@@ -1,0 +1,7 @@
+{
+  "appId": "com.octocat.app",
+  "appName": "Octocat",
+  "webDir": "www",
+  "backgroundColor": "#ffffff",
+  "android": { "allowMixedContent": false }
+}

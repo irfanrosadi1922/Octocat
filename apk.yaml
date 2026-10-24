@@ -1,0 +1,292 @@
+name: Buat APK
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Siapkan isi aplikasi
+        run: |
+          mkdir www
+          echo '{"appId":"com.octocat.app","appName":"Octocat","webDir":"www","backgroundColor":"#ffffff"}' > capacitor.config.json
+          cp index.html dashboard.html order.html sw.js sbapi.js native.js config.js manifest.webmanifest icon-192.png icon-512.png www/
+          # alamat website publik untuk QR: variabel APP_URL > file CNAME > alamat GitHub Pages
+          PUB="${{ vars.APP_URL }}"
+          if [ -z "$PUB" ] && [ -f CNAME ]; then PUB="https://$(tr -d ' \r\n' < CNAME)/"; fi
+          if [ -z "$PUB" ]; then PUB="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"; fi
+          echo "window.POS_PUBLIC_URL='$PUB';" >> www/native.js
+          echo "Alamat publik QR: $PUB"
+          # Bila variabel APP_URL diisi, aplikasi membuka situs live (selalu terbaru)
+          if [ -n "${{ vars.APP_URL }}" ]; then
+            node -e "const c=require('./capacitor.config.json');c.server={url:'${{ vars.APP_URL }}',cleartext:false};require('fs').writeFileSync('capacitor.config.json',JSON.stringify(c,null,2))"
+          fi
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - name: Izin kamera, lokasi, ikon
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.BLUETOOTH" />\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />#' $M
+          for d in android/app/src/main/res/mipmap-*; do
+            case $d in *anydpi*) rm -rf $d; continue;; esac
+            for n in ic_launcher ic_launcher_round ic_launcher_foreground; do cp icon-512.png $d/$n.png; done
+          done
+          grep -c CAMERA $M
+      - name: Plugin Bluetooth klasik (printer thermal)
+        run: |
+          D=android/app/src/main/java/com/octocat/app
+          mkdir -p $D
+          cat > $D/ClassicBtPlugin.java <<'JAVAEOF'
+          package com.octocat.app;
+
+          import android.Manifest;
+          import android.annotation.SuppressLint;
+          import android.bluetooth.BluetoothAdapter;
+          import android.bluetooth.BluetoothDevice;
+          import android.bluetooth.BluetoothSocket;
+          import android.os.Build;
+          import android.util.Base64;
+
+          import com.getcapacitor.JSArray;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.PermissionState;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.getcapacitor.annotation.Permission;
+          import com.getcapacitor.annotation.PermissionCallback;
+
+          import java.io.OutputStream;
+          import java.util.Set;
+          import java.util.UUID;
+
+          @CapacitorPlugin(
+              name = "ClassicBt",
+              permissions = { @Permission(alias = "bt", strings = { Manifest.permission.BLUETOOTH_CONNECT }) }
+          )
+          public class ClassicBtPlugin extends Plugin {
+              private static final UUID SPP = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+              private BluetoothSocket socket;
+              private OutputStream out;
+              private String addr = "";
+
+              private boolean needPerm() {
+                  return Build.VERSION.SDK_INT >= 31 && getPermissionState("bt") != PermissionState.GRANTED;
+              }
+
+              @PluginMethod
+              public void list(PluginCall call) {
+                  if (needPerm()) {
+                      requestPermissionForAlias("bt", call, "permCb");
+                      return;
+                  }
+                  doList(call);
+              }
+
+              @PluginMethod
+              public void connect(PluginCall call) {
+                  if (needPerm()) {
+                      requestPermissionForAlias("bt", call, "permCb");
+                      return;
+                  }
+                  doConnect(call);
+              }
+
+              @PermissionCallback
+              private void permCb(PluginCall call) {
+                  if (needPerm()) {
+                      call.reject("Izin Bluetooth ditolak. Izinkan di pengaturan aplikasi.");
+                      return;
+                  }
+                  if ("list".equals(call.getMethodName())) doList(call);
+                  else doConnect(call);
+              }
+
+              @SuppressLint("MissingPermission")
+              private void doList(PluginCall call) {
+                  BluetoothAdapter ad = BluetoothAdapter.getDefaultAdapter();
+                  if (ad == null) {
+                      call.reject("HP ini tidak punya Bluetooth");
+                      return;
+                  }
+                  if (!ad.isEnabled()) {
+                      call.reject("Bluetooth HP belum menyala");
+                      return;
+                  }
+                  JSArray arr = new JSArray();
+                  Set<BluetoothDevice> bonded = ad.getBondedDevices();
+                  if (bonded != null) {
+                      for (BluetoothDevice d : bonded) {
+                          JSObject o = new JSObject();
+                          String n = d.getName();
+                          o.put("name", n == null ? "" : n);
+                          o.put("address", d.getAddress());
+                          arr.put(o);
+                      }
+                  }
+                  JSObject res = new JSObject();
+                  res.put("devices", arr);
+                  call.resolve(res);
+              }
+
+              @SuppressLint("MissingPermission")
+              private void doConnect(final PluginCall call) {
+                  final String a = call.getString("address", "");
+                  if (a == null || a.length() < 11) {
+                      call.reject("Alamat printer kosong");
+                      return;
+                  }
+                  new Thread(new Runnable() {
+                      @Override
+                      public void run() {
+                          try {
+                              closeQuiet();
+                              BluetoothAdapter ad = BluetoothAdapter.getDefaultAdapter();
+                              if (ad == null || !ad.isEnabled()) {
+                                  call.reject("Bluetooth HP belum menyala");
+                                  return;
+                              }
+                              BluetoothDevice dev = ad.getRemoteDevice(a);
+                              ad.cancelDiscovery();
+                              BluetoothSocket s;
+                              try {
+                                  s = dev.createRfcommSocketToServiceRecord(SPP);
+                                  s.connect();
+                              } catch (Exception e1) {
+                                  s = (BluetoothSocket) dev.getClass()
+                                      .getMethod("createRfcommSocket", new Class[] { int.class })
+                                      .invoke(dev, Integer.valueOf(1));
+                                  s.connect();
+                              }
+                              socket = s;
+                              out = s.getOutputStream();
+                              addr = a;
+                              JSObject res = new JSObject();
+                              res.put("connected", true);
+                              call.resolve(res);
+                          } catch (Exception e) {
+                              closeQuiet();
+                              call.reject("Gagal menyambung ke printer: " + e.getMessage());
+                          }
+                      }
+                  }).start();
+              }
+
+              @PluginMethod
+              public void write(final PluginCall call) {
+                  final String b64 = call.getString("data", "");
+                  if (out == null || socket == null) {
+                      call.reject("Printer belum terhubung");
+                      return;
+                  }
+                  new Thread(new Runnable() {
+                      @Override
+                      public void run() {
+                          try {
+                              byte[] bytes = Base64.decode(b64, Base64.DEFAULT);
+                              int off = 0;
+                              while (off < bytes.length) {
+                                  int n = Math.min(512, bytes.length - off);
+                                  out.write(bytes, off, n);
+                                  out.flush();
+                                  off += n;
+                                  try { Thread.sleep(8); } catch (InterruptedException ie) { }
+                              }
+                              call.resolve();
+                          } catch (Exception e) {
+                              closeQuiet();
+                              call.reject("Gagal mengirim ke printer: " + e.getMessage());
+                          }
+                      }
+                  }).start();
+              }
+
+              @PluginMethod
+              public void disconnect(PluginCall call) {
+                  closeQuiet();
+                  call.resolve();
+              }
+
+              @PluginMethod
+              public void hasFcm(PluginCall call) {
+                  int id = getContext().getResources().getIdentifier("google_app_id", "string", getContext().getPackageName());
+                  JSObject res = new JSObject();
+                  res.put("fcm", id != 0);
+                  call.resolve(res);
+              }
+
+              @PluginMethod
+              public void status(PluginCall call) {
+                  JSObject res = new JSObject();
+                  res.put("connected", socket != null && socket.isConnected());
+                  res.put("address", addr);
+                  call.resolve(res);
+              }
+
+              private void closeQuiet() {
+                  try { if (out != null) out.close(); } catch (Exception e) { }
+                  try { if (socket != null) socket.close(); } catch (Exception e) { }
+                  out = null;
+                  socket = null;
+              }
+          }
+          JAVAEOF
+          cat > $D/MainActivity.java <<'JAVAEOF'
+          package com.octocat.app;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(ClassicBtPlugin.class);
+                  super.onCreate(savedInstanceState);
+              }
+          }
+          JAVAEOF
+          ls -la $D
+      - name: Firebase (notifikasi) bila kunci tersedia
+        env:
+          GS: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GS" ]; then
+            printf '%s' "$GS" > android/app/google-services.json
+            echo 'window.POS_FCM=true;' >> www/native.js
+            echo "Firebase aktif"
+          else
+            echo "Tanpa Firebase (notifikasi native nonaktif)"
+          fi
+      - run: npx cap sync android
+      - name: Bangun APK rilis
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Tandatangani APK
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > ks.jks; PASS="$KS_PASS"
+          else
+            PASS=octocat123
+            keytool -genkeypair -keystore ks.jks -alias pos -keyalg RSA -keysize 2048 -validity 10000 -storepass $PASS -keypass $PASS -dname "CN=Octocat"
+          fi
+          mkdir out
+          IN=$(ls android/app/build/outputs/apk/release/*.apk | head -1)
+          $BT/zipalign -p 4 "$IN" aligned.apk
+          $BT/apksigner sign --ks ks.jks --ks-key-alias pos --ks-pass pass:$PASS --key-pass pass:$PASS --out out/Octocat.apk aligned.apk
+          $BT/apksigner verify out/Octocat.apk
+          [ -n "$KS_B64" ] || cp ks.jks out/KUNCI-SIMPAN-INI.jks
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Octocat-apk
+          path: out/*
