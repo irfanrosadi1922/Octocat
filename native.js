@@ -66,7 +66,7 @@
           if(!list.length){var e=document.createElement('div');e.style.cssText='color:#666;margin-bottom:12px';e.textContent='Belum ada printer yang dipasangkan. Pasangkan dulu di Pengaturan Bluetooth HP (PIN 0000 atau 1234), lalu kembali ke sini.';box.appendChild(e)}
           list.forEach(function(d){
             var b=document.createElement('button');b.type='button';
-            b.style.cssText='display:block;width:100%;text-align:left;padding:14px;margin:6px 0;border:1px solid #ddd;border-radius:12px;background:#fff7f0;font-size:15px';
+            b.style.cssText='display:block;width:100%;text-align:left;padding:14px;margin:6px 0;border:1px solid #ddd;border-radius:12px;background:#f6f6f6;font-size:15px';
             b.textContent=(d.name||'Tanpa nama')+'  ·  '+d.address;
             b.onclick=function(){document.body.removeChild(ov);res(d)};box.appendChild(b)});
           var c=document.createElement('button');c.type='button';c.textContent='Batal';

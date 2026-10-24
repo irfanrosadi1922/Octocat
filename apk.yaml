@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir www
           echo '{"appId":"com.octocat.app","appName":"Octocat","webDir":"www","backgroundColor":"#ffffff"}' > capacitor.config.json
-          cp index.html dashboard.html order.html sw.js sbapi.js native.js config.js manifest.webmanifest icon-192.png icon-512.png www/
+          cp index.html dashboard.html order.html sw.js sbapi.js native.js config.js manifest.webmanifest icon-192.png icon-512.png icon-maskable-512.png www/
           # alamat website publik untuk QR: variabel APP_URL > file CNAME > alamat GitHub Pages
           PUB="${{ vars.APP_URL }}"
           if [ -z "$PUB" ] && [ -f CNAME ]; then PUB="https://$(tr -d ' \r\n' < CNAME)/"; fi
