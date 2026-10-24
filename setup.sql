@@ -29,6 +29,19 @@ alter table pos.users add column if not exists single boolean;            -- nul
 alter table pos.sessions add column if not exists seen_at timestamptz not null default now();   -- terakhir dipakai; sesi mati bila 12 jam tidak ada permintaan
 alter table pos.sessions add column if not exists kicked_at timestamptz;   -- diisi saat perangkat ini dikeluarkan karena login di perangkat lain
 create index if not exists sessions_uid on pos.sessions(uid);
+-- ---- pendaftaran mandiri (Supabase Auth): kolom tambahan, peran 'new' = sudah daftar tetapi belum punya toko
+alter table pos.users add column if not exists auth_id uuid;                 -- akun di auth.users (email + sandi dikelola Supabase Auth)
+alter table pos.users add column if not exists birth date;
+alter table pos.users add column if not exists address text not null default '';
+do $$ begin
+  alter table pos.users drop constraint if exists users_role_check;
+  alter table pos.users add constraint users_role_check check (role in ('owner', 'staff', 'new'));
+end $$;
+create unique index if not exists users_auth_id_u on pos.users(auth_id) where auth_id is not null;
+do $$ begin
+  create unique index if not exists users_email_u on pos.users(lower(email)) where email <> '';
+exception when others then raise notice 'users_email_u dilewati: ada email ganda di data lama';
+end $$;
 create table if not exists pos.audit(
   id bigint generated always as identity primary key,
   t timestamptz not null default now(), uid bigint, uname text not null default '',
@@ -64,6 +77,9 @@ create table if not exists pos.push_tokens(tok text primary key, uid bigint not 
 insert into pos.meta(k, v) values ('rev', to_jsonb((extract(epoch from now()) * 1000)::bigint)) on conflict do nothing;
 create table if not exists pos.fails(ip text primary key, n int not null default 0, until timestamptz);
 create table if not exists pos.hits(id bigint generated always as identity primary key, ip text not null, t timestamptz not null default now());
+create table if not exists pos.rl(id bigint generated always as identity primary key, k text not null, ip text not null, t timestamptz not null default now());
+create index if not exists rl_k on pos.rl(k, ip, t);
+alter table pos.rl enable row level security;
 create index if not exists hits_ip on pos.hits(ip, t);
 
 alter table pos.users enable row level security;  alter table pos.sessions enable row level security;
@@ -85,6 +101,15 @@ create or replace function pos.num(j jsonb) returns numeric language sql immutab
 
 create or replace function pos.clean(t text, n int) returns text language sql immutable as
 $$ select left(btrim(regexp_replace(regexp_replace(coalesce(t, ''), '[[:cntrl:]]+', ' ', 'g'), '\s+', ' ', 'g')), n) $$;
+
+create or replace function pos.rate(p_k text, p_lim int, p_win interval) returns boolean language plpgsql as $$
+declare v_ip text := pos.client_ip();
+begin
+  if random() < 0.05 then delete from pos.rl where t < now() - interval '1 day'; end if;
+  if (select count(*) from pos.rl where rl.k = p_k and rl.ip = v_ip and rl.t > now() - p_win) >= p_lim then return false; end if;
+  insert into pos.rl(k, ip) values (p_k, v_ip);
+  return true;
+end $$;
 
 create or replace function pos.iso(ts timestamptz) returns text language sql immutable as
 $$ select to_char(ts at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') $$;
@@ -129,7 +154,61 @@ create or replace function pos.me_view(u pos.users) returns jsonb language sql s
     'single', coalesce(u.single, u.role <> 'owner'), 'active', u.active, 'lastLogin', coalesce(pos.iso(u.last_login), ''), 'createdAt', pos.iso(u.created_at),
     'email', u.email, 'phone', u.phone, 'hasPhoto', u.photo <> '') $$;
 create or replace function pos.me_self(u pos.users) returns jsonb language sql stable as $$
-  select pos.me_view(u) || jsonb_build_object('photo', u.photo) $$;
+  select pos.me_view(u) || jsonb_build_object('photo', u.photo, 'birth', coalesce(u.birth::text, ''), 'address', u.address,
+    'hasAuth', u.auth_id is not null,
+    'emailVerified', coalesce((select a.email_confirmed_at is not null from auth.users a where a.id = u.auth_id), false)) $$;
+
+-- ---- sandi: akun Supabase Auth memakai hash di auth.users, akun lama (dan staf) memakai pos.users.pw
+create or replace function pos.pw_ok(u pos.users, pw text) returns boolean language plpgsql as $$
+declare h text;
+begin
+  if pw is null or u.id is null then return false; end if;
+  if u.auth_id is not null then
+    select encrypted_password into h from auth.users where id = u.auth_id;
+    return h is not null and h <> '' and h = extensions.crypt(pw, h);
+  end if;
+  return u.pw <> '!' and u.pw = extensions.crypt(pw, u.pw);
+end $$;
+create or replace function pos.pw_set(uid bigint, pw text) returns void language plpgsql as $$
+declare v_auth uuid; h text := extensions.crypt(pw, extensions.gen_salt('bf', 10));
+begin
+  select auth_id into v_auth from pos.users where id = uid;
+  if v_auth is not null then update auth.users set encrypted_password = h, updated_at = now() where id = v_auth;
+  else update pos.users set pw = h where id = uid; end if;
+end $$;
+
+-- ---- akun baru dari Supabase Auth -> baris pos.users (peran 'new' sampai toko disiapkan)
+create or replace function pos.on_auth_user() returns trigger language plpgsql security definer set search_path = '' as $$
+declare md jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb); un text; v_birth date; nm text;
+begin
+  if md ->> 'kind' = 'link' then return new; end if;
+  un := lower(btrim(coalesce(md ->> 'username', '')));
+  if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then raise exception 'Username tidak valid'; end if;
+  if exists (select 1 from pos.users where username = un) then raise exception 'Username sudah dipakai'; end if;
+  begin v_birth := nullif(md ->> 'birth', '')::date; exception when others then v_birth := null; end;
+  nm := coalesce(nullif(regexp_replace(btrim(coalesce(md ->> 'name', '')), '\s+', ' ', 'g'), ''), un);
+  insert into pos.users(username, name, role, perms, pw, auth_id, email, phone, birth, address)
+  values (un, left(nm, 60), 'new', '[]'::jsonb, '!', new.id, lower(coalesce(new.email, '')), left(coalesce(md ->> 'phone', ''), 20),
+          v_birth, left(coalesce(md ->> 'address', ''), 300));
+  return new;
+end $$;
+create or replace function pos.on_auth_pw() returns trigger language plpgsql security definer set search_path = '' as $$
+begin  -- sandi diganti (reset lewat email / ganti sandi): semua sesi aplikasi akun itu dicabut
+  if new.encrypted_password is distinct from old.encrypted_password then
+    delete from pos.sessions where uid in (select id from pos.users where auth_id = new.id);
+  end if;
+  return new;
+end $$;
+do $$ begin
+  drop trigger if exists pos_on_auth_pw on auth.users;
+  create trigger pos_on_auth_pw after update of encrypted_password on auth.users for each row execute function pos.on_auth_pw();
+exception when others then raise notice 'trigger sandi auth.users gagal dibuat: %', sqlerrm;
+end $$;
+do $$ begin
+  drop trigger if exists pos_on_auth_user on auth.users;
+  create trigger pos_on_auth_user after insert on auth.users for each row execute function pos.on_auth_user();
+exception when others then raise notice 'trigger auth.users gagal dibuat: %', sqlerrm;
+end $$;
 
 create or replace function pos.auth(tok text) returns pos.users language plpgsql as $$
 declare u pos.users; h text;
@@ -340,15 +419,18 @@ begin
   if lu is not null and lu > now() then return pos.r(429, '{"error":"terlalu banyak percobaan"}'); end if;
   un := lower(btrim(coalesce(b ->> 'username', '')));
   pw := case when jsonb_typeof(b -> 'password') = 'string' then b ->> 'password' end;
-  if un <> '' then select * into u from pos.users where username = un; end if;
-  if u.id is not null and pw is not null then good := (u.pw = extensions.crypt(pw, u.pw));
+  if un <> '' and length(un) <= 120 then
+    if position('@' in un) > 0 then select * into u from pos.users where lower(email) = un and email <> '' order by (auth_id is not null) desc limit 1;
+    else select * into u from pos.users where username = un; end if;
+  end if;
+  if u.id is not null and pw is not null and length(pw) <= 200 then good := pos.pw_ok(u, pw);
   else perform extensions.crypt('x', '$2a$10$abcdefghijklmnopqrstuu'); end if;
   if not good then
     insert into pos.fails(ip, n) values (v_ip, 1) on conflict (ip) do update set
       n = case when pos.fails.n + 1 >= 8 then 0 else pos.fails.n + 1 end,
       until = case when pos.fails.n + 1 >= 8 then now() + interval '10 minutes' else pos.fails.until end;
     perform pos.audit(null, null, 'login-gagal', left(un, 40) || ' dari ' || v_ip);
-    return pos.r(401, '{"error":"username atau sandi salah"}');
+    return pos.r(401, '{"error":"username/email atau sandi salah"}');
   end if;
   delete from pos.fails where ip = v_ip;
   if not u.active then return pos.r(403, '{"error":"Akun dinonaktifkan. Hubungi owner."}'); end if;
@@ -453,11 +535,19 @@ begin
 end $$;
 
 create or replace function pos.route(m text, u text, q jsonb, b jsonb, t text) returns jsonb language plpgsql as $$
-declare me pos.users; mt text[]; r pos.co; tu pos.users; own boolean; nrole text; act boolean; nm text; nperms jsonb; un text; nsingle boolean;
+declare me pos.users; v_auth uuid; mt text[]; r pos.co; tu pos.users; own boolean; nrole text; act boolean; nm text; nperms jsonb; un text; nsingle boolean;
   d pos.doc; gerr text; nv int; cnt int; rv bigint; wt numeric; ms bigint; x jsonb; v_proof text;
 begin
   if u = '/api/health' then return pos.r(200, '{"ok":true,"pos":true,"sb":true}'); end if;
   if u = '/api/login' and m = 'POST' then return pos.login(b); end if;
+  if u = '/api/register/check' and m = 'POST' then
+    if not pos.rate('reg', 30, interval '10 minutes') then return pos.r(429, '{"error":"Terlalu banyak percobaan. Coba lagi nanti."}'); end if;
+    un := lower(btrim(coalesce(b ->> 'username', '')));
+    nm := lower(btrim(coalesce(b ->> 'email', '')));
+    return pos.r(200, jsonb_build_object(
+      'usernameFree', un ~ '^[a-z0-9][a-z0-9._-]{2,23}$' and not exists (select 1 from pos.users where username = un),
+      'emailFree', nm = '' or (not exists (select 1 from pos.users where lower(email) = nm) and not exists (select 1 from auth.users where lower(email) = nm))));
+  end if;
   if u = '/api/public/menu' and m = 'GET' then return pos.pub_menu(q); end if;
   if u = '/api/public/order' and m = 'POST' then return pos.create_order(b, pos.client_ip()); end if;
   mt := regexp_match(u, '^/api/public/order/([A-Za-z0-9_-]{10,40})(/cancel|/paid)?$');
@@ -494,6 +584,9 @@ begin
   me := pos.auth(t);
   if me.id is null then return pos.r(401, case when pos.kicked(t) then '{"error":"kicked"}'::jsonb when pos.expired(t) then '{"error":"expired"}'::jsonb else '{"error":"unauthorized"}'::jsonb end); end if;
   own := me.role = 'owner';
+  if me.role = 'new' and not (u in ('/api/me', '/api/logout', '/api/me/password', '/api/store/setup')) then
+    return pos.r(403, '{"error":"Siapkan toko Anda dulu","code":"no-store"}');
+  end if;
 
   if u = '/api/logout' and m = 'POST' then   -- keluar: sesi ini dihapus di server
     delete from pos.sessions where th = encode(extensions.digest(t, 'sha256'), 'hex');
@@ -506,26 +599,48 @@ begin
     declare pn text; pe text; pp text; pf text;
     begin
       pn := regexp_replace(btrim(coalesce(b ->> 'name', me.name)), '\s+', ' ', 'g');
-      pe := lower(btrim(coalesce(b ->> 'email', me.email)));
+      pe := case when me.auth_id is not null then me.email else lower(btrim(coalesce(b ->> 'email', me.email))) end;
       pp := btrim(coalesce(b ->> 'phone', me.phone));
       pf := coalesce(b ->> 'photo', me.photo);
       if length(pn) < 1 or length(pn) > 60 then return pos.r(400, '{"error":"Nama lengkap wajib diisi (maks. 60 karakter)"}'); end if;
       if pe <> '' and (length(pe) > 120 or pe !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$') then return pos.r(400, '{"error":"Format alamat email tidak valid"}'); end if;
       if pp <> '' and (pp !~ '^[0-9+() -]{6,20}$' or length(regexp_replace(pp, '\D', '', 'g')) < 6) then return pos.r(400, '{"error":"Nomor telepon tidak valid"}'); end if;
       if pf <> '' and (length(pf) > 110000 or pf !~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$') then return pos.r(400, '{"error":"Foto profil tidak valid atau terlalu besar"}'); end if;
-      update pos.users set name = pn, email = pe, phone = pp, photo = pf where id = me.id;
+      if exists (select 1 from pos.users where lower(email) = pe and pe <> '' and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
+      update pos.users set name = pn, email = pe, phone = pp, photo = pf,
+        address = case when b ? 'address' then left(btrim(coalesce(b ->> 'address', '')), 300) else address end where id = me.id;
       perform pos.audit(me.id, me.username, 'ubah-profil', '');
       select * into me from pos.users where id = me.id;
       return pos.r(200, pos.me_self(me));
     end;
   end if;
   if u = '/api/me/password' and m = 'POST' then
-    if coalesce(jsonb_typeof(b -> 'new'), '') <> 'string' or length(b ->> 'new') < 6 then return pos.r(400, '{"error":"Sandi baru minimal 6 karakter"}'); end if;
-    if me.pw <> extensions.crypt(coalesce(b ->> 'old', ''), me.pw) then return pos.r(403, '{"error":"Sandi lama salah"}'); end if;
-    update pos.users set pw = extensions.crypt(b ->> 'new', extensions.gen_salt('bf', 10)) where id = me.id;
+    cnt := case when me.auth_id is null then 6 else 8 end;
+    if coalesce(jsonb_typeof(b -> 'new'), '') <> 'string' or length(b ->> 'new') < cnt then
+      return pos.r(400, jsonb_build_object('error', 'Sandi baru minimal ' || cnt || ' karakter')); end if;
+    if length(b ->> 'new') > 200 then return pos.r(400, '{"error":"Sandi terlalu panjang"}'); end if;
+    if not pos.pw_ok(me, coalesce(b ->> 'old', '')) then return pos.r(403, '{"error":"Sandi lama salah"}'); end if;
+    perform pos.pw_set(me.id, b ->> 'new');
     delete from pos.sessions where uid = me.id;
     perform pos.audit(me.id, me.username, 'ganti-sandi', '');
     return pos.r(200, jsonb_build_object('token', pos.new_session(me.id), 'me', pos.me_self(me)));
+  end if;
+
+  if u = '/api/me/link-email' and m = 'POST' then
+    -- akun lama menambahkan email: klien mendaftar ke Supabase Auth (kind=link) memakai sandi saat ini, lalu server mencocokkan
+    if me.auth_id is not null then return pos.r(409, '{"error":"Akun ini sudah punya email"}'); end if;
+    if not pos.rate('link', 10, interval '10 minutes') then return pos.r(429, '{"error":"Terlalu banyak percobaan. Coba lagi nanti."}'); end if;
+    nm := lower(btrim(coalesce(b ->> 'email', '')));
+    if nm !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$' or length(nm) > 120 then return pos.r(400, '{"error":"Format alamat email tidak valid"}'); end if;
+    if not pos.pw_ok(me, coalesce(b ->> 'password', '')) then return pos.r(403, '{"error":"Sandi saat ini salah"}'); end if;
+    if exists (select 1 from pos.users where lower(email) = nm and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
+    select a.id into v_auth from auth.users a where lower(a.email) = nm and not exists (select 1 from pos.users x where x.auth_id = a.id)
+      and a.encrypted_password = extensions.crypt(b ->> 'password', a.encrypted_password);
+    if v_auth is null then return pos.r(409, '{"error":"Pendaftaran email belum selesai atau email sudah terdaftar. Coba lagi."}'); end if;
+    update pos.users set auth_id = v_auth, email = nm, pw = '!' where id = me.id;
+    perform pos.audit(me.id, me.username, 'tambah-email', nm);
+    select * into me from pos.users where id = me.id;
+    return pos.r(200, pos.me_self(me));
   end if;
 
   if u = '/api/users' and m = 'GET' then
@@ -571,7 +686,7 @@ begin
     update pos.users set name = nm, role = nrole, perms = nperms, active = act, single = nsingle where id = tu.id;
     if nrole <> tu.role or (not act and tu.active) then delete from pos.sessions where uid = tu.id; end if;
     if b ? 'password' then
-      update pos.users set pw = extensions.crypt(b ->> 'password', extensions.gen_salt('bf', 10)) where id = tu.id;
+      perform pos.pw_set(tu.id, b ->> 'password');
       delete from pos.sessions where uid = tu.id;
       perform pos.audit(me.id, me.username, 'reset-sandi', tu.username);
     end if;

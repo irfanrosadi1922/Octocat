@@ -3242,7 +3242,7 @@ async function doLogin(){
   try{
     const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:un,password:pw})});
     const j=await r.json().catch(()=>({}));
-    if(r.status===401){err.textContent='Username atau kata sandi salah';return}
+    if(r.status===401){err.textContent='Username/email atau kata sandi salah';return}
     if(r.status===403){err.textContent=j.error||'Akun tidak aktif';return}
     if(r.status===429){err.textContent='Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';return}
     if(!r.ok)throw 0;
@@ -3984,5 +3984,6 @@ setInterval(()=>{if(document.hidden)return;if(S.view==='home')renderHome();else 
 applyBrand();
 tick();go(matchMedia('(min-width:701px)').matches?'home':'pos');initI18n();dbBoot();setupPwa();cloudStart();coStart();applyAccess();bleAutoSoon(1200);
 </script>
+<script src="auth.js"></script>
 </body>
 </html>
