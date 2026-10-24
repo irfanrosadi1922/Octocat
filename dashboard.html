@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f6">
+<meta name="color-scheme" content="only light">
 <meta name="robots" content="noindex">
-<script>(function(){try{var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6')}catch(e){}})()</script>
+<script>(function(){try{if(localStorage.getItem('pos_theme_v')!=='2'){localStorage.setItem('pos_theme','light');localStorage.setItem('pos_theme_v','2')}var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light')}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
@@ -146,6 +147,7 @@ a.btn{display:inline-block;text-align:center;text-decoration:none}
 
 
 /* tema gelap: pilihan dibaca dari pengaturan Tema di aplikasi kasir (Pengaturan > Tampilan) */
+html:not([data-theme=dark]){color-scheme:only light}
 html[data-theme=dark]{color-scheme:dark;--bg:#101012;--card:#1b1b1f;--tx:#f1f1f3;--tx2:#c9c9d0;--mu:#9a9aa3;--ln:#2e2e34;--ln2:#3a3a42;--b:#52525b;--b2:#71717a;--bt:#e4e4e7;--peach:#232327;--peach2:#2c2c31;--peach3:#202024;--redbg:#3b1c1f;--greenbg:#17301f;--yelbg:#3a3015;--chip:#2a2a2f;--srch:#252529;--dis:#3a3a40;--wash:rgba(255,255,255,.07);--note:#232327;--noteb:#3a3a42;--notet:#d4d4d8;--bad:#f87171;--ok:#4ade80}
 html[data-theme=dark] .tag.low{color:#fbbf24}
 html[data-theme=dark] .chgp.gu{color:#4ade80}
@@ -604,7 +606,7 @@ const themePref=()=>{try{return localStorage.getItem('pos_theme')||'light'}catch
 function applyTheme(){
   const t=themePref(),d=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
-  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
   const b=document.getElementById('dTh');if(b){b.textContent={light:'☀️',dark:'🌙',auto:'🌓'}[t]||'☀️'}
 }
 function dTheme(){const n={light:'dark',dark:'auto',auto:'light'}[themePref()]||'dark';try{localStorage.setItem('pos_theme',n)}catch(e){}applyTheme();toast('Tema: '+({light:'Terang',dark:'Gelap',auto:'Otomatis'}[n]))}

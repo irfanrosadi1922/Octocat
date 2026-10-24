@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f6">
-<script>(function(){try{var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6')}catch(e){}})()</script>
+<meta name="color-scheme" content="only light">
+<script>(function(){try{if(localStorage.getItem('pos_theme_v')!=='2'){localStorage.setItem('pos_theme','light');localStorage.setItem('pos_theme_v','2')}var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light')}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
@@ -478,6 +479,7 @@ select.fi{appearance:auto}
 .ic[data-ic=dash]{--m:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Crect%20x=%223%22%20y=%223%22%20width=%227%22%20height=%229%22%20rx=%221.5%22/%3E%3Crect%20x=%2214%22%20y=%223%22%20width=%227%22%20height=%225%22%20rx=%221.5%22/%3E%3Crect%20x=%2214%22%20y=%2212%22%20width=%227%22%20height=%229%22%20rx=%221.5%22/%3E%3Crect%20x=%223%22%20y=%2216%22%20width=%227%22%20height=%225%22%20rx=%221.5%22/%3E%3C/svg%3E")}
 
 /* tema gelap (pilihan per perangkat: Terang / Gelap / Otomatis ikut sistem) */
+html:not([data-theme=dark]){color-scheme:only light}
 html[data-theme=dark]{color-scheme:dark;--bg:#101012;--card:#1b1b1f;--tx:#f1f1f3;--tx2:#c9c9d0;--mu:#9a9aa3;--ln:#2e2e34;--bg2:#252529;--b:#52525b;--b2:#71717a;--bt:#e4e4e7;--peach:#232327;--peach2:#2c2c31;--peach3:#202024;--cat1:#2c2c31;--cat2:#26262b;--redbg:#3b1c1f;--greenbg:#17301f;--yelbg:#3a3015;--chip:#2a2a2f;--srch:#252529;--hover:#222226;--dis:#3a3a40;--bad:#f87171;--ok:#4ade80}
 html[data-theme=dark] .pill{box-shadow:none}
 html[data-theme=dark] .sold{background:rgba(16,16,18,.72)}
@@ -2385,7 +2387,7 @@ const themePref=()=>{try{return localStorage.getItem('pos_theme')||'light'}catch
 function applyTheme(){
   const t=themePref(),d=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
-  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#f6f6f6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
 }
 function setTheme(v){try{localStorage.setItem('pos_theme',v)}catch(e){}applyTheme();renderTheme()}
 function renderTheme(){
