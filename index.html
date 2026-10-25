@@ -601,6 +601,18 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
   table{max-width:100%}
   input,select,textarea{font-size:16px}
 }
+
+/* Account pages: cleaner responsive profile layout */
+.accp{max-width:520px;margin:0 auto;padding:clamp(8px,2vw,18px)}
+.accph{display:flex;align-items:center;gap:16px;padding:18px;background:var(--bg2);border:1px solid var(--ln);border-radius:22px;margin-bottom:20px;min-width:0}
+.accav{width:76px;height:76px;flex:none;border-radius:50%;background:var(--peach2);border:3px solid var(--card);box-shadow:0 0 0 1px var(--ln);position:relative;display:grid;place-items:center;font-size:28px;font-weight:700;color:var(--tx);padding:0}
+.accav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.accwho{min-width:0;display:flex;flex-direction:column;gap:5px}.accwho b{font-size:16px;overflow-wrap:anywhere}.accwho small{font-size:12px;color:var(--mu);overflow-wrap:anywhere}
+.accp .fl{margin:16px 0 7px}.accp .fi{width:100%;min-height:48px;border:1px solid var(--ln);background:var(--card);border-radius:14px;padding:12px 14px;outline:none}.accp .fi:focus{border-color:var(--tx);box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+.accp .phr{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:10px}.accp .btn{min-height:48px;margin-top:18px}.accp .btn.sec{margin-top:10px}.accp .hint{font-size:12px;line-height:1.55;color:var(--mu)}
+.acc-summary{display:grid;gap:10px}.acc-field{padding:13px 15px;border:1px solid var(--ln);border-radius:14px;background:var(--card)}.acc-field small{display:block;color:var(--mu);font-size:11px;margin-bottom:4px}.acc-field b{font-size:14px;overflow-wrap:anywhere}
+.cropbox{width:min(100%,340px);margin:0 auto}.cropstage{width:100%;aspect-ratio:1;overflow:hidden;border-radius:50%;background:#171717;touch-action:none;cursor:grab;border:2px solid var(--ln)}.cropstage:active{cursor:grabbing}.cropstage canvas{display:block;width:100%;height:100%;touch-action:none}.cropcontrols{margin:18px 0 8px}.cropcontrols label{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:8px}.cropcontrols input{width:100%;accent-color:var(--b)}.cropnote{font-size:12px;color:var(--mu);text-align:center;margin:10px 0 0}.cropactions{display:flex;gap:10px;margin-top:18px}.cropactions .btn{margin:0;min-width:0}.cropactions .btn.sec{background:var(--peach2);color:var(--tx)}
+@media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
 <script>
@@ -3371,21 +3383,42 @@ function renderPwPage(){
   </div>`;
 }
 function accAvDraw(){const m=CL.me||{};const e=$('#accAv');if(e)e.innerHTML=ACC.photo?`<img src="${esc(ACC.photo)}" alt="">`:esc(((($('#accName')||{}).value||m.name||'?')).trim().charAt(0).toUpperCase());const r=$('#accRm');if(r)r.hidden=!ACC.photo}
+let ACC_CROP=null;
 function accPhoto(inp){
   const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
-  if(!/^image\//.test(f.type)){$('#accErr').textContent='File harus berupa gambar';return}
+  const e=$('#accErr');if(!/^image\//.test(f.type)){if(e)e.textContent='Pilih file gambar';return}
+  if(f.size>12*1024*1024){if(e)e.textContent='Ukuran foto maksimal 12 MB';return}
   const rd=new FileReader();
-  rd.onload=()=>{const im=new Image();
-    im.onload=()=>{try{
-      const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
-      const sz=Math.min(im.width,im.height),sx=(im.width-sz)/2,sy=(im.height-sz)/2;
-      x.fillStyle='#fff';x.fillRect(0,0,N,N);x.drawImage(im,sx,sy,sz,sz,0,0,N,N);
-      ACC.photo=c.toDataURL('image/jpeg',.82);$('#accErr').textContent='';accAvDraw();
-    }catch(e){$('#accErr').textContent='Foto tidak bisa diproses'}};
-    im.onerror=()=>{$('#accErr').textContent='Foto tidak bisa dibaca'};
-    im.src=rd.result};
-  rd.onerror=()=>{$('#accErr').textContent='Foto tidak bisa dibaca'};
-  rd.readAsDataURL(f);
+  rd.onload=()=>{const im=new Image();im.onload=()=>openAccCrop(im);im.onerror=()=>{if(e)e.textContent='Foto tidak bisa dibaca'};im.src=rd.result};
+  rd.onerror=()=>{if(e)e.textContent='Foto tidak bisa dibaca'};rd.readAsDataURL(f);
+}
+function openAccCrop(im){
+  ACC_CROP={im,zoom:1,x:0,y:0,drag:null};
+  openModal(`<div class="cropbox">
+    <h3 style="margin:0 0 6px;font-size:18px">Atur Foto Profil</h3>
+    <p class="hint" style="font-size:12px;color:var(--mu);margin:0 0 18px">Geser foto untuk mengatur posisi, lalu sesuaikan zoom.</p>
+    <div class="cropstage" id="cropStage"><canvas id="cropCanvas" width="320" height="320"></canvas></div>
+    <div class="cropcontrols"><label for="cropZoom"><span>Perbesar foto</span><b id="cropZoomVal">100%</b></label><input id="cropZoom" type="range" min="1" max="3" step=".01" value="1" oninput="accCropZoom(this.value)"></div>
+    <p class="cropnote">Foto akan dipotong menjadi lingkaran.</p>
+    <div class="cropactions"><button class="btn sec" onclick="cancelAccCrop()">Batal</button><button class="btn" onclick="saveAccCrop()">Gunakan Foto</button></div>
+  </div>`);
+  const c=$('#cropCanvas');c.onpointerdown=accCropDown;c.onpointermove=accCropMove;c.onpointerup=accCropUp;c.onpointercancel=accCropUp;c.onpointerleave=accCropUp;accCropDraw();
+}
+function accCropDraw(){
+  const q=ACC_CROP,c=$('#cropCanvas');if(!q||!c)return;const x=c.getContext('2d'),w=c.width,h=c.height,im=q.im;
+  const base=Math.max(w/im.width,h/im.height),sc=base*q.zoom,iw=im.width*sc,ih=im.height*sc;
+  const maxX=Math.max(0,(iw-w)/2),maxY=Math.max(0,(ih-h)/2);q.x=Math.max(-maxX,Math.min(maxX,q.x));q.y=Math.max(-maxY,Math.min(maxY,q.y));
+  x.clearRect(0,0,w,h);x.fillStyle='#171717';x.fillRect(0,0,w,h);x.drawImage(im,(w-iw)/2+q.x,(h-ih)/2+q.y,iw,ih);
+}
+function accCropZoom(v){if(!ACC_CROP)return;ACC_CROP.zoom=Number(v)||1;const e=$('#cropZoomVal');if(e)e.textContent=Math.round(ACC_CROP.zoom*100)+'%';accCropDraw()}
+function accCropDown(e){if(!ACC_CROP)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);ACC_CROP.drag={x:e.clientX,y:e.clientY,ox:ACC_CROP.x,oy:ACC_CROP.y}}
+function accCropMove(e){const q=ACC_CROP;if(!q||!q.drag)return;e.preventDefault();const r=e.currentTarget.getBoundingClientRect(),scale=320/r.width;q.x=q.drag.ox+(e.clientX-q.drag.x)*scale;q.y=q.drag.oy+(e.clientY-q.drag.y)*scale;accCropDraw()}
+function accCropUp(){if(ACC_CROP)ACC_CROP.drag=null}
+function cancelAccCrop(){ACC_CROP=null;closeModal()}
+function saveAccCrop(){
+  const q=ACC_CROP;if(!q)return;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),im=q.im,w=320,h=320,base=Math.max(w/im.width,h/im.height),sc=base*q.zoom,iw=im.width*sc,ih=im.height*sc;
+  x.fillStyle='#fff';x.fillRect(0,0,256,256);x.drawImage(im,((w-iw)/2+q.x)/w*256,((h-ih)/2+q.y)/h*256,iw/w*256,ih/h*256);
+  try{ACC.photo=c.toDataURL('image/jpeg',.84);ACC_CROP=null;closeModal();const e=$('#accErr');if(e)e.textContent='';accAvDraw()}catch(e){const er=$('#accErr');if(er)er.textContent='Foto tidak bisa diproses'}
 }
 /* nomor telepon: kode negara + nomor, disimpan seperti "+62 812 3456 7890" */
 const PH_CC=[['62','🇮🇩 Indonesia'],['60','🇲🇾 Malaysia'],['65','🇸🇬 Singapura'],['673','🇧🇳 Brunei'],['66','🇹🇭 Thailand'],['63','🇵🇭 Filipina'],['84','🇻🇳 Vietnam'],['855','🇰🇭 Kamboja'],['91','🇮🇳 India'],['86','🇨🇳 Tiongkok'],['852','🇭🇰 Hong Kong'],['81','🇯🇵 Jepang'],['82','🇰🇷 Korea Selatan'],['61','🇦🇺 Australia'],['966','🇸🇦 Arab Saudi'],['971','🇦🇪 UEA'],['44','🇬🇧 Inggris'],['1','🇺🇸 AS / Kanada']];
