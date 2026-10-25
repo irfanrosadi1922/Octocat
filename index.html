@@ -833,6 +833,8 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 const $=s=>document.querySelector(s);
 const KEY='sushi_pos_v1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Hanya izinkan URL gambar yang diperlukan aplikasi; escape atribut untuk mencegah injeksi HTML.
+const imgSrc=s=>{const v=String(s??'').trim();return (/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(v)||/^https?:\/\//i.test(v))?esc(v):''};
 const emo=i=>i.emoji&&i.emoji!=='🍽️'?esc(i.emoji):'<i class="ic solo" data-ic="food"></i>'; // item tanpa gambar: emoji pilihan, atau ikon bawaan
 const uid=()=>'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
@@ -897,7 +899,7 @@ const thumb=i=>i.img?`<img src="${i.img}" alt="">`:emo(i);
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 function applyBrand(){
   const s=db.set,b=$('#brand');if(!b)return;
-  b.innerHTML=(s.logo&&s.logoApp!==false?'<img class="blogo" alt="" src="'+s.logo+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
+  b.innerHTML=(s.logo&&s.logoApp!==false?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
   if(typeof applyLang==='function'&&lang()!=='id'){}
   if(typeof railBrand==='function')railBrand();
 }
@@ -906,7 +908,7 @@ function applyBrand(){
   setTimeout(()=>{
     const w=$('#splash');if(!w)return;
     const n=String(db.set.store||'Ordela').split(' '),last=n.pop();
-    $('#splashLogo').src=db.set.logo||DEF_LOGO;$('#splashName').innerHTML=(n.length?esc(n.join(' '))+' ':'')+'<span>'+esc(last)+'</span>';
+    $('#splashLogo').src=(imgSrc(db.set.logo)?db.set.logo:DEF_LOGO);$('#splashName').innerHTML=(n.length?esc(n.join(' '))+' ':'')+'<span>'+esc(last)+'</span>';
     w.hidden=false;setTimeout(()=>w.classList.add('out'),1000);setTimeout(()=>{w.hidden=true},1500);
   },0);
 })();
@@ -1507,7 +1509,7 @@ function itemForm(id){
   const i=id?find(id):{name:'',cat:db.cats[0]||'',price:'',cost:'',stock:0,min:db.set.low,img:'',emoji:'🍽️'};
   S.edit={id:id||null,img:i.img,bd:isB(i)?i.bundle.map(c=>({id:c.id,q:c.q})):[]};
   openModal(`<h3>${id?'Edit':'Tambah'} Item</h3>
-  <div class="up"><div class="pv" id="pv">${i.img?`<img src="${i.img}">`:emo(i)}</div>
+  <div class="up"><div class="pv" id="pv">${i.img?`<img src="${imgSrc(i.img)}" alt="">`:emo(i)}</div>
   <div><button class="btn sm sec" onclick="$('#imgF').click()"><i class="ic" data-ic="camera"></i>Upload Gambar</button>
   <button class="mini" onclick="S.edit.img='';$('#pv').innerHTML=emo({})">Hapus</button>
   <input type="file" id="imgF" accept="image/*" hidden onchange="pickImg(this)"></div></div>
@@ -1931,7 +1933,7 @@ function renderRc(){
   const tx=(k,l,ph)=>`<label class="fl">${l}</label><input class="fi" value="${esc(r[k])}" placeholder="${esc(ph||'')}" oninput="setOpt('rc','${k}',this.value)">`;
   $('#rcForm').innerHTML=`
   <div class="panel"><h3>Logo</h3>
-    <div class="up"><div class="pv logo">${db.set.logo?`<img src="${db.set.logo}" alt="">`:'<i class="ic solo" data-ic="image"></i>'}</div>
+    <div class="up"><div class="pv logo">${db.set.logo?`<img src="${imgSrc(db.set.logo)}" alt="">`:'<i class="ic solo" data-ic="image"></i>'}</div>
     <div><button class="btn sm sec" onclick="go('set')">Ubah logo di Pengaturan</button></div></div>
     <div class="tgls" style="margin-top:8px">${ck('showLogo','Tampilkan logo di struk')}</div>
     ${sel('logoW','Ukuran logo',[['100','Kecil'],['160','Sedang'],['240','Besar'],['320','Sangat besar']])}
@@ -1973,7 +1975,7 @@ function setLogoApp(v){db.set.logoApp=v;save();applyBrand()}
 function renderLogo(){
   const el=$('#logoForm');if(!el)return;const s=db.set;
   el.innerHTML=`<h3>Logo Perusahaan</h3>
-  <div class="up"><div class="pv logo">${s.logo?`<img src="${s.logo}" alt="">`:'<i class="ic solo" data-ic="image"></i>'}</div>
+  <div class="up"><div class="pv logo">${s.logo?`<img src="${imgSrc(s.logo)}" alt="">`:'<i class="ic solo" data-ic="image"></i>'}</div>
   <div><button class="btn sm sec" onclick="$('#lgF').click()">Upload Logo</button> <button class="mini" style="color:var(--bt)" onclick="setLogo(DEF_LOGO)">Kembali ke Default</button>
   <input type="file" id="lgF" accept="image/*" hidden onchange="pickLogo(this)"></div></div>
   <div class="tgls" style="margin-top:8px">
