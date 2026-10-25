@@ -1,5 +1,5 @@
 -- =====================================================================
---  Octocat — database Supabase (jalankan SEKALI di Supabase > SQL Editor)
+--  Ordela — database Supabase (jalankan SEKALI di Supabase > SQL Editor)
 --  Aman dijalankan ulang (memperbarui fungsi, data tidak dihapus).
 --  Semua tabel ada di skema "pos" yang TIDAK terbuka untuk internet.
 --  Satu-satunya pintu masuk: fungsi public.pos_api(p jsonb).
@@ -121,9 +121,9 @@ do $$ declare v_owner bigint; v_name text; v_code text;
 begin
   if not exists (select 1 from pos.stores) and exists (select 1 from pos.t_users where role in ('owner', 'staff')) then
     select id into v_owner from pos.t_users where role = 'owner' order by id limit 1;
-    select coalesce(nullif(json #>> '{set,store}', ''), 'Octocat') into v_name from pos.t_doc limit 1;
+    select coalesce(nullif(json #>> '{set,store}', ''), 'Ordela') into v_name from pos.t_doc limit 1;
     v_code := substr(md5(random()::text || clock_timestamp()::text), 1, 8);
-    insert into pos.stores(id, code, name, owner_id) overriding system value values (1, v_code, coalesce(v_name, 'Octocat'), v_owner);
+    insert into pos.stores(id, code, name, owner_id) overriding system value values (1, v_code, coalesce(v_name, 'Ordela'), v_owner);
     perform setval(pg_get_serial_sequence('pos.stores', 'id'), 1);
     update pos.t_users set store_id = 1 where store_id is null and role in ('owner', 'staff');
     update pos.t_audit set store_id = 1 where store_id is null;
@@ -437,7 +437,7 @@ begin
   select coalesce(array_agg(c order by o), '{}') into ccats from jsonb_array_elements_text(case when jsonb_typeof(d -> 'cats') = 'array' then d -> 'cats' else '[]'::jsonb end) with ordinality t(c, o);
   foreach x in array ccats loop if x = any (ucats) then res := res || x; end if; end loop;
   foreach x in array ucats loop if not (x = any (ccats)) then res := res || x; end if; end loop;
-  return pos.r(200, jsonb_build_object('ver', v, 'store', coalesce(nullif(s ->> 'store', ''), 'Octocat'),
+  return pos.r(200, jsonb_build_object('ver', v, 'store', coalesce(nullif(s ->> 'store', ''), 'Ordela'),
     'logo', case when (s ->> 'logo') ~ '^data:image/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$' then s ->> 'logo' else 'icon-192.png' end,
     'cur', coalesce(nullif(s ->> 'cur', ''), 'Rp'), 'curPos', case when s ->> 'curPos' = 'after' then 'after' else 'before' end,
     'dec', greatest(0, least(4, pos.num(s -> 'dec'))), 'loc', coalesce(nullif(s ->> 'loc', ''), 'id-ID'),
@@ -1030,7 +1030,7 @@ begin
   if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then raise exception 'username 3-24 karakter: huruf kecil/angka . _ -'; end if;
   if length(coalesce(vpw, '')) < 6 or vpw = 'ganti-dengan-sandi-yang-kuat' then raise exception 'sandi minimal 6 karakter dan jangan memakai contoh'; end if;
   if not exists (select 1 from pos.stores where id = 1) then
-    insert into pos.stores(id, code, name) overriding system value values (1, substr(md5(random()::text), 1, 8), 'Octocat');
+    insert into pos.stores(id, code, name) overriding system value values (1, substr(md5(random()::text), 1, 8), 'Ordela');
     perform setval(pg_get_serial_sequence('pos.stores', 'id'), 1);
     insert into pos.t_doc(store_id, id, json, version) values (1, 1, null, 0);
     insert into pos.t_meta(store_id, k, v) values (1, 'rev', to_jsonb((extract(epoch from now()) * 1000)::bigint));

@@ -1,7 +1,7 @@
 {
-  "name": "Octocat",
-  "short_name": "Octocat",
-  "description": "Aplikasi kasir Octocat",
+  "name": "Ordela",
+  "short_name": "Ordela",
+  "description": "Aplikasi kasir Ordela",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

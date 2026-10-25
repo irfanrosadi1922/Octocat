@@ -1,4 +1,4 @@
-/* Octocat — penghubung ke Supabase (dipakai bila config.js mengisi window.POS_SB).
+/* Ordela — penghubung ke Supabase (dipakai bila config.js mengisi window.POS_SB).
    Aplikasi tetap memanggil "/api/..." seperti biasa; file ini mencegat panggilan itu dan mengirimnya ke
    fungsi database public.pos_api lewat Supabase REST. Tidak ada rahasia di sini: key adalah kunci PUBLISHABLE
    (anon), dan semua pembatasan akses dijaga di database (lihat supabase/setup.sql). */

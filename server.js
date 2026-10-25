@@ -1,5 +1,5 @@
 'use strict';
-/* Octocat - server online
+/* Ordela - server online
  * Node >= 22.13 (memakai node:sqlite bawaan, tanpa dependensi npm).
  * Menyimpan data di SQLite (data/pos.db), melayani aplikasi POS, dan API sinkron.
  */
@@ -125,19 +125,19 @@ const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,23}$/;
 (() => {
   if (!uq.count.get().n) {
     if (!PASSWORD || PASSWORD.length < 6 || PASSWORD === PLACEHOLDER_PW) {
-      console.error('\n[Octocat] Pertama kali jalan: atur POS_PASSWORD="sandi-anda" (minimal 6 karakter). Sandi ini menjadi sandi akun owner (username: owner).\n');
+      console.error('\n[Ordela] Pertama kali jalan: atur POS_PASSWORD="sandi-anda" (minimal 6 karakter). Sandi ini menjadi sandi akun owner (username: owner).\n');
       process.exit(1);
     }
     const salt = crypto.randomBytes(16).toString('hex');
     uq.ins.run('owner', 'Owner', 'owner', '[]', salt, crypto.scryptSync(PASSWORD, Buffer.from(salt, 'hex'), 32, { N: 16384, r: 8, p: 1 }).toString('hex'), new Date().toISOString());
-    console.log('[Octocat] Akun owner dibuat. Login dengan username "owner" dan sandi POS_PASSWORD.');
+    console.log('[Ordela] Akun owner dibuat. Login dengan username "owner" dan sandi POS_PASSWORD.');
   } else if (process.env.RESET_OWNER_PASSWORD === '1') { // pemulihan bila sandi owner lupa
-    if (!PASSWORD || PASSWORD.length < 6 || PASSWORD === PLACEHOLDER_PW) { console.error('[Octocat] RESET_OWNER_PASSWORD=1 butuh POS_PASSWORD baru (minimal 6 karakter, bukan sandi contoh).'); process.exit(1); }
+    if (!PASSWORD || PASSWORD.length < 6 || PASSWORD === PLACEHOLDER_PW) { console.error('[Ordela] RESET_OWNER_PASSWORD=1 butuh POS_PASSWORD baru (minimal 6 karakter, bukan sandi contoh).'); process.exit(1); }
     const o = uq.firstOwner.get(), salt = crypto.randomBytes(16).toString('hex');
     uq.setPw.run(salt, crypto.scryptSync(PASSWORD, Buffer.from(salt, 'hex'), 32, { N: 16384, r: 8, p: 1 }).toString('hex'), o.id);
     db.prepare('UPDATE users SET active=1 WHERE id=?').run(o.id);
     audit(null, 'reset-owner', 'sandi owner (' + o.username + ') direset lewat RESET_OWNER_PASSWORD');
-    console.log('[Octocat] Sandi owner "' + o.username + '" direset. Hapus RESET_OWNER_PASSWORD dari pengaturan lalu jalankan ulang.');
+    console.log('[Ordela] Sandi owner "' + o.username + '" direset. Hapus RESET_OWNER_PASSWORD dari pengaturan lalu jalankan ulang.');
   }
 })();
 const q = {
@@ -355,7 +355,7 @@ const vapid = (() => {
 })();
 const b64u = (x) => Buffer.from(x).toString('base64url');
 function vapidAuth(endpoint) {
-  const head = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' })), body = b64u(JSON.stringify({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'mailto:admin@octocat.local' }));
+  const head = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' })), body = b64u(JSON.stringify({ aud: new URL(endpoint).origin, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: 'mailto:admin@ordela.local' }));
   const sig = crypto.sign('sha256', Buffer.from(head + '.' + body), { key: vapid.key, dsaEncoding: 'ieee-p1363' });
   return 'vapid t=' + head + '.' + body + '.' + b64u(sig) + ', k=' + vapid.pub;
 }
@@ -433,7 +433,7 @@ function pubBuild() {
     ver, imgs,
     doc: { items: new Map(items.map((i) => [i.id, i])), tax: num(s.tax), dec: Math.max(0, Math.min(4, num(s.dec))) },
     menu: {
-      store: String(s.store || 'Octocat'), logo: putImg('logo', s.logo) || '/icon-192.png',
+      store: String(s.store || 'Ordela'), logo: putImg('logo', s.logo) || '/icon-192.png',
       cur: String(s.cur || 'Rp'), curPos: s.curPos === 'after' ? 'after' : 'before', dec: Math.max(0, Math.min(4, num(s.dec))), loc: String(s.loc || 'id-ID'),
       tax: num(s.tax), pay, cats: (d.cats || []).filter((c) => used.has(c)).concat([...used].filter((c) => !(d.cats || []).includes(c))), items,
     },
@@ -867,7 +867,7 @@ const server = http.createServer(async (req, res) => {
     if ((p === '/api/export' || p.startsWith('/api/snapshots')) && !isOwner) return forbid('Khusus owner');
     if (p === '/api/export' && req.method === 'GET') {
       const d = getDoc();
-      return send(res, 200, JSON.stringify(d.data || {}), { 'Content-Type': 'application/json', 'Content-Disposition': `attachment; filename="octocat-${new Date().toISOString().slice(0, 10)}.json"`, 'Cache-Control': 'no-store' });
+      return send(res, 200, JSON.stringify(d.data || {}), { 'Content-Type': 'application/json', 'Content-Disposition': `attachment; filename="ordela-${new Date().toISOString().slice(0, 10)}.json"`, 'Cache-Control': 'no-store' });
     }
     if (p === '/api/snapshots' && req.method === 'GET') return json(res, 200, { snapshots: q.snapList.all() });
     const m = p.match(/^\/api\/snapshots\/(\d{4}-\d{2}-\d{2})$/);
@@ -883,7 +883,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 server.requestTimeout = 60000;
-server.listen(PORT, () => console.log(`Octocat berjalan di http://localhost:${PORT}  (data: ${DATA_DIR})`));
+server.listen(PORT, () => console.log(`Ordela berjalan di http://localhost:${PORT}  (data: ${DATA_DIR})`));
 
 function shutdown() { try { server.close(); db.close(); } catch (e) {} process.exit(0); }
 process.on('SIGTERM', shutdown);

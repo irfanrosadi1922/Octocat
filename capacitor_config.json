@@ -1,6 +1,6 @@
 {
-  "appId": "com.octocat.app",
-  "appName": "Octocat",
+  "appId": "com.ordela.app",
+  "appName": "Ordela",
   "webDir": "www",
   "backgroundColor": "#ffffff",
   "android": { "allowMixedContent": false }

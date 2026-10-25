@@ -1,11 +1,11 @@
-# Octocat di GitHub Pages + Supabase (hanya akun GitHub + iPhone)
+# Ordela di GitHub Pages + Supabase (hanya akun GitHub + iPhone)
 
 Tidak perlu VPS, komputer toko, atau kartu kredit. Semua langkah bisa dari Safari di iPhone.
 Anda hanya butuh **akun GitHub**; Supabase cukup dimasuki dengan tombol "Continue with GitHub".
 
 ## 1. Buat database (Supabase)
 1. Buka **supabase.com** → **Sign in** → **Continue with GitHub**.
-2. **New project** → nama `octocat`, buat *Database Password* (simpan, tidak dipakai kasir), region **Singapore** → **Create**. Tunggu ±2 menit.
+2. **New project** → nama `ordela`, buat *Database Password* (simpan, tidak dipakai kasir), region **Singapore** → **Create**. Tunggu ±2 menit.
 3. Menu **SQL Editor** → **New query** → tempel **seluruh isi `setup.sql`** → **Run**. Harus muncul "Success".
 4. **New query** lagi, tempel (ganti sandi sementara Anda, minimal 6 karakter):
    ```sql
@@ -16,7 +16,7 @@ Anda hanya butuh **akun GitHub**; Supabase cukup dimasuki dengan tombol "Continu
 5. **Project Settings → API** (atau tombol **Connect**): salin **Project URL** dan **Publishable key** (`sb_publishable_…`, atau `anon public`). *Jangan* memakai `secret` / `service_role`.
 
 ## 2. Pasang aplikasi (GitHub)
-1. github.com → **+** → **New repository** → nama bebas (mis. `octocat`) → **Public** → Create.
+1. github.com → **+** → **New repository** → nama bebas (mis. `ordela`) → **Public** → Create.
    (GitHub Pages gratis memerlukan repo Public. Tidak ada data toko di repo: hanya kode. Kunci publishable memang boleh publik.)
 2. **Add file → Upload files** → pilih semua berkas dari folder ini (index.html, order.html, config.js, sbapi.js, sw.js, manifest.webmanifest, icon-192.png, icon-512.png, .nojekyll) → **Commit changes**.
 3. Buka `config.js` → ikon pensil → isi:
@@ -24,7 +24,7 @@ Anda hanya butuh **akun GitHub**; Supabase cukup dimasuki dengan tombol "Continu
    window.POS_SB = { url: 'https://XXXX.supabase.co', key: 'sb_publishable_XXXX' };
    ```
    → **Commit changes**.
-4. **Settings → Pages** → *Source*: **Deploy from a branch** → branch `main`, folder `/ (root)` → **Save**. Tunggu 1–2 menit; alamat tampil: `https://NAMAANDA.github.io/octocat/`.
+4. **Settings → Pages** → *Source*: **Deploy from a branch** → branch `main`, folder `/ (root)` → **Save**. Tunggu 1–2 menit; alamat tampil: `https://NAMAANDA.github.io/ordela/`.
 
 ## 3. Pakai
 - Buka alamat itu di Safari → login `owner` → **Bagikan → Tambah ke Layar Utama**.

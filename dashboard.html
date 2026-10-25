@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Dashboard">
-<title>Dashboard · Octocat</title>
+<title>Dashboard · Ordela</title>
 <link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
 <style>
 *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -179,7 +179,7 @@ html[data-theme=dark] .btn.sec{color:#e4e4e7}
 </div></main></div>
 
 <div class="loginw" id="login" hidden><form class="loginc" onsubmit="doLogin();return false" autocomplete="on">
-  <img id="loginLogo" alt=""><h2 id="loginName">Octocat</h2><p class="lsub">Masuk untuk membuka dashboard (khusus owner)</p>
+  <img id="loginLogo" alt=""><h2 id="loginName">Ordela</h2><p class="lsub">Masuk untuk membuka dashboard (khusus owner)</p>
   <label class="fl" for="loginUser">Username</label>
   <input class="fi" id="loginUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="mis. owner">
   <label class="fl" for="loginPw">Kata sandi</label>
@@ -419,7 +419,7 @@ function dStatus(txt,cls){
   s.className=cls||'';
   s.textContent=txt!=null?txt:(CLOUD?(LAST?'Diperbarui '+new Date(LAST).toLocaleTimeString(dloc(),{hour:'2-digit',minute:'2-digit'}):''):'Data perangkat ini');
 }
-function dBrand(){const b=$('#dBrand');if(b)b.textContent=db.set.store||'Octocat'}
+function dBrand(){const b=$('#dBrand');if(b)b.textContent=db.set.store||'Ordela'}
 function dShow(what){ // 'dash' | 'den' | 'none'
   $('#v-dash').hidden=what!=='dash';$('#v-den').hidden=what!=='den';
   $('#dOut').hidden=!(CLOUD&&TOK);$('#dRef').hidden=!(CLOUD&&TOK&&what==='dash');

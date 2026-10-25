@@ -1,6 +1,6 @@
-/* Octocat — pendaftaran akun, verifikasi email, reset sandi lewat email, dan penyiapan toko.
+/* Ordela — pendaftaran akun, verifikasi email, reset sandi lewat email, dan penyiapan toko.
    Hanya aktif di mode Supabase (window.POS_SB terisi). Email & sandi dikelola Supabase Auth (GoTrue, lewat fetch biasa);
-   sesi aplikasi tetap sesi Octocat (lihat setup.sql: pos.login). Dimuat setelah skrip utama di index.html. */
+   sesi aplikasi tetap sesi Ordela (lihat setup.sql: pos.login). Dimuat setelah skrip utama di index.html. */
 (function(){
 'use strict';
 const SB=globalThis.POS_SB;

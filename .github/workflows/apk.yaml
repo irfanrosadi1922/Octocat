@@ -15,7 +15,7 @@ jobs:
       - name: Siapkan isi aplikasi
         run: |
           mkdir www
-          echo '{"appId":"com.octocat.app","appName":"Octocat","webDir":"www","backgroundColor":"#ffffff"}' > capacitor.config.json
+          echo '{"appId":"com.ordela.app","appName":"Ordela","webDir":"www","backgroundColor":"#ffffff"}' > capacitor.config.json
           cp index.html dashboard.html order.html sw.js sbapi.js auth.js native.js config.js manifest.webmanifest icon-192.png icon-512.png icon-maskable-512.png www/
           # alamat website publik untuk QR: variabel APP_URL > file CNAME > alamat GitHub Pages
           PUB="${{ vars.APP_URL }}"
@@ -40,10 +40,10 @@ jobs:
           grep -c CAMERA $M
       - name: Plugin Bluetooth klasik (printer thermal)
         run: |
-          D=android/app/src/main/java/com/octocat/app
+          D=android/app/src/main/java/com/ordela/app
           mkdir -p $D
           cat > $D/ClassicBtPlugin.java <<'JAVAEOF'
-          package com.octocat.app;
+          package com.ordela.app;
 
           import android.Manifest;
           import android.annotation.SuppressLint;
@@ -239,7 +239,7 @@ jobs:
           }
           JAVAEOF
           cat > $D/MainActivity.java <<'JAVAEOF'
-          package com.octocat.app;
+          package com.ordela.app;
 
           import android.os.Bundle;
           import com.getcapacitor.BridgeActivity;
@@ -277,16 +277,16 @@ jobs:
           if [ -n "$KS_B64" ]; then
             echo "$KS_B64" | base64 -d > ks.jks; PASS="$KS_PASS"
           else
-            PASS=octocat123
-            keytool -genkeypair -keystore ks.jks -alias pos -keyalg RSA -keysize 2048 -validity 10000 -storepass $PASS -keypass $PASS -dname "CN=Octocat"
+            PASS=ordela123
+            keytool -genkeypair -keystore ks.jks -alias pos -keyalg RSA -keysize 2048 -validity 10000 -storepass $PASS -keypass $PASS -dname "CN=Ordela"
           fi
           mkdir out
           IN=$(ls android/app/build/outputs/apk/release/*.apk | head -1)
           $BT/zipalign -p 4 "$IN" aligned.apk
-          $BT/apksigner sign --ks ks.jks --ks-key-alias pos --ks-pass pass:$PASS --key-pass pass:$PASS --out out/Octocat.apk aligned.apk
-          $BT/apksigner verify out/Octocat.apk
+          $BT/apksigner sign --ks ks.jks --ks-key-alias pos --ks-pass pass:$PASS --key-pass pass:$PASS --out out/Ordela.apk aligned.apk
+          $BT/apksigner verify out/Ordela.apk
           [ -n "$KS_B64" ] || cp ks.jks out/KUNCI-SIMPAN-INI.jks
       - uses: actions/upload-artifact@v4
         with:
-          name: Octocat-apk
+          name: Ordela-apk
           path: out/*

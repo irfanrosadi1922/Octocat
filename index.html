@@ -11,8 +11,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Octocat">
-<title>Octocat</title>
+<meta name="apple-mobile-web-app-title" content="Ordela">
+<title>Ordela</title>
 <style>
 *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}
@@ -495,7 +495,7 @@ html[data-theme=dark] .btn.sec,html[data-theme=dark] .ib,html[data-theme=dark] .
 html[data-theme=dark] img{color-scheme:light}
 @media print{html[data-theme=dark]{--bg:#fff;--card:#fff;--tx:#000;--tx2:#000;--mu:#555;--ln:#ddd;--bg2:#fff}}
 .thm{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-/* ===== Octocat: sidebar + Beranda / Meja / Laporan / Notifikasi ===== */
+/* ===== Ordela: sidebar + Beranda / Meja / Laporan / Notifikasi ===== */
 .rail{display:none}
 .pm{flex:none;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--tx2);white-space:nowrap}
 .pm.c{background:var(--greenbg);color:#15803d}.pm.d{background:var(--peach3);color:var(--b2)}.pm.w{background:#dbeafe;color:#1d4ed8}
@@ -628,7 +628,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <div class="splash" id="splash" hidden><img id="splashLogo" alt=""><div class="spn" id="splashName"></div></div>
 <div class="scrim" id="scrim" onclick="closeAll()"></div>
 <nav class="drawer" id="drawer">
-  <h3 id="brand">Octocat</h3>
+  <h3 id="brand">Ordela</h3>
   <div class="dg">Operasional</div>
   <button data-v="home" onclick="go('home')"><i class="ic" data-ic="dash"></i>Beranda</button>
   <button data-v="pos" onclick="go('pos')"><i class="ic" data-ic="cart"></i>Kasir</button>
@@ -650,7 +650,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
   <div class="cloudst" id="cloudRow" hidden onclick="syncNow()"><i class="ic" data-ic="cloud"></i><span id="cloudSt"></span> <span id="cloudT"></span></div>
 </nav>
 <div class="loginw" id="login" hidden><form class="loginc" onsubmit="doLogin();return false" autocomplete="on">
-  <img id="loginLogo" alt=""><h2 id="loginName">Octocat</h2><p class="lsub">Masuk untuk membuka kasir</p>
+  <img id="loginLogo" alt=""><h2 id="loginName">Ordela</h2><p class="lsub">Masuk untuk membuka kasir</p>
   <label class="fl" for="loginUser">Username</label>
   <input class="fi" id="loginUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="mis. owner">
   <label class="fl" for="loginPw">Kata sandi</label>
@@ -838,7 +838,7 @@ function seed(){
       it('Es Teh Lemon','Minuman',15000,4000,0,'🍋'),
     ],
     orders:[],log:[],seq:1,
-    set:{store:'Octocat',addr:'Jl. Contoh No. 1, Kota',tax:10,paper:'80',cur:'Rp',foot:'Terima kasih atas kunjungan Anda!',low:5}
+    set:{store:'Ordela',addr:'Jl. Contoh No. 1, Kota',tax:10,paper:'80',cur:'Rp',foot:'Terima kasih atas kunjungan Anda!',low:5}
   };
 }
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.items){globalThis.__lsok=true;return d}}catch(e){}globalThis.__lsok=false;return seed()}
@@ -848,7 +848,7 @@ const PRN_DEF={mode:'browser',auto:false,autoNew:true,cut:true,drawer:false,baud
 const DEF_LOGO='data:image/png;base64,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';
 const GV_DEF={mode:'grid',colsD:0,colsM:2,stock:true,cats:true,tap:'add'};
 function fixDb(d){d.set=d.set||{};if(d.set.fsAuto==null)d.set.fsAuto=true;if(d.set.logoApp==null)d.set.logoApp=true;if(d.set.rc&&d.set.rc.logo&&!d.set.logo){d.set.logo=d.set.rc.logo;d.set.rc.logo=''}d.set.logo=d.set.logo||'';d.set.gv={...GV_DEF,...(d.set.gv||{})};delete d.set.gv.size;d.set.lang=d.set.lang||'id';if(d.set.dec==null)d.set.dec=0;d.set.loc=d.set.loc||'id-ID';d.set.curPos=d.set.curPos||'before';d.set.cur=d.set.cur||'Rp';d.set.curCode=d.set.curCode||(d.set.cur==='Rp'?'IDR':'CUSTOM');d.set.rc={...RC_DEF,...(d.set.rc||{})};d.set.pay={on:false,qr:'',name:'',note:'',...(d.set.pay&&typeof d.set.pay==='object'?d.set.pay:{})};d.set.prn={...PRN_DEF,...(d.set.prn||{})};d.set.att={on:false,tz:'',lat:'',lng:'',radius:100,strict:false,shifts:[],assign:{},...(d.set.att&&typeof d.set.att==='object'?d.set.att:{})};d.set.paper=d.set.paper||'80';d.log=d.log||[];d.orders=d.orders||[];d.cats=d.cats||[];
-  if(d.set.store==='Sushi POS')d.set.store='Octocat';
+  if(d.set.store==='Sushi POS'||d.set.store==='Octocat')d.set.store='Ordela';
   if(d.set.logo&&((d.set.logo.length===9895&&d.set.logo.slice(0,40)==='data:image/jpeg;base64,/9j/4AAQSkZJRgABA')||(d.set.logo.length===22538&&d.set.logo.slice(-24)==='YWBpBFcIAAAAAElFTkSuQmCC')))d.set.logo=DEF_LOGO; /* ganti logo bawaan lama */
   if(!d.set.logo){d.set.logo=DEF_LOGO;if(!d.set.logoInit)d.set.rc.showLogo=false}
   d.set.logoInit=true;
@@ -885,7 +885,7 @@ function applyBrand(){
   try{if(sessionStorage.getItem('pos_splash'))return;sessionStorage.setItem('pos_splash','1')}catch(e){}
   setTimeout(()=>{
     const w=$('#splash');if(!w)return;
-    const n=String(db.set.store||'Octocat').split(' '),last=n.pop();
+    const n=String(db.set.store||'Ordela').split(' '),last=n.pop();
     $('#splashLogo').src=db.set.logo||DEF_LOGO;$('#splashName').innerHTML=(n.length?esc(n.join(' '))+' ':'')+'<span>'+esc(last)+'</span>';
     w.hidden=false;setTimeout(()=>w.classList.add('out'),1000);setTimeout(()=>{w.hidden=true},1500);
   },0);
@@ -2404,7 +2404,7 @@ function setupPwa(){
     const im=new Image();
     im.onload=()=>{try{
       const mk=n=>{const c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');x.fillStyle='#242426';x.fillRect(0,0,n,n);const k=Math.min(n/im.width,n/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(n-w)/2,(n-h)/2,w,h);return c.toDataURL('image/png')};
-      const i1=mk(192),i2=mk(512),nm=db.set.store||'Octocat';
+      const i1=mk(192),i2=mk(512),nm=db.set.store||'Ordela';
       const m={name:nm,short_name:nm,start_url:location.href.split('#')[0],display:'fullscreen',display_override:['fullscreen','standalone'],background_color:'#242426',theme_color:'#f6f6f6',icons:[{src:i1,sizes:'192x192',type:'image/png'},{src:i2,sizes:'512x512',type:'image/png',purpose:'any'}]};
       const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));document.head.appendChild(l);
       const a=document.createElement('link');a.rel='apple-touch-icon';a.href=i1;document.head.appendChild(a);
@@ -2603,7 +2603,7 @@ async function srvSnapRestore(day){
 async function downloadServerExport(){
   try{
     const r=await api('/api/export');const b=await r.blob(),a=document.createElement('a');
-    a.href=URL.createObjectURL(b);a.download='octocat-server-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+    a.href=URL.createObjectURL(b);a.download='ordela-server-'+new Date().toISOString().slice(0,10)+'.json';a.click();
   }catch(e){toast('Gagal mengunduh')}
 }
 function cloudStart(){
@@ -2727,7 +2727,7 @@ function qrSvg(text,px){
 }
 
 /* ---------- pesanan online (QR pelanggan) ---------- */
-const CO={rev:0,list:[],set:{on:true,msg:''},seen:new Set(),mine:new Set(),run:false,err:false,tries:{},pr:false,ring:0,aud:null,wl:null,pend:[],title:'Octocat',perr:''};
+const CO={rev:0,list:[],set:{on:true,msg:''},seen:new Set(),mine:new Set(),run:false,err:false,tries:{},pr:false,ring:0,aud:null,wl:null,pend:[],title:'Ordela',perr:''};
 function coPref(k,d){try{const p=JSON.parse(localStorage.getItem('pos_co')||'{}');return p[k]==null?d:p[k]}catch(e){return d}}
 function coSetPref(k,v){let p={};try{p=JSON.parse(localStorage.getItem('pos_co')||'{}')}catch(e){}p[k]=v;try{localStorage.setItem('pos_co',JSON.stringify(p))}catch(e){}}
 const coNew=()=>CO.list.filter(o=>o.status==='new');
@@ -3051,7 +3051,7 @@ function coQrPng(){
   const t=S.coT||'',u=coUrl(t),M=qrMatrix(u),n=M.length,sc=Math.max(4,Math.floor(900/(n+8))),W=(n+8)*sc,H=W+260,c=document.createElement('canvas');
   c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#000';
   for(let r=0;r<n;r++)for(let q=0;q<n;q++)if(M[r][q])x.fillRect((q+4)*sc,(r+4)*sc+90,sc,sc);
-  x.textAlign='center';x.fillStyle='#111';x.font='bold 60px sans-serif';x.fillText(db.set.store||'Octocat',W/2,70,W-40);
+  x.textAlign='center';x.fillStyle='#111';x.font='bold 60px sans-serif';x.fillText(db.set.store||'Ordela',W/2,70,W-40);
   x.font='38px sans-serif';x.fillText('Scan untuk memesan',W/2,W+135);
   if(t){x.font='bold 70px sans-serif';x.fillText('MEJA '+t,W/2,W+225,W-40)}
   c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='qr-pesan'+(t?'-meja-'+t:'')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)});
@@ -3152,7 +3152,7 @@ function renderPay(){
     <div><button class="btn sm sec" onclick="$('#pqF').click()">${y.qr?'Ganti gambar QR':'Upload gambar QR'}</button> ${y.qr?`<button class="mini" style="color:var(--bt)" onclick="setPay('qr','');setPay('on',false)">Hapus</button>`:''}
     <input type="file" id="pqF" accept="image/*" hidden onchange="pickPayQr(this)"></div></div>
     <label class="fl">Nama penerima (tampil ke pelanggan)</label>
-    <input class="fi" value="${esc(y.name||'')}" maxlength="60" placeholder="mis. Octocat" onchange="setPay('name',this.value.trim())">
+    <input class="fi" value="${esc(y.name||'')}" maxlength="60" placeholder="mis. Ordela" onchange="setPay('name',this.value.trim())">
     <label class="fl">Petunjuk tambahan (opsional)</label>
     <textarea class="fi" rows="2" maxlength="300" placeholder="mis. Tulis nomor pesanan di kolom catatan transfer" onchange="setPay('note',this.value.trim())">${esc(y.note||'')}</textarea>
 `;
@@ -3230,7 +3230,7 @@ function togglePw(){const i=$('#loginPw'),b=$('#loginEye');const s=i.type==='pas
 function showLogin(msg){
   const w=$('#login');if(!w)return;
   closeModal&&closeModal();
-  $('#loginLogo').src=db.set.logo||DEF_LOGO;$('#loginName').textContent=db.set.store||'Octocat';
+  $('#loginLogo').src=db.set.logo||DEF_LOGO;$('#loginName').textContent=db.set.store||'Ordela';
   $('#loginErr').textContent=msg||'';$('#loginPw').value='';$('#loginPw').type='password';$('#loginEye').textContent='Tampilkan';
   let u='';try{u=localStorage.getItem('pos_user')||''}catch(e){}
   $('#loginUser').value=u;w.hidden=false;
