@@ -899,7 +899,7 @@ const thumb=i=>i.img?`<img src="${imgSrc(i.img)}" alt="">`:emo(i);
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 function applyBrand(){
   const s=db.set,b=$('#brand');if(!b)return;
-  b.innerHTML=(s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>;
+  b.innerHTML=(s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
   if(typeof applyLang==='function'&&lang()!=='id'){}
   if(typeof railBrand==='function')railBrand();
 }
