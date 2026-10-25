@@ -894,12 +894,12 @@ const bdLbl=b=>(b||[]).map(c=>{const x=find(c.id);return c.q+'× '+(c.name||(x?x
 function cartUse(skip){const u={};for(const id in S.cart){if(id===skip)continue;const i=find(id);if(!i)continue;const q=S.cart[id];if(isB(i))i.bundle.forEach(c=>{u[c.id]=(u[c.id]||0)+c.q*q});else u[id]=(u[id]||0)+q}return u}
 function maxQty(i){const u=cartUse(i.id);if(isB(i)){let m=Infinity;for(const c of i.bundle){const x=find(c.id);if(!x||isB(x)||!(c.q>0))return 0;m=Math.min(m,Math.floor(((+x.stock||0)-(u[c.id]||0))/c.q))}return Math.max(0,m===Infinity?0:m)}return Math.max(0,i.stock-(u[i.id]||0))}
 function bdUsedBy(id,skip){return db.items.find(x=>isB(x)&&!(skip&&skip.has(x.id))&&x.bundle.some(c=>c.id===id))}
-const thumb=i=>i.img?`<img src="${i.img}" alt="">`:emo(i);
+const thumb=i=>i.img?`<img src="${imgSrc(i.img)}" alt="">`:emo(i);
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 function applyBrand(){
   const s=db.set,b=$('#brand');if(!b)return;
-  b.innerHTML=(s.logo&&s.logoApp!==false?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
+  b.innerHTML=(s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>;
   if(typeof applyLang==='function'&&lang()!=='id'){}
   if(typeof railBrand==='function')railBrand();
 }
@@ -1146,7 +1146,7 @@ function receiptModel(o){
 function receiptHTML(o,prev){
   const s=db.set,r=s.rc,fs={small:11,normal:12,large:14}[r.font]||12;
   const h=receiptModel(o).map(e=>{
-    if(e.t==='logo')return`<img src="${db.set.logo}" alt="" style="width:${r.logoW}px;max-width:90%">`;
+    if(e.t==='logo')return`<img src="${imgSrc(db.set.logo)}" alt="" style="width:${r.logoW}px;max-width:90%">`;
     if(e.t==='hr')return`<hr class="${r.divider==='equal'?'equal':''}">`;
     if(e.t==='qr')return`<div class="rq">${e.cap?`<div class="rqc">${esc(e.cap)}</div>`:''}${qrSvg(e.x,150)}</div>`;
     if(e.t==='text'&&e.huge){const em=Math.min(e.huge===3?3.4:2.3,Math.max(1.3,(e.huge===3?26:17)/Math.max(6,String(e.x).length)));return`<div class="rtb" style="font-size:${em.toFixed(2)}em">${esc(e.x)}</div>`}
@@ -2445,7 +2445,7 @@ function orderForm(cat){
   openModal(`<h3>Atur Urutan Menu</h3>
   <div class="chips" style="margin-bottom:8px">${chip('all','Semua')}${db.cats.map(k=>chip(k,k)).join('')}</div>
   <div class="chips" style="margin-bottom:8px"><button class="chip" onclick="orderSort('name')">A–Z</button><button class="chip" onclick="orderSort('price')">Harga ↑</button><button class="chip" onclick="orderSort('stock')">Stok ↓</button></div>
-  <div class="rlist" id="rlist">${l.map((i,n)=>`<div class="rrow" data-id="${i.id}"><span class="rn">${n+1}</span><div class="th">${thumb(i)}</div><div class="rnm"><b>${esc(i.name)}</b><small>${esc(i.cat)}</small></div><button class="rmv" onclick="orderMove('${i.id}',-1)">▲</button><button class="rmv" onclick="orderMove('${i.id}',1)">▼</button><span class="rh" onpointerdown="orderDrag(event)">⠿</span></div>`).join('')||''}</div>
+  <div class="rlist" id="rlist">${l.map((i,n)=>`<div class="rrow" data-id="${esc(i.id)}"><span class="rn">${n+1}</span><div class="th">${thumb(i)}</div><div class="rnm"><b>${esc(i.name)}</b><small>${esc(i.cat)}</small></div><button class="rmv" onclick="orderMove('${i.id}',-1)">▲</button><button class="rmv" onclick="orderMove('${i.id}',1)">▼</button><span class="rh" onpointerdown="orderDrag(event)">⠿</span></div>`).join('')||''}</div>
   <button class="btn" onclick="closeModal()">Selesai</button>`);
   const nl=$('#rlist'),nm=$('#modal');if(nl)nl.scrollTop=sc;if(nm)nm.scrollTop=ms;
 }
@@ -4042,7 +4042,7 @@ function renderAlert(){
 }
 function railBrand(){
   const e=$('#railLogo'),s=db.set;if(!e)return;
-  e.innerHTML=s.logo&&s.logoApp!==false?'<img alt="" src="'+s.logo+'">':'<i class="ic solo" data-ic="food"></i>';
+  e.innerHTML=s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>';
 }
 setInterval(()=>{if(document.hidden)return;if(S.view==='home')renderHome();else if(S.view==='table')renderTable();else if(S.view==='alert')renderAlert()},15000);
 applyBrand();
