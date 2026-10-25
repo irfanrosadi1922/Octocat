@@ -3808,17 +3808,20 @@ async function renderUsr(){
       ${u.id!==me?`<button class="btn sec" onclick="usrToggle(${u.id})">${u.active?'<i class="ic" data-ic="pause"></i>Nonaktifkan':'<i class="ic" data-ic="play"></i>Aktifkan'}</button><button class="btn sec" onclick="usrDel(${u.id})"><i class="ic" data-ic="trash"></i>Hapus</button>`:''}</div></div>`).join('')||'<div class="empty">Belum ada pengguna</div>';
   usrLogDraw();
 }
-const ULOG={sort:'new',act:'',user:''};
+const ULOG={sort:'new',act:'',user:'',page:0,size:5};
+function usrLogPage(p){ULOG.page=Math.max(0,p);usrLogDraw()}
 function usrLogDraw(){
   const bar=$('#usrLogBar'),el=$('#usrLog');if(!bar||!el)return;
   const acts=[...new Set(USR.log.map(x=>x.action))].sort((a,b)=>(ACT_LBL[a]||a).localeCompare(ACT_LBL[b]||b)),us=[...new Set(USR.log.map(x=>x.uname).filter(Boolean))].sort();
-  bar.innerHTML=`<select class="logsel" aria-label="Urutkan" onchange="ULOG.sort=this.value;usrLogDraw()">${[['new','Terbaru'],['old','Terlama'],['user','Pengguna A–Z'],['act','Aksi A–Z']].map(([v,t])=>`<option value="${v}" ${ULOG.sort===v?'selected':''}>${t}</option>`).join('')}</select>
-  <select class="logsel" aria-label="Filter aksi" onchange="ULOG.act=this.value;usrLogDraw()"><option value="">Semua aksi</option>${acts.map(a=>`<option value="${esc(a)}" ${ULOG.act===a?'selected':''}>${esc(ACT_LBL[a]||a)}</option>`).join('')}</select>
-  <select class="logsel" aria-label="Filter pengguna" onchange="ULOG.user=this.value;usrLogDraw()"><option value="">Semua pengguna</option>${us.map(u=>`<option value="${esc(u)}" ${ULOG.user===u?'selected':''}>@${esc(u)}</option>`).join('')}</select>`;
+  bar.innerHTML=`<select class="logsel" aria-label="Urutkan" onchange="ULOG.sort=this.value;ULOG.page=0;usrLogDraw()">${[['new','Terbaru'],['old','Terlama'],['user','Pengguna A–Z'],['act','Aksi A–Z']].map(([v,t])=>`<option value="${v}" ${ULOG.sort===v?'selected':''}>${t}</option>`).join('')}</select>
+  <select class="logsel" aria-label="Filter aksi" onchange="ULOG.act=this.value;ULOG.page=0;usrLogDraw()"><option value="">Semua aksi</option>${acts.map(a=>`<option value="${esc(a)}" ${ULOG.act===a?'selected':''}>${esc(ACT_LBL[a]||a)}</option>`).join('')}</select>
+  <select class="logsel" aria-label="Filter pengguna" onchange="ULOG.user=this.value;ULOG.page=0;usrLogDraw()"><option value="">Semua pengguna</option>${us.map(u=>`<option value="${esc(u)}" ${ULOG.user===u?'selected':''}>@${esc(u)}</option>`).join('')}</select>`;
   let l=USR.log.filter(x=>(!ULOG.act||x.action===ULOG.act)&&(!ULOG.user||x.uname===ULOG.user));
   const tm=x=>String(x.t||''),nm=x=>String(x.uname||'').toLowerCase(),ac=x=>String(ACT_LBL[x.action]||x.action).toLowerCase();
   l=l.slice().sort(ULOG.sort==='old'?(a,b)=>tm(a)<tm(b)?-1:tm(a)>tm(b)?1:0:ULOG.sort==='user'?(a,b)=>nm(a)<nm(b)?-1:nm(a)>nm(b)?1:(tm(a)<tm(b)?1:-1):ULOG.sort==='act'?(a,b)=>ac(a)<ac(b)?-1:ac(a)>ac(b)?1:(tm(a)<tm(b)?1:-1):(a,b)=>tm(a)<tm(b)?1:tm(a)>tm(b)?-1:0);
-  el.innerHTML=l.length?l.slice(0,100).map(x=>`<div class="dbs"><span><b>${esc(ACT_LBL[x.action]||x.action)}</b>${x.uname?' · @'+esc(x.uname):''}${x.detail?' · <span style="color:var(--mu)">'+esc(x.detail)+'</span>':''}</span><span style="color:var(--mu);white-space:nowrap">${esc(fmtLast(x.t))}</span></div>`).join(''):'<div class="empty">Tidak ada aktivitas</div>';
+  const pages=Math.max(1,Math.ceil(l.length/ULOG.size));ULOG.page=Math.min(ULOG.page,pages-1);const start=ULOG.page*ULOG.size;
+  el.innerHTML=l.length?l.slice(start,start+ULOG.size).map(x=>`<div class="dbs"><span><b>${esc(ACT_LBL[x.action]||x.action)}</b>${x.uname?' · @'+esc(x.uname):''}${x.detail?' · <span style="color:var(--mu)">'+esc(x.detail)+'</span>':''}</span><span style="color:var(--mu);white-space:nowrap">${esc(fmtLast(x.t))}</span></div>`).join(''):'<div class="empty">Tidak ada aktivitas</div>';
+  if(l.length)el.innerHTML+=`<div class="cob" style="align-items:center;justify-content:space-between;gap:8px;margin-top:10px"><span style="color:var(--mu);font-size:12px">${start+1}–${Math.min(start+ULOG.size,l.length)} dari ${l.length} aktivitas</span><span style="display:flex;gap:6px"><button class="btn sec sm" onclick="usrLogPage(${ULOG.page-1})" ${ULOG.page===0?'disabled':''}>Sebelumnya</button><button class="btn sec sm" onclick="usrLogPage(${ULOG.page+1})" ${ULOG.page>=pages-1?'disabled':''}>Berikutnya</button></span></div>`;
 }
 function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl"><input type="checkbox" class="upm" value="${p}" ${sel.includes(p)?'checked':''}><span>${PERM_LBL[p]}</span></label>`).join('')}
 function usrRoleSw(){const o=$('#uRole').value==='owner';const sg=$('#uSingle');if(sg&&sg.dataset.t!=='1')sg.checked=!o;$('#uPerms').style.display=o?'none':''}
