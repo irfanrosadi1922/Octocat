@@ -1074,7 +1074,7 @@ function payForm(){
   <label class="fl">Metode</label><div class="chips" id="pM">${['Tunai','Kartu','QRIS','DuitNow','E-Wallet'].map(m=>`<button class="chip ${m===pre?'on':''}" data-m="${m}" onclick="setM('${m}')">${m}</button>`).join('')}</div>
   ${co&&co.pay==='duitnow'?`<div class="chg ${co.pst===2?'':'neg'}" style="margin:8px 0"><span>${co.pst===2?'<i class="ic" data-ic="card"></i>Pelanggan membayar lewat DuitNow, sudah Anda konfirmasi.':co.pst===1?'<i class="ic" data-ic="card"></i>Pelanggan mengaku sudah bayar lewat DuitNow. Cek mutasi dulu sebelum lanjut.':'<i class="ic" data-ic="card"></i>Pelanggan memilih DuitNow tetapi belum menandai sudah bayar.'}</span></div>`:''}
   <div id="cashBox" style="${pre==='Tunai'?'':'display:none'}"><label class="fl">Uang diterima</label><input class="fi" id="pPaid" type="number" step="any" min="0" value="${c.total}" oninput="calcChange()">
-  <div class="chips"><button class="chip" onclick="quick(${c.total})">Uang Pas</button>${quickAmts().filter(v=>v>=c.total/2).map(v=>`<button class="chip" onclick="quick(${v})">${amtLbl(v)}</button>`).join('')}</div>
+  <div class="chips"><button class="chip" onclick="quick(${c.total})">Uang Pas</button>${quickAmts().map(v=>`<button class="chip" onclick="quick(${v})">${amtLbl(v)}</button>`).join('')}</div>
   <div class="chg" id="pChg"><span>Kembalian</span><span>${money(0)}</span></div></div>
   <button class="btn" id="payOk" onclick="checkout()">Bayar & Cetak Struk</button>
   <button class="btn sec" onclick="closeModal()">Batal</button>`);
