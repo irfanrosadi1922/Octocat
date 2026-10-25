@@ -1053,3 +1053,22 @@ begin
   return 'zona waktu: ' || z;
 end $$;
 revoke all on all functions in schema pos from public, anon, authenticated;
+
+
+-- ------------------------------------------------------------ hardening search_path fungsi internal
+-- Fungsi di skema pos hanya dipanggil melalui router terkontrol public.pos_api.
+-- Pastikan nama tabel/fungsi selalu dicari pada skema tepercaya dan pg_temp tetap terakhir.
+do $secure_search_path$
+declare r record;
+begin
+  for r in
+    select p.oid::regprocedure as sig
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'pos'
+      and not coalesce(array_to_string(p.proconfig, ','), '') like '%search_path=%'
+  loop
+    execute format('alter function %s set search_path to pg_catalog, pos, extensions, pg_temp', r.sig);
+  end loop;
+end
+$secure_search_path$;
