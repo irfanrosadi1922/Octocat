@@ -720,7 +720,9 @@ const server = http.createServer(async (req, res) => {
       if (!USERNAME_RE.test(un)) return json(res, 400, { error: 'Username 3-24 karakter: huruf kecil, angka, titik, strip, garis bawah' });
       if (typeof b.password !== 'string' || b.password.length < 6) return json(res, 400, { error: 'Sandi minimal 6 karakter' });
       if (uq.byName.get(un)) return json(res, 409, { error: 'Username sudah dipakai' });
-      const role = b.role === 'owner' ? 'owner' : 'staff', perms = role === 'owner' ? [] : cleanPerms(b.perms == null ? DEFAULT_STAFF_PERMS : b.perms), h = await hashPw(b.password);
+      const rawRole = clean(b.role, 32) || 'staff';
+      const role = rawRole.toLowerCase() === 'owner' ? 'owner' : (rawRole.toLowerCase() === 'staf' ? 'staff' : rawRole);
+      const perms = role === 'owner' ? [] : cleanPerms(b.perms == null ? [] : b.perms), h = await hashPw(b.password);
       const r = uq.ins.run(un, name, role, JSON.stringify(perms), h.salt, h.hash, new Date().toISOString());
       if (typeof b.single === 'boolean') uq.setSingle.run(b.single ? 1 : 0, Number(r.lastInsertRowid));
       audit(me, 'tambah-user', un + ' (' + role + ')');
@@ -739,7 +741,8 @@ const server = http.createServer(async (req, res) => {
       }
       if (req.method === 'PUT') {
         const b = await rd(); if (!b) return json(res, 400, { error: 'bad json' });
-        const role = b.role === undefined ? t.role : (b.role === 'owner' ? 'owner' : 'staff');
+        const rawRole = b.role === undefined ? t.role : (clean(b.role, 32) || t.role);
+        const role = rawRole.toLowerCase() === 'owner' ? 'owner' : (rawRole.toLowerCase() === 'staf' ? 'staff' : rawRole);
         const active = b.active === undefined ? !!t.active : !!b.active;
         const name = b.name === undefined ? t.name : (clean(b.name, 40) || t.name);
         const perms = role === 'owner' ? [] : cleanPerms(b.perms === undefined ? JSON.parse(t.perms || '[]') : b.perms);
