@@ -3862,7 +3862,7 @@ function usrForm(id){
   <label class="fl">Username (untuk login)</label><input class="fi" id="uUser" maxlength="24" value="${esc(u?u.username:'')}" ${u?'disabled':''} autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="huruf kecil/angka, mis. siti">
   ${u?'':`<label class="fl">Kata sandi awal</label><input class="fi" id="uPw" type="text" autocomplete="off" placeholder="minimal 6 karakter">`}
   <label class="fl">Status / Jabatan</label>
-  <input class="fi" id="uRole" list="uRoleOptions" maxlength="32" value="${esc(u?(u.role==='staff'?'Staf':u.role==='kasir'?'Kasir':u.role==='server'?'Server':u.role==='kitchen'?'Kitchen':u.role==='owner'?'owner':u.role):'Staf')}" ${u&&u.id===(CL.me||{}).id?'disabled':''} placeholder="Mis. Kasir, Server, Supervisor">
+  <input class="fi" id="uRole" list="uRoleOptions" maxlength="32" onchange="usrRoleSw()" value="${esc(u?(u.role==='staff'?'Staf':u.role==='kasir'?'Kasir':u.role==='server'?'Server':u.role==='kitchen'?'Kitchen':u.role==='owner'?'owner':u.role):'Staf')}" ${u&&u.id===(CL.me||{}).id?'disabled':''} placeholder="Mis. Kasir, Server, Supervisor">
   <datalist id="uRoleOptions"><option value="Owner"><option value="Kasir"><option value="Server"><option value="Kitchen"><option value="Staf"></datalist>
   <p class="hint">Ketik status apa pun sesuai kebutuhan. Status selain Owner tidak mendapat akses penuh otomatis.</p>
   <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?u.perms:(['kasir','server','kitchen'].includes('staff')?[]:[]))}</div>
