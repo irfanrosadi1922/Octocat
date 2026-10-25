@@ -3369,9 +3369,10 @@ function openAcct(){go('acc')}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
   const role=m.role==='owner'?'Owner':'Karyawan';
-  const accountId=m.id||m.userId||m.username||'—';
   const storeName=(db&&db.set&&db.set.store)||'Belum diatur';
   const status=(CL.on&&CL.tok)?'Aktif':'Offline';
+  const joined=m.createdAt?new Date(m.createdAt):null;
+  const joinedText=joined&&!Number.isNaN(joined.getTime())?joined.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'Belum tersedia';
   box.innerHTML=`<div class="accp">
     <div class="accph"><span class="accav" style="display:flex;align-items:center;justify-content:center;overflow:hidden"><span id="accAv"></span></span>
       <div class="accwho"><b>${esc(m.name||'Pengguna')}</b><small>@${esc(m.username||'—')} · ${role}</small></div></div>
@@ -3386,6 +3387,7 @@ function renderAccPage(){
       <h3 style="margin:0 0 12px">Informasi Akun</h3>
       <label class="fl">Peran</label><p>${esc(role)}</p>
       <label class="fl">Nama toko</label><p>${esc(storeName)}</p>
+      <label class="fl">Tanggal bergabung</label><p>${esc(joinedText)}</p>
       <label class="fl">Status akun</label><p>${esc(status)}</p>
     </div>
     <button class="btn" type="button" onclick="go('editacc')">Edit Profil</button>
