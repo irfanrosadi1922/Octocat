@@ -2039,8 +2039,25 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','=','-',
 
 /* ---------- mata uang & desimal ---------- */
 const CURS={IDR:['Rp',0,'id-ID','before'],MYR:['RM',2,'en-US','before'],USD:['$',2,'en-US','before'],SGD:['S$',2,'en-US','before'],EUR:['€',2,'id-ID','before'],GBP:['£',2,'en-US','before'],AUD:['A$',2,'en-US','before'],JPY:['¥',0,'en-US','before'],THB:['฿',2,'en-US','before'],SAR:['SAR',2,'en-US','before'],AED:['AED',2,'en-US','before']};
-function quickAmts(){return db.set.cur==='Rp'&&dec()===0?[20000,50000,100000,200000]:(dec()?[5,10,20,50,100,200]:[1000,5000,10000,50000])}
-function amtLbl(v){return db.set.cur==='Rp'&&dec()===0?(v/1000)+'rb':fmtNum(v)}
+function quickAmts(){
+  const code=Object.keys(CURS).find(k=>CURS[k][0]===db.set.cur&&CURS[k][1]===dec())||db.set.curCode||'CUSTOM';
+  const presets={
+    IDR:[20000,50000,100000,200000,500000],
+    MYR:[1,5,10,20,50,100],
+    USD:[1,5,10,20,50,100],
+    SGD:[2,5,10,50,100],
+    EUR:[5,10,20,50,100,200],
+    GBP:[5,10,20,50],
+    AUD:[5,10,20,50,100],
+    JPY:[1000,5000,10000],
+    THB:[20,50,100,500,1000],
+    SAR:[5,10,50,100,500],
+    AED:[5,10,50,100,500]
+  };
+  if(presets[code])return presets[code];
+  return dec()?[5,10,20,50,100,200]:[1000,5000,10000,50000];
+}
+function amtLbl(v){return (db.set.curCode==='IDR'||(db.set.cur==='Rp'&&dec()===0))?(v>=1000?(v/1000)+'rb':fmtNum(v)):fmtNum(v)}
 function matchCur(){
   const s=db.set;
   const k=Object.keys(CURS).find(c=>{const[a,b,l,p]=CURS[c];return a===s.cur&&b===+s.dec&&l===s.loc&&p===s.curPos});
