@@ -675,9 +675,9 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <nav class="bnav" id="bnav"><svg class="bnbg" id="bnbg" aria-hidden="true"><defs><mask id="bnmask" maskUnits="userSpaceOnUse" x="-100" y="-40" width="2000" height="300"><rect x="-100" y="-40" width="2000" height="300" fill="#fff"/><path id="bnhole" fill="#000" d=""/></mask></defs><rect id="bnrect" x="0" y="0" width="400" height="200" rx="28" ry="28" style="fill:var(--card)" mask="url(#bnmask)"/></svg><i class="bndot" id="bndot"></i>
   <button data-v="home" onclick="go('home')" aria-label="Beranda"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></button>
   <button data-v="table" onclick="go('table')" aria-label="Meja"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
-  <button class="home" data-v="pos" onclick="go('pos')" aria-label="Menu"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 8V6"/><path d="M4 20.5h16"/></svg></button>
+  <button class="home" data-v="pos" onclick="go('pos')" aria-label="Kasir"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 8V6"/><path d="M4 20.5h16"/></svg></button>
   <button data-v="co" onclick="go('co')" aria-label="Pesanan"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11l2-8H6"/></svg></button>
-  <button data-v="acc" id="bnAcc" onclick="accTap()" aria-label="Akun"><i class="ic" data-ic="sliders"></i></button>
+  <button data-v="acc" id="bnAcc" onclick="accTap()" aria-label="Akun"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></button>
 </nav>
 
 <div class="app">
@@ -685,7 +685,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     <button class="rl" onclick="toggleDrawer()" aria-label="Menu lainnya" title="Menu lainnya"><span id="railLogo"></span></button>
     <button class="rb" data-v="home" onclick="go('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Beranda</button>
     <button class="rb" data-v="table" onclick="go('table')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Meja</button>
-    <button class="rb" data-v="pos" onclick="go('pos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 8V6"/><path d="M4 20.5h16"/></svg>Menu</button>
+    <button class="rb" data-v="pos" onclick="go('pos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 8V6"/><path d="M4 20.5h16"/></svg>Kasir</button>
     <button class="rb" data-v="co" onclick="go('co')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11l2-8H6"/></svg>Pesanan</button>
     <button class="rb" data-v="inv" onclick="go('inv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>Inventori</button>
     <button class="rb" data-v="hist" onclick="go('hist')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Riwayat</button>
@@ -894,12 +894,12 @@ const bdLbl=b=>(b||[]).map(c=>{const x=find(c.id);return c.q+'× '+(c.name||(x?x
 function cartUse(skip){const u={};for(const id in S.cart){if(id===skip)continue;const i=find(id);if(!i)continue;const q=S.cart[id];if(isB(i))i.bundle.forEach(c=>{u[c.id]=(u[c.id]||0)+c.q*q});else u[id]=(u[id]||0)+q}return u}
 function maxQty(i){const u=cartUse(i.id);if(isB(i)){let m=Infinity;for(const c of i.bundle){const x=find(c.id);if(!x||isB(x)||!(c.q>0))return 0;m=Math.min(m,Math.floor(((+x.stock||0)-(u[c.id]||0))/c.q))}return Math.max(0,m===Infinity?0:m)}return Math.max(0,i.stock-(u[i.id]||0))}
 function bdUsedBy(id,skip){return db.items.find(x=>isB(x)&&!(skip&&skip.has(x.id))&&x.bundle.some(c=>c.id===id))}
-const thumb=i=>i.img?`<img src="${i.img}" alt="">`:emo(i);
+const thumb=i=>i.img?`<img src="${imgSrc(i.img)}" alt="">`:emo(i);
 
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 function applyBrand(){
   const s=db.set,b=$('#brand');if(!b)return;
-  b.innerHTML=(s.logo&&s.logoApp!==false?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
+  b.innerHTML=(s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img class="blogo" alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>')+'<span>'+esc(s.store)+'</span>';
   if(typeof applyLang==='function'&&lang()!=='id'){}
   if(typeof railBrand==='function')railBrand();
 }
@@ -1146,7 +1146,7 @@ function receiptModel(o){
 function receiptHTML(o,prev){
   const s=db.set,r=s.rc,fs={small:11,normal:12,large:14}[r.font]||12;
   const h=receiptModel(o).map(e=>{
-    if(e.t==='logo')return`<img src="${db.set.logo}" alt="" style="width:${r.logoW}px;max-width:90%">`;
+    if(e.t==='logo')return`<img src="${imgSrc(db.set.logo)}" alt="" style="width:${r.logoW}px;max-width:90%">`;
     if(e.t==='hr')return`<hr class="${r.divider==='equal'?'equal':''}">`;
     if(e.t==='qr')return`<div class="rq">${e.cap?`<div class="rqc">${esc(e.cap)}</div>`:''}${qrSvg(e.x,150)}</div>`;
     if(e.t==='text'&&e.huge){const em=Math.min(e.huge===3?3.4:2.3,Math.max(1.3,(e.huge===3?26:17)/Math.max(6,String(e.x).length)));return`<div class="rtb" style="font-size:${em.toFixed(2)}em">${esc(e.x)}</div>`}
@@ -2445,7 +2445,7 @@ function orderForm(cat){
   openModal(`<h3>Atur Urutan Menu</h3>
   <div class="chips" style="margin-bottom:8px">${chip('all','Semua')}${db.cats.map(k=>chip(k,k)).join('')}</div>
   <div class="chips" style="margin-bottom:8px"><button class="chip" onclick="orderSort('name')">A–Z</button><button class="chip" onclick="orderSort('price')">Harga ↑</button><button class="chip" onclick="orderSort('stock')">Stok ↓</button></div>
-  <div class="rlist" id="rlist">${l.map((i,n)=>`<div class="rrow" data-id="${i.id}"><span class="rn">${n+1}</span><div class="th">${thumb(i)}</div><div class="rnm"><b>${esc(i.name)}</b><small>${esc(i.cat)}</small></div><button class="rmv" onclick="orderMove('${i.id}',-1)">▲</button><button class="rmv" onclick="orderMove('${i.id}',1)">▼</button><span class="rh" onpointerdown="orderDrag(event)">⠿</span></div>`).join('')||''}</div>
+  <div class="rlist" id="rlist">${l.map((i,n)=>`<div class="rrow" data-id="${esc(i.id)}"><span class="rn">${n+1}</span><div class="th">${thumb(i)}</div><div class="rnm"><b>${esc(i.name)}</b><small>${esc(i.cat)}</small></div><button class="rmv" onclick="orderMove('${i.id}',-1)">▲</button><button class="rmv" onclick="orderMove('${i.id}',1)">▼</button><span class="rh" onpointerdown="orderDrag(event)">⠿</span></div>`).join('')||''}</div>
   <button class="btn" onclick="closeModal()">Selesai</button>`);
   const nl=$('#rlist'),nm=$('#modal');if(nl)nl.scrollTop=sc;if(nm)nm.scrollTop=ms;
 }
@@ -4042,7 +4042,7 @@ function renderAlert(){
 }
 function railBrand(){
   const e=$('#railLogo'),s=db.set;if(!e)return;
-  e.innerHTML=s.logo&&s.logoApp!==false?'<img alt="" src="'+s.logo+'">':'<i class="ic solo" data-ic="food"></i>';
+  e.innerHTML=s.logo&&s.logoApp!==false&&imgSrc(s.logo)?'<img alt="" src="'+imgSrc(s.logo)+'">':'<i class="ic solo" data-ic="food"></i>';
 }
 setInterval(()=>{if(document.hidden)return;if(S.view==='home')renderHome();else if(S.view==='table')renderTable();else if(S.view==='alert')renderAlert()},15000);
 applyBrand();
