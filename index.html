@@ -756,8 +756,16 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     </section>
 
     <section id="v-acc" hidden>
-      <div class="bar"><h2><i class="ic" data-ic="users"></i>Akun</h2></div>
+      <div class="bar"><h2><i class="ic" data-ic="users"></i>Akun Saya</h2></div>
       <div class="panel" id="accPage" style="max-width:560px"></div>
+    </section>
+    <section id="v-editacc" hidden>
+      <div class="bar"><button class="mini" type="button" onclick="go('acc')">← Kembali</button><h2>Edit Profil</h2></div>
+      <div class="panel" id="editAccPage" style="max-width:560px"></div>
+    </section>
+    <section id="v-pw" hidden>
+      <div class="bar"><button class="mini" type="button" onclick="go('acc')">← Kembali</button><h2>Ubah Password</h2></div>
+      <div class="panel" id="pwPage" style="max-width:560px"></div>
     </section>
     <section id="v-usr" hidden>
       <div class="bar"><h2><i class="ic" data-ic="users"></i>Pengguna</h2><button class="btn sm" style="width:auto;margin:0" onclick="usrForm(0)"><i class="ic" data-ic="plus"></i>Tambah</button></div>
@@ -900,7 +908,7 @@ function go(v){
   if(v==='acc'&&!(CL.on&&CL.me))v='set';
   if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v='pos'}
   S.view=v;closeAll();toggleInv(false);
-  ['pos','home','table','rep','alert','inv','hist','rc','prn','set','co','usr','acc','att'].forEach(x=>$('#v-'+x).hidden=x!==v);
+  ['pos','home','table','rep','alert','inv','hist','rc','prn','set','co','usr','acc','editacc','pw','att'].forEach(x=>$('#v-'+x).hidden=x!==v);
   document.querySelectorAll('.drawer button,.bnav button,.rail button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   navDot(v);
   $('#invoice').style.display=v==='pos'?'':'none';
@@ -3327,6 +3335,19 @@ function openAcct(){go('acc')}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
   box.innerHTML=`<div class="accp">
+    <div class="accph"><span class="accav" style="display:flex;align-items:center;justify-content:center;overflow:hidden"><span id="accAv"></span></span>
+      <div class="accwho"><b>${esc(m.name)}</b><small>@${esc(m.username)} · ${m.role==='owner'?'Owner':'Karyawan'}</small></div></div>
+    <div style="margin:16px 0"><label class="fl">Nama lengkap</label><p>${esc(m.name||'—')}</p>
+    <label class="fl">Alamat email</label><p>${esc(m.email||'Belum diisi')}</p>
+    <label class="fl">Nomor telepon</label><p>${esc(m.phone||'Belum diisi')}</p></div>
+    <button class="btn" type="button" onclick="go('editacc')">Edit Profil</button>
+    <button class="btn sec" type="button" style="margin-top:8px" onclick="go('pw')">Ubah Password</button>
+  </div>`;
+  accAvDraw();
+}
+function renderEditAccPage(){
+  const m=CL.me,box=$('#editAccPage');if(!m||!box)return;ACC.photo=m.photo||'';
+  box.innerHTML=`<div class="accp">
   <div class="accph"><button class="accav" type="button" onclick="$('#accFile').click()" aria-label="Ganti foto profil"><span id="accAv"></span><i class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i></button>
     <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
     <div class="accwho"><b id="accNm">${esc(m.name)}</b><small>@${esc(m.username)} · ${m.role==='owner'?'Owner':'Karyawan'}</small>
@@ -3335,14 +3356,19 @@ function renderAccPage(){
   <label class="fl">Alamat email</label><input class="fi" id="accEmail" type="email" inputmode="email" maxlength="120" placeholder="nama@contoh.com" value="${esc(m.email||'')}" autocomplete="email">
   <label class="fl">Nomor telepon</label><div class="phr"><select class="fi" id="accCc" aria-label="Kode negara">${phCcOpts(phSplit(m.phone).cc)}</select><input class="fi" id="accPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(phSplit(m.phone).num)}" autocomplete="tel-national"></div>
   <p class="hint" id="accErr" style="color:var(--bad);min-height:16px;margin:6px 0 0"></p>
-  <button class="btn" id="accSave" onclick="accSave()">Simpan Perubahan</button>
-  <details class="accpw"><summary>Ubah password</summary>
-    <input class="fi" id="pwOld" type="password" placeholder="Password saat ini" autocomplete="current-password">
-    <input class="fi" id="pwNew" type="password" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password" style="margin-top:8px">
-    <input class="fi" id="pwNew2" type="password" placeholder="Ulangi password baru" autocomplete="new-password" style="margin-top:8px">
-    <p class="hint" id="pwErr" style="color:var(--bad);min-height:16px"></p>
-    <button class="btn sec" onclick="changePw()">Ubah Password</button></details></div>`;
+  <button class="btn" id="accSave" onclick="accSave()">Simpan Perubahan</button></div>`;
   accAvDraw();
+}
+function renderPwPage(){
+  const box=$('#pwPage');if(!box)return;
+  box.innerHTML=`<div class="accp">
+    <p class="hint">Masukkan password saat ini, lalu tentukan password baru.</p>
+    <label class="fl">Password saat ini</label><input class="fi" id="pwOld" type="password" placeholder="Password saat ini" autocomplete="current-password">
+    <label class="fl" style="margin-top:10px">Password baru</label><input class="fi" id="pwNew" type="password" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password">
+    <label class="fl" style="margin-top:10px">Ulangi password baru</label><input class="fi" id="pwNew2" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
+    <p class="hint" id="pwErr" style="color:var(--bad);min-height:16px"></p>
+    <button class="btn" onclick="changePw()">Ubah Password</button>
+  </div>`;
 }
 function accAvDraw(){const m=CL.me||{};const e=$('#accAv');if(e)e.innerHTML=ACC.photo?`<img src="${esc(ACC.photo)}" alt="">`:esc(((($('#accName')||{}).value||m.name||'?')).trim().charAt(0).toUpperCase());const r=$('#accRm');if(r)r.hidden=!ACC.photo}
 function accPhoto(inp){
@@ -3382,7 +3408,7 @@ async function accSave(){
   try{
     const r=await api('/api/me',{method:'PUT',body:JSON.stringify({name,email,phone,photo:ACC.photo||''})}),j=await r.json();
     if(!r.ok){e.textContent=j.error||'Gagal menyimpan';return}
-    setMe(j);renderAcct();renderAccPage();toast('Profil disimpan');
+    setMe(j);renderAcct();go('acc');renderAccPage();toast('Profil disimpan');
   }catch(x){if(x.message!=='auth')e.textContent='Tidak bisa terhubung ke server'}
   finally{btn.disabled=false}
 }
@@ -3396,7 +3422,7 @@ async function changePw(){
     const j=await r.json();
     if(!r.ok){e.textContent=j.error||'Gagal';return}
     CL.tok=j.token;try{localStorage.setItem('pos_tok',CL.tok)}catch(x){}
-    ['pwOld','pwNew','pwNew2'].forEach(i=>{const e=$('#'+i);if(e)e.value=''});$('#pwErr').textContent='';toast('Password diganti');
+    ['pwOld','pwNew','pwNew2'].forEach(i=>{const e=$('#'+i);if(e)e.value=''});$('#pwErr').textContent='';toast('Password diganti');go('acc');
   }catch(x){if(x.message!=='auth')e.textContent='Tidak bisa terhubung ke server'}
 }
 /* dialog keluar: hanya dua pilihan, Keluar atau Batal */
@@ -3804,6 +3830,8 @@ function render(){
   if(S.view==='co')renderCo(true);
   if(S.view==='usr')renderUsr();
   if(S.view==='acc')renderAccPage();
+  if(S.view==='editacc')renderEditAccPage();
+  if(S.view==='pw')renderPwPage();
   if(S.view==='att')renderAtt();else ATT.built=false;
 }
 const RAIL_USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
