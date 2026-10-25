@@ -3369,7 +3369,8 @@ function openAcct(){go('acc')}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
   const role=m.role==='owner'?'Owner':'Karyawan';
-  const storeName=(db&&db.set&&db.set.store)||'Belum diatur';
+  const localStore=String(db&&db.set&&db.set.store||'').trim();
+  const storeName=localStore&&localStore!=='Ordela'?localStore:'Belum diatur';
   const status=(CL.on&&CL.tok)?'Aktif':'Offline';
   const joined=m.createdAt?new Date(m.createdAt):null;
   const joinedText=joined&&!Number.isNaN(joined.getTime())?joined.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'Belum tersedia';
@@ -3386,7 +3387,7 @@ function renderAccPage(){
     <div style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
       <h3 style="margin:0 0 12px">Informasi Akun</h3>
       <label class="fl">Peran</label><p>${esc(role)}</p>
-      <label class="fl">Nama toko</label><p>${esc(storeName)}</p>
+      <label class="fl">Nama toko</label><p id="accStoreName">${esc(storeName)}</p>
       <label class="fl">Tanggal bergabung</label><p>${esc(joinedText)}</p>
       <label class="fl">Status akun</label><p>${esc(status)}</p>
     </div>
@@ -3394,6 +3395,19 @@ function renderAccPage(){
     <button class="btn sec" type="button" style="margin-top:8px" onclick="go('pw')">Ubah Password</button>
   </div>`;
   accAvDraw();
+  // Ambil nama toko dari data bersama di server agar akun staf tidak bergantung
+  // pada salinan pengaturan lokal di perangkatnya.
+  if(CL.on&&CL.tok){
+    const token=CL.tok;
+    api('/api/public/menu').then(async r=>{
+      if(!r.ok)return;
+      const j=await r.json();
+      const el=$('#accStoreName');
+      if(token!==CL.tok||!el)return;
+      const name=String(j.store||'').trim();
+      el.textContent=name&&name!=='Ordela'?name:'Belum diatur';
+    }).catch(()=>{});
+  }
 }
 function renderEditAccPage(){
   const m=CL.me,box=$('#editAccPage');if(!m||!box)return;ACC.photo=m.photo||'';
