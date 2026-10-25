@@ -59,16 +59,17 @@ st.textContent=`
 .authc .alt{display:block;text-align:center;margin:14px 0 0;font-size:13px;color:var(--mu)}
 .authc .alt a,.lfoot a{color:var(--tx,#111);font-weight:700;text-decoration:underline;cursor:pointer}
 .lfoot.two{display:flex;flex-direction:column;gap:6px}
-.vbar{position:fixed;left:0;right:0;top:0;z-index:120;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px;background:#111;color:#fff;font-size:12.5px;line-height:1.35;text-align:center}
+.vbar{position:fixed;left:0;right:0;top:0;z-index:120;display:flex;align-items:center;gap:10px;justify-content:center;height:34px;box-sizing:content-box;padding:env(safe-area-inset-top,0px) 12px 0;background:#111;color:#fff;font-size:12.5px;line-height:1.35;text-align:center}
 .vbar button{background:#fff;color:#111;border-radius:999px;padding:4px 12px;font-weight:700;font-size:12px}
 .vbar button:disabled{opacity:.55}
+html.hasvb body{padding-top:calc(34px + env(safe-area-inset-top,0px))}
 .vbar .x{background:transparent;color:#fff;padding:2px 8px;font-size:16px}
 .vst{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 0;font-size:12.5px}
 .vst b{padding:2px 10px;border-radius:999px;font-size:11.5px}
 .vst b.y{background:#dcfce7;color:#15803d}.vst b.n{background:#fee2e2;color:#b91c1c}
 .vst .lnk{font-size:12.5px}
 .wz{display:flex;gap:6px;justify-content:center;margin:0 0 10px}.wz i{width:28px;height:4px;border-radius:2px;background:var(--ln,#ddd)}.wz i.on{background:#111}
-.lgup{display:flex;align-items:center;gap:12px;margin-top:6px}.lgup .pv{width:64px;height:64px;border-radius:50%;border:1.5px dashed var(--ln,#ccc);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg,#f5f5f5);flex:none}.lgup .pv img{width:100%;height:100%;object-fit:cover}
+.lgup{display:flex;align-items:center;gap:12px;margin-top:6px}.lgup .lpv{width:64px;height:64px;border-radius:50%;border:1.5px dashed var(--ln,#ccc);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg,#f5f5f5);flex:none}.lgup .lpv img{width:100%;height:100%;object-fit:cover}
 `;
 document.head.appendChild(st);
 
@@ -213,10 +214,11 @@ let vbar=null,vtick=0;
 function vRender(){
   const m=CL&&CL.me,need=!!(CL.on&&CL.tok&&m&&m.hasAuth&&!m.emailVerified);
   let dis='';try{dis=sessionStorage.getItem('pos_vbar_x')||''}catch(e){}
-  if(!need||dis){if(vbar){vbar.remove();vbar=null}clearInterval(vtick);return}
+  if(!need||dis){if(vbar){vbar.remove();vbar=null}document.documentElement.classList.remove('hasvb');clearInterval(vtick);return}
   if(!vbar){vbar=document.createElement('div');vbar.className='vbar';vbar.id='vbar';document.body.appendChild(vbar)}
+  document.documentElement.classList.add('hasvb');
   const left=cdLeft(RESEND_KEY);
-  vbar.innerHTML=`<span>Email <b>${E(m.email)}</b> belum diverifikasi. Anda tetap bisa memakai aplikasi.</span><button type="button" id="vRs" ${left?'disabled':''}>${left?'Kirim ulang ('+left+'d)':'Kirim ulang'}</button><button class="x" type="button" aria-label="Tutup" id="vX">×</button>`;
+  vbar.innerHTML=`<span>Email belum diverifikasi.</span><button type="button" id="vRs" ${left?'disabled':''}>${left?'Kirim ulang ('+left+' dtk)':'Kirim ulang'}</button><button class="x" type="button" aria-label="Tutup" id="vX">×</button>`;
   $('#vRs').onclick=authResend;$('#vX').onclick=()=>{try{sessionStorage.setItem('pos_vbar_x','1')}catch(e){}vRender()};
   clearInterval(vtick);if(left)vtick=setInterval(vRender,1000);
 }
@@ -236,7 +238,7 @@ function renderAccVerif(){
   if(m.hasAuth){
     inp.readOnly=true;
     const left=cdLeft(RESEND_KEY);
-    box.innerHTML=m.emailVerified?'<b class="y">Terverifikasi</b>':`<b class="n">Belum diverifikasi</b><button class="lnk" type="button" ${left?'disabled':''} onclick="authResend()">${left?'Kirim ulang ('+left+'d)':'Kirim ulang email verifikasi'}</button>`;
+    box.innerHTML=m.emailVerified?'<b class="y">Terverifikasi</b>':`<b class="n">Belum diverifikasi</b><button class="lnk" type="button" ${left?'disabled':''} onclick="authResend()">${left?'Kirim ulang ('+left+' dtk)':'Kirim ulang email verifikasi'}</button>`;
   }else{
     box.innerHTML='<span style="color:var(--mu)">Akun ini belum memakai email.</span><button class="lnk" type="button" onclick="authAddEmail()">Tambah email</button>';
   }
@@ -272,6 +274,87 @@ window.authAddEmail=function(){
 };
 window.authClose=hide;
 
+
+/* ---------- penyiapan toko (akun baru) ---------- */
+const WZ={step:1,name:'',addr:'',phone:'',cc:'',cur:'',tz:'',tax:'0',logo:''};
+const TZS=[['Asia/Jakarta','WIB · Jakarta'],['Asia/Makassar','WITA · Makassar'],['Asia/Jayapura','WIT · Jayapura'],['Asia/Kuala_Lumpur','Malaysia'],['Asia/Singapore','Singapura'],['Asia/Brunei','Brunei'],['Asia/Bangkok','Thailand'],['Asia/Manila','Filipina']];
+const CURS=[['Rp','Rupiah (Rp)'],['RM','Ringgit (RM)'],['S$','Dolar Singapura (S$)'],['B$','Dolar Brunei (B$)'],['฿','Baht (฿)'],['₱','Peso (₱)'],['$','Dolar ($)']];
+function wzDefaults(){
+  if(WZ.tz)return;let z='';try{z=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}
+  WZ.tz=TZS.some(x=>x[0]===z)?z:'Asia/Jakarta';
+  WZ.cc=phDefCc();WZ.cur=/Kuala_Lumpur/.test(WZ.tz)?'RM':/Singapore/.test(WZ.tz)?'S$':/Brunei/.test(WZ.tz)?'B$':/Bangkok/.test(WZ.tz)?'฿':/Manila/.test(WZ.tz)?'₱':'Rp';
+}
+function wzDots(){return'<div class="wz">'+[1,2,3].map(i=>`<i class="${i<=WZ.step?'on':''}"></i>`).join('')+'</div>'}
+window.authWizard=function(){
+  wzDefaults();
+  const m=CL.me||{};
+  if(!WZ.name&&m.name)WZ.name='';
+  const hdr=`<i id="wzOn" hidden></i>${wzDots()}`;
+  const out=`<span class="alt"><a onclick="cloudLogout()">Keluar</a></span>`;
+  let f;
+  if(WZ.step===1){
+    f=show(`${hdr}<h2>Siapkan toko Anda</h2><p class="lsub">Langkah 1 dari 3 · Informasi toko</p>
+    <label class="fl" for="wName">Nama toko</label><input class="fi" id="wName" maxlength="60" value="${E(WZ.name)}" placeholder="mis. Kedai Melati" autocomplete="organization">
+    <label class="fl" for="wAddr">Alamat toko</label><textarea class="fi" id="wAddr" maxlength="300" placeholder="Jalan, kota">${E(WZ.addr)}</textarea>
+    <label class="fl">Nomor telepon toko <span style="font-weight:400">(opsional)</span></label>
+    <div class="phr"><select class="fi" id="wCc">${phCcOpts(WZ.cc)}</select><input class="fi" id="wPhone" type="tel" inputmode="tel" maxlength="14" value="${E(WZ.phone)}" placeholder="812 3456 7890"></div>
+    <p class="fe" id="aErr" role="alert"></p><button class="btn" type="submit">Lanjut</button>${out}`);
+    $('#wPhone').addEventListener('input',e=>{e.target.value=phFmt(e.target.value)});
+    f.addEventListener('submit',()=>{
+      WZ.name=val('wName').trim().replace(/\s+/g,' ');WZ.addr=val('wAddr').trim();WZ.cc=val('wCc');WZ.phone=val('wPhone');
+      if(WZ.name.length<2)return msg('Nama toko wajib diisi (min. 2 karakter).');
+      if(WZ.phone&&WZ.phone.replace(/\D/g,'').length<6)return msg('Nomor telepon tidak valid.');
+      WZ.step=2;authWizard()});
+  }else if(WZ.step===2){
+    f=show(`${hdr}<h2>Pengaturan dasar</h2><p class="lsub">Langkah 2 dari 3 · Mata uang, zona waktu, pajak</p>
+    <label class="fl" for="wCur">Mata uang</label><select class="fi" id="wCur">${CURS.map(c=>`<option value="${E(c[0])}" ${c[0]===WZ.cur?'selected':''}>${E(c[1])}</option>`).join('')}</select>
+    <label class="fl" for="wTz">Zona waktu</label><select class="fi" id="wTz">${TZS.map(c=>`<option value="${c[0]}" ${c[0]===WZ.tz?'selected':''}>${E(c[1])}</option>`).join('')}</select>
+    <label class="fl" for="wTax">Pajak (%)</label><input class="fi" id="wTax" type="number" inputmode="decimal" min="0" max="50" step="0.5" value="${E(WZ.tax)}">
+    <p class="fe" id="aErr" role="alert"></p>
+    <div class="row2"><button class="btn sec" type="button" id="wBack">Kembali</button><button class="btn" type="submit">Lanjut</button></div>${out}`);
+    $('#wBack').onclick=()=>{WZ.step=1;authWizard()};
+    f.addEventListener('submit',()=>{
+      WZ.cur=val('wCur');WZ.tz=val('wTz');WZ.tax=val('wTax')||'0';
+      const x=parseFloat(WZ.tax);if(isNaN(x)||x<0||x>50)return msg('Pajak harus 0 sampai 50.');
+      WZ.step=3;authWizard()});
+  }else{
+    f=show(`${hdr}<h2>Logo toko</h2><p class="lsub">Langkah 3 dari 3 · Opsional, bisa diubah nanti</p>
+    <div class="lgup"><span class="lpv" id="wPv">${WZ.logo?`<img src="${E(WZ.logo)}" alt="">`:'<small style="color:var(--mu)">Logo</small>'}</span>
+      <div><button class="btn sec sm" type="button" onclick="document.getElementById('wFile').click()">Pilih gambar</button> <button class="lnk" type="button" id="wRm" ${WZ.logo?'':'hidden'}>Hapus</button></div></div>
+    <input type="file" id="wFile" accept="image/*" hidden>
+    <p class="hint" style="font-size:12px;color:var(--mu)">Toko dimulai kosong: Anda mengisi menu dan produk sendiri setelah ini.</p>
+    <p class="fe" id="aErr" role="alert"></p>
+    <div class="row2"><button class="btn sec" type="button" id="wBack">Kembali</button><button class="btn" id="wGo" type="submit">Selesai</button></div>${out}`);
+    $('#wBack').onclick=()=>{WZ.step=2;authWizard()};
+    $('#wRm').onclick=()=>{WZ.logo='';authWizard()};
+    $('#wFile').onchange=e=>{const fl=e.target.files&&e.target.files[0];if(!fl)return;
+      if(!/^image\//.test(fl.type))return msg('File harus berupa gambar.');
+      const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{try{
+        const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
+        const sz=Math.min(im.width,im.height);x.fillStyle='#fff';x.fillRect(0,0,N,N);x.drawImage(im,(im.width-sz)/2,(im.height-sz)/2,sz,sz,0,0,N,N);
+        WZ.logo=c.toDataURL('image/jpeg',.85);authWizard()}catch(er){msg('Gambar tidak bisa diproses.')}};
+        im.onerror=()=>msg('Gambar tidak bisa dibaca.');im.src=rd.result};rd.readAsDataURL(fl)};
+    f.addEventListener('submit',wzFinish);
+  }
+};
+async function wzFinish(){
+  const b=$('#wGo');setBusy(b,true,'Menyiapkan…');msg('');
+  try{
+    const r=await api('/api/store/setup',{method:'POST',body:JSON.stringify({name:WZ.name,tz:WZ.tz})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)return msg(j.error||'Gagal menyiapkan toko. Coba lagi.');
+    setMe(j);
+    const d=seed();d.items=[];d.cats=[];d.orders=[];d.log=[];d.seq=1;
+    const dec=WZ.cur==='Rp'||WZ.cur==='₱'?0:2;
+    d.set={...d.set,store:WZ.name,addr:WZ.addr,phone:WZ.phone?'+'+WZ.cc+' '+WZ.phone:'',tax:parseFloat(WZ.tax)||0,cur:WZ.cur,dec,logo:WZ.logo,tz:WZ.tz};
+    delete d._ts;
+    db=fixDb(d);S.cart={};S.sel.clear();CL.ver=0;CL.dirty=true;persistMeta();save();applyBrand();
+    hide();Object.assign(WZ,{step:1,name:'',addr:'',phone:'',logo:''});
+    applyAccess();go('pos');syncNow();toast('Toko siap. Mulai tambahkan menu Anda.');
+  }catch(e){if(e&&e.message!=='auth')msg('Tidak bisa terhubung. Coba lagi.')}
+  finally{setBusy(b,false)}
+}
+
 /* ---------- kaitkan ke aplikasi ---------- */
 function patchLogin(){
   const l=document.querySelector('label[for=loginUser]');if(l)l.textContent='Username atau email';
@@ -293,6 +376,6 @@ function authGate(){ // akun baru tanpa toko -> penyiapan toko
 }
 
 patchLogin();
-handleHash();
+handleHash();window.addEventListener("hashchange",handleHash);
 if(CL.me)vRender();
 })();

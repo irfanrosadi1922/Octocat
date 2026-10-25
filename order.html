@@ -169,6 +169,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS={g(k){try{return localStorage.getItem(k)}catch(e){return null}},s(k,v){try{localStorage.setItem(k,v)}catch(e){}},d(k){try{localStorage.removeItem(k)}catch(e){}}};
 const U=new URLSearchParams(location.search);
+const SC=(U.get('s')||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,16);
 const TBL=(U.get('t')||U.get('meja')||'').replace(/[^\w\- ]/g,'').slice(0,12);
 let payM='cash',M=null,cart={},cat='all',q='',type=TBL?'Dine In':'Takeaway',sending=false,poll=null,cur=null;
 try{const c=JSON.parse(LS.g('co_cart')||'{}');if(c&&typeof c==='object')cart=c}catch(e){}
@@ -339,7 +340,7 @@ const thumb=i=>i.img?`<img src="${esc(i.img)}" alt="" loading="lazy">`:(i.emoji&
 
 /* ---------- menu ---------- */
 async function loadMenu(first){
-  const r=await fetch('/api/public/menu',{cache:'no-store'});
+  const r=await fetch('/api/public/menu'+(SC?'?s='+SC:''),{cache:'no-store'});
   if(!r.ok)throw new Error(r.status);
   M=await r.json();
   if(M.pay===undefined&&!loadMenu.retry){ // cache menu lama dari versi sebelumnya (tanpa data bayar): buang lalu ambil ulang sekali
@@ -426,7 +427,7 @@ async function send(){
   if(!idem)idem=(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));
   sending=true;const btn=$('#sendBtn'),old=btn.textContent;btn.disabled=true;btn.textContent=t('sending');
   try{
-    const r=await fetch('/api/public/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,table:$('#cTbl').value.trim(),type,note:$('#cNote').value.trim(),items,key:idem,pay:payOn()&&payM==='duitnow'?'duitnow':'',website:$('#hp').value})});
+    const r=await fetch('/api/public/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({s:SC,name,table:$('#cTbl').value.trim(),type,note:$('#cNote').value.trim(),items,key:idem,pay:payOn()&&payM==='duitnow'?'duitnow':'',website:$('#hp').value})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){
       if(r.status===409){idem=null;await loadMenu().catch(()=>{});renderCart();$('#err').textContent=(trErr(j.error)||t('stockChanged'))+t('adjusted');}

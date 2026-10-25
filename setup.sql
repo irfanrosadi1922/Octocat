@@ -8,7 +8,22 @@ create schema if not exists extensions;
 create extension if not exists pgcrypto with schema extensions;
 create schema if not exists pos;
 
-create table if not exists pos.users(
+-- ---- multi-toko: tabel data diganti nama menjadi pos.t_* dan diberi VIEW bernama lama yang otomatis hanya menampilkan
+-- data toko milik sesi (pos.sid()). Seluruh fungsi di bawah memakai nama lama, jadi tak bisa melihat data toko lain.
+do $$ declare f record; t text;
+begin
+  for f in select p.oid::regprocedure as sig from pg_proc p where p.pronamespace = 'pos'::regnamespace loop
+    execute 'drop function if exists ' || f.sig || ' cascade';
+  end loop;
+  foreach t in array array['users', 'audit', 'doc', 'snapshots', 'co', 'att', 'meta', 'push_tokens'] loop
+    if to_regclass('pos.' || t) is not null and to_regclass('pos.t_' || t) is null
+       and (select c.relkind from pg_class c where c.oid = to_regclass('pos.' || t)) = 'r' then
+      execute format('alter table pos.%I rename to %I', t, 't_' || t);
+    end if;
+  end loop;
+end $$;
+
+create table if not exists pos.t_users(
   id bigint generated always as identity primary key,
   username text not null unique,
   name text not null,
@@ -20,61 +35,60 @@ create table if not exists pos.users(
   created_at timestamptz not null default now());
 create table if not exists pos.sessions(
   th text primary key,                    -- sha256 dari token; token asli tidak disimpan
-  uid bigint not null references pos.users(id) on delete cascade,
+  uid bigint not null references pos.t_users(id) on delete cascade,
   exp timestamptz not null);
-alter table pos.users add column if not exists email text not null default '';
-alter table pos.users add column if not exists phone text not null default '';
-alter table pos.users add column if not exists photo text not null default '';
-alter table pos.users add column if not exists single boolean;            -- null = otomatis (karyawan: ya, owner: tidak)
+alter table pos.t_users add column if not exists email text not null default '';
+alter table pos.t_users add column if not exists phone text not null default '';
+alter table pos.t_users add column if not exists photo text not null default '';
+alter table pos.t_users add column if not exists single boolean;            -- null = otomatis (karyawan: ya, owner: tidak)
 alter table pos.sessions add column if not exists seen_at timestamptz not null default now();   -- terakhir dipakai; sesi mati bila 12 jam tidak ada permintaan
 alter table pos.sessions add column if not exists kicked_at timestamptz;   -- diisi saat perangkat ini dikeluarkan karena login di perangkat lain
 create index if not exists sessions_uid on pos.sessions(uid);
 -- ---- pendaftaran mandiri (Supabase Auth): kolom tambahan, peran 'new' = sudah daftar tetapi belum punya toko
-alter table pos.users add column if not exists auth_id uuid;                 -- akun di auth.users (email + sandi dikelola Supabase Auth)
-alter table pos.users add column if not exists birth date;
-alter table pos.users add column if not exists address text not null default '';
+alter table pos.t_users add column if not exists auth_id uuid;                 -- akun di auth.users (email + sandi dikelola Supabase Auth)
+alter table pos.t_users add column if not exists birth date;
+alter table pos.t_users add column if not exists address text not null default '';
 do $$ begin
-  alter table pos.users drop constraint if exists users_role_check;
-  alter table pos.users add constraint users_role_check check (role in ('owner', 'staff', 'new'));
+  alter table pos.t_users drop constraint if exists users_role_check;
+  alter table pos.t_users drop constraint if exists t_users_role_check;
+  alter table pos.t_users add constraint users_role_check check (role in ('owner', 'staff', 'new'));
 end $$;
-create unique index if not exists users_auth_id_u on pos.users(auth_id) where auth_id is not null;
+create unique index if not exists users_auth_id_u on pos.t_users(auth_id) where auth_id is not null;
 do $$ begin
-  create unique index if not exists users_email_u on pos.users(lower(email)) where email <> '';
+  create unique index if not exists users_email_u on pos.t_users(lower(email)) where email <> '';
 exception when others then raise notice 'users_email_u dilewati: ada email ganda di data lama';
 end $$;
-create table if not exists pos.audit(
+create table if not exists pos.t_audit(
   id bigint generated always as identity primary key,
   t timestamptz not null default now(), uid bigint, uname text not null default '',
   action text not null, detail text not null default '');
-create table if not exists pos.doc(
+create table if not exists pos.t_doc(
   id int primary key check (id = 1), json jsonb, version int not null default 0, updated_at timestamptz);
-insert into pos.doc(id, json, version) values (1, null, 0) on conflict do nothing;
-create table if not exists pos.snapshots(
+create table if not exists pos.t_snapshots(
   day date primary key, json jsonb not null, version int not null, created_at timestamptz not null default now());
-create table if not exists pos.co(
+create table if not exists pos.t_co(
   id bigint generated always as identity primary key,
   tok text not null unique, idem text unique, day date not null, num text not null,
   name text not null, tbl text not null default '', type text not null, note text not null default '',
   lines jsonb not null, sub numeric not null, tax numeric not null, total numeric not null,
   status text not null default 'new', printed int not null default 0, claim_at bigint,
   sale_no text, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
-alter table pos.co add column if not exists pay text not null default '';
-alter table pos.co add column if not exists pst int not null default 0;
-alter table pos.co add column if not exists proof text not null default '';
-create index if not exists co_day on pos.co(day);
-create index if not exists co_status on pos.co(status, id);
-create table if not exists pos.att(
+alter table pos.t_co add column if not exists pay text not null default '';
+alter table pos.t_co add column if not exists pst int not null default 0;
+alter table pos.t_co add column if not exists proof text not null default '';
+create index if not exists co_day on pos.t_co(day);
+create index if not exists co_status on pos.t_co(status, id);
+create table if not exists pos.t_att(
   id bigint generated always as identity primary key,
   uid bigint not null, uname text not null default '', name text not null default '',
   day date not null, ts timestamptz not null default now(), type text not null,
   shift_id text not null default '', shift_name text not null default '', sstart text not null default '', send text not null default '',
   status text not null default 'none', mins int not null default 0,
   lat double precision, lng double precision, acc int, dist int, photo text not null default '');
-create index if not exists att_uid on pos.att(uid, id);
-create index if not exists att_day on pos.att(day);
-create table if not exists pos.meta(k text primary key, v jsonb not null);
-create table if not exists pos.push_tokens(tok text primary key, uid bigint not null, created_at timestamptz not null default now());
-insert into pos.meta(k, v) values ('rev', to_jsonb((extract(epoch from now()) * 1000)::bigint)) on conflict do nothing;
+create index if not exists att_uid on pos.t_att(uid, id);
+create index if not exists att_day on pos.t_att(day);
+create table if not exists pos.t_meta(k text primary key, v jsonb not null);
+create table if not exists pos.t_push_tokens(tok text primary key, uid bigint not null, created_at timestamptz not null default now());
 create table if not exists pos.fails(ip text primary key, n int not null default 0, until timestamptz);
 create table if not exists pos.hits(id bigint generated always as identity primary key, ip text not null, t timestamptz not null default now());
 create table if not exists pos.rl(id bigint generated always as identity primary key, k text not null, ip text not null, t timestamptz not null default now());
@@ -82,11 +96,87 @@ create index if not exists rl_k on pos.rl(k, ip, t);
 alter table pos.rl enable row level security;
 create index if not exists hits_ip on pos.hits(ip, t);
 
-alter table pos.users enable row level security;  alter table pos.sessions enable row level security;
-alter table pos.audit enable row level security;  alter table pos.doc enable row level security;
-alter table pos.snapshots enable row level security; alter table pos.co enable row level security;
-alter table pos.meta enable row level security;   alter table pos.fails enable row level security;
-alter table pos.hits enable row level security;  alter table pos.att enable row level security;
+
+-- ================================================================ multi-toko
+create table if not exists pos.stores(
+  id bigint generated always as identity primary key,
+  code text not null unique,                 -- kode publik toko (untuk tautan/QR pemesanan online)
+  name text not null, owner_id bigint, created_at timestamptz not null default now());
+alter table pos.stores enable row level security;
+alter table pos.t_users add column if not exists store_id bigint references pos.stores(id);
+alter table pos.t_audit add column if not exists store_id bigint;
+alter table pos.t_doc add column if not exists store_id bigint;
+alter table pos.t_snapshots add column if not exists store_id bigint;
+alter table pos.t_co add column if not exists store_id bigint;
+alter table pos.t_att add column if not exists store_id bigint;
+alter table pos.t_meta add column if not exists store_id bigint;
+alter table pos.t_push_tokens add column if not exists store_id bigint;
+create index if not exists users_store on pos.t_users(store_id);
+create index if not exists co_store on pos.t_co(store_id, day);
+create index if not exists att_store on pos.t_att(store_id);
+create index if not exists audit_store on pos.t_audit(store_id, id);
+
+-- data lama (satu toko) -> toko nomor 1, dimiliki owner pertama
+do $$ declare v_owner bigint; v_name text; v_code text;
+begin
+  if not exists (select 1 from pos.stores) and exists (select 1 from pos.t_users where role in ('owner', 'staff')) then
+    select id into v_owner from pos.t_users where role = 'owner' order by id limit 1;
+    select coalesce(nullif(json #>> '{set,store}', ''), 'Octocat') into v_name from pos.t_doc limit 1;
+    v_code := substr(md5(random()::text || clock_timestamp()::text), 1, 8);
+    insert into pos.stores(id, code, name, owner_id) overriding system value values (1, v_code, coalesce(v_name, 'Octocat'), v_owner);
+    perform setval(pg_get_serial_sequence('pos.stores', 'id'), 1);
+    update pos.t_users set store_id = 1 where store_id is null and role in ('owner', 'staff');
+    update pos.t_audit set store_id = 1 where store_id is null;
+    update pos.t_doc set store_id = 1 where store_id is null;
+    update pos.t_snapshots set store_id = 1 where store_id is null;
+    update pos.t_co set store_id = 1 where store_id is null;
+    update pos.t_att set store_id = 1 where store_id is null;
+    update pos.t_meta set store_id = 1 where store_id is null and k <> 'push';
+    update pos.t_meta set store_id = 0 where store_id is null and k = 'push';   -- konfigurasi notifikasi APK berlaku untuk semua toko
+    update pos.t_push_tokens set store_id = 1 where store_id is null;
+    insert into pos.t_doc(store_id, id, json, version) select 1, 1, null, 0 where not exists (select 1 from pos.t_doc where store_id = 1);
+    insert into pos.t_meta(store_id, k, v) select 1, 'rev', to_jsonb((extract(epoch from now()) * 1000)::bigint) where not exists (select 1 from pos.t_meta where store_id = 1 and k = 'rev');
+  end if;
+end $$;
+
+-- kunci unik per toko (menggantikan kunci utama lama)
+do $$ declare t text; c text;
+begin
+  foreach t in array array['doc', 'snapshots', 'meta'] loop
+    select conname into c from pg_constraint where conrelid = ('pos.t_' || t)::regclass and contype = 'p';
+    if c is not null then execute format('alter table pos.t_%I drop constraint %I', t, c); end if;
+  end loop;
+end $$;
+create unique index if not exists doc_sid on pos.t_doc(store_id, id);
+create unique index if not exists snap_sid on pos.t_snapshots(store_id, day);
+create unique index if not exists meta_sid on pos.t_meta(store_id, k);
+
+create or replace function pos.sid() returns bigint language sql stable as
+$$ select nullif(current_setting('pos.sid', true), '')::bigint $$;
+
+create or replace view pos.users as select * from pos.t_users where store_id = pos.sid();
+create or replace view pos.audit as select * from pos.t_audit where store_id = pos.sid();
+create or replace view pos.doc as select * from pos.t_doc where store_id = pos.sid();
+create or replace view pos.snapshots as select * from pos.t_snapshots where store_id = pos.sid();
+create or replace view pos.co as select * from pos.t_co where store_id = pos.sid();
+create or replace view pos.att as select * from pos.t_att where store_id = pos.sid();
+create or replace view pos.meta as select * from pos.t_meta where store_id = pos.sid();
+create or replace view pos.push_tokens as select * from pos.t_push_tokens where store_id = pos.sid();
+alter view pos.users alter column store_id set default pos.sid();
+alter view pos.audit alter column store_id set default pos.sid();
+alter view pos.doc alter column store_id set default pos.sid();
+alter view pos.snapshots alter column store_id set default pos.sid();
+alter view pos.co alter column store_id set default pos.sid();
+alter view pos.att alter column store_id set default pos.sid();
+alter view pos.meta alter column store_id set default pos.sid();
+alter view pos.push_tokens alter column store_id set default pos.sid();
+
+alter table pos.t_users enable row level security;  alter table pos.sessions enable row level security;
+alter table pos.t_audit enable row level security;  alter table pos.t_doc enable row level security;
+alter table pos.t_snapshots enable row level security; alter table pos.t_co enable row level security;
+alter table pos.t_meta enable row level security;   alter table pos.fails enable row level security;
+alter table pos.hits enable row level security;  alter table pos.t_att enable row level security;
+alter table pos.t_push_tokens enable row level security;
 
 -- ---------------------------------------------------------------- pembantu
 create or replace function pos.r(s int, b jsonb) returns jsonb language sql immutable as
@@ -155,7 +245,7 @@ create or replace function pos.me_view(u pos.users) returns jsonb language sql s
     'email', u.email, 'phone', u.phone, 'hasPhoto', u.photo <> '') $$;
 create or replace function pos.me_self(u pos.users) returns jsonb language sql stable as $$
   select pos.me_view(u) || jsonb_build_object('photo', u.photo, 'birth', coalesce(u.birth::text, ''), 'address', u.address,
-    'hasAuth', u.auth_id is not null,
+    'hasAuth', u.auth_id is not null, 'store', (select jsonb_build_object('code', s.code, 'name', s.name) from pos.stores s where s.id = u.store_id),
     'emailVerified', coalesce((select a.email_confirmed_at is not null from auth.users a where a.id = u.auth_id), false)) $$;
 
 -- ---- sandi: akun Supabase Auth memakai hash di auth.users, akun lama (dan staf) memakai pos.users.pw
@@ -172,9 +262,9 @@ end $$;
 create or replace function pos.pw_set(uid bigint, pw text) returns void language plpgsql as $$
 declare v_auth uuid; h text := extensions.crypt(pw, extensions.gen_salt('bf', 10));
 begin
-  select auth_id into v_auth from pos.users where id = uid;
+  select auth_id into v_auth from pos.t_users where id = uid;
   if v_auth is not null then update auth.users set encrypted_password = h, updated_at = now() where id = v_auth;
-  else update pos.users set pw = h where id = uid; end if;
+  else update pos.t_users set pw = h where id = uid; end if;
 end $$;
 
 -- ---- akun baru dari Supabase Auth -> baris pos.users (peran 'new' sampai toko disiapkan)
@@ -184,10 +274,10 @@ begin
   if md ->> 'kind' = 'link' then return new; end if;
   un := lower(btrim(coalesce(md ->> 'username', '')));
   if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then raise exception 'Username tidak valid'; end if;
-  if exists (select 1 from pos.users where username = un) then raise exception 'Username sudah dipakai'; end if;
+  if exists (select 1 from pos.t_users where username = un) then raise exception 'Username sudah dipakai'; end if;
   begin v_birth := nullif(md ->> 'birth', '')::date; exception when others then v_birth := null; end;
   nm := coalesce(nullif(regexp_replace(btrim(coalesce(md ->> 'name', '')), '\s+', ' ', 'g'), ''), un);
-  insert into pos.users(username, name, role, perms, pw, auth_id, email, phone, birth, address)
+  insert into pos.t_users(username, name, role, perms, pw, auth_id, email, phone, birth, address)
   values (un, left(nm, 60), 'new', '[]'::jsonb, '!', new.id, lower(coalesce(new.email, '')), left(coalesce(md ->> 'phone', ''), 20),
           v_birth, left(coalesce(md ->> 'address', ''), 300));
   return new;
@@ -195,7 +285,7 @@ end $$;
 create or replace function pos.on_auth_pw() returns trigger language plpgsql security definer set search_path = '' as $$
 begin  -- sandi diganti (reset lewat email / ganti sandi): semua sesi aplikasi akun itu dicabut
   if new.encrypted_password is distinct from old.encrypted_password then
-    delete from pos.sessions where uid in (select id from pos.users where auth_id = new.id);
+    delete from pos.sessions where uid in (select id from pos.t_users where auth_id = new.id);
   end if;
   return new;
 end $$;
@@ -215,7 +305,7 @@ declare u pos.users; h text;
 begin
   if tok is null or length(tok) < 20 or length(tok) > 200 then return null; end if;
   h := encode(extensions.digest(tok, 'sha256'), 'hex');
-  select us.* into u from pos.sessions s join pos.users us on us.id = s.uid
+  select us.* into u from pos.sessions s join pos.t_users us on us.id = s.uid
    where s.th = h and s.exp > now() and s.kicked_at is null and s.seen_at > now() - interval '12 hours' and us.active;
   if u.id is not null then update pos.sessions set seen_at = now() where th = h and seen_at < now() - interval '1 minute'; end if;
   return u;
@@ -264,6 +354,15 @@ end $$;
 create or replace function pos.valid_doc(d jsonb) returns boolean language sql immutable as $$
   select jsonb_typeof(d) = 'object' and jsonb_typeof(d -> 'items') = 'array' and jsonb_typeof(d -> 'orders') = 'array'
      and jsonb_typeof(d -> 'set') = 'object' $$;
+
+create or replace function pos.pub_sid(code text) returns boolean language plpgsql as $$
+declare v bigint; c text := lower(btrim(coalesce(code, '')));
+begin
+  if c = '' then select id into v from pos.stores where id = 1;
+  elsif c ~ '^[a-z0-9]{4,16}$' then select id into v from pos.stores where stores.code = c; end if;
+  if v is null then return false; end if;
+  perform set_config('pos.sid', v::text, true); return true;
+end $$;
 
 create or replace function pos.guard(me pos.users, cur jsonb, nxt jsonb) returns text language plpgsql as $$
 declare pm jsonb; k text; c jsonb; n jsonb; ci int; ni int; cs jsonb; ns jsonb; a int;
@@ -420,11 +519,12 @@ begin
   un := lower(btrim(coalesce(b ->> 'username', '')));
   pw := case when jsonb_typeof(b -> 'password') = 'string' then b ->> 'password' end;
   if un <> '' and length(un) <= 120 then
-    if position('@' in un) > 0 then select * into u from pos.users where lower(email) = un and email <> '' order by (auth_id is not null) desc limit 1;
-    else select * into u from pos.users where username = un; end if;
+    if position('@' in un) > 0 then select * into u from pos.t_users where lower(email) = un and email <> '' order by (auth_id is not null) desc limit 1;
+    else select * into u from pos.t_users where username = un; end if;
   end if;
   if u.id is not null and pw is not null and length(pw) <= 200 then good := pos.pw_ok(u, pw);
   else perform extensions.crypt('x', '$2a$10$abcdefghijklmnopqrstuu'); end if;
+  if u.id is not null then perform set_config('pos.sid', coalesce(u.store_id, 0)::text, true); end if;
   if not good then
     insert into pos.fails(ip, n) values (v_ip, 1) on conflict (ip) do update set
       n = case when pos.fails.n + 1 >= 8 then 0 else pos.fails.n + 1 end,
@@ -434,14 +534,14 @@ begin
   end if;
   delete from pos.fails where ip = v_ip;
   if not u.active then return pos.r(403, '{"error":"Akun dinonaktifkan. Hubungi owner."}'); end if;
-  update pos.users set last_login = now() where id = u.id;
+  update pos.t_users set last_login = now() where id = u.id;
   v_out := 0;
   if coalesce(u.single, u.role <> 'owner') then
     update pos.sessions set kicked_at = now() where uid = u.id and kicked_at is null;
     get diagnostics v_out = row_count;
   end if;
   perform pos.audit(u.id, u.username, 'login', v_ip || case when v_out > 0 then ' (perangkat lama dikeluarkan)' else '' end);
-  select * into u from pos.users where id = u.id;
+  select * into u from pos.t_users where id = u.id;
   return pos.r(200, jsonb_build_object('token', pos.new_session(u.id), 'days', 14, 'me', pos.me_self(u)));
 end $$;
 
@@ -545,13 +645,20 @@ begin
     un := lower(btrim(coalesce(b ->> 'username', '')));
     nm := lower(btrim(coalesce(b ->> 'email', '')));
     return pos.r(200, jsonb_build_object(
-      'usernameFree', un ~ '^[a-z0-9][a-z0-9._-]{2,23}$' and not exists (select 1 from pos.users where username = un),
-      'emailFree', nm = '' or (not exists (select 1 from pos.users where lower(email) = nm) and not exists (select 1 from auth.users where lower(email) = nm))));
+      'usernameFree', un ~ '^[a-z0-9][a-z0-9._-]{2,23}$' and not exists (select 1 from pos.t_users where username = un),
+      'emailFree', nm = '' or (not exists (select 1 from pos.t_users where lower(email) = nm) and not exists (select 1 from auth.users where lower(email) = nm))));
   end if;
-  if u = '/api/public/menu' and m = 'GET' then return pos.pub_menu(q); end if;
-  if u = '/api/public/order' and m = 'POST' then return pos.create_order(b, pos.client_ip()); end if;
+  if u = '/api/public/menu' and m = 'GET' then
+    if not pos.pub_sid(q ->> 's') then return pos.r(404, '{"error":"Toko tidak ditemukan"}'); end if;
+    return pos.pub_menu(q);
+  end if;
+  if u = '/api/public/order' and m = 'POST' then
+    if not pos.pub_sid(b ->> 's') then return pos.r(404, '{"error":"Toko tidak ditemukan"}'); end if;
+    return pos.create_order(b, pos.client_ip());
+  end if;
   mt := regexp_match(u, '^/api/public/order/([A-Za-z0-9_-]{10,40})(/cancel|/paid)?$');
   if mt is not null then
+    perform set_config('pos.sid', coalesce((select store_id from pos.t_co where tok = mt[1]), 0)::text, true);
     select * into r from pos.co where tok = mt[1];
     if r.id is null then return pos.r(404, '{"error":"tidak ada"}'); end if;
     if mt[2] = '/paid' then
@@ -583,6 +690,7 @@ begin
 
   me := pos.auth(t);
   if me.id is null then return pos.r(401, case when pos.kicked(t) then '{"error":"kicked"}'::jsonb when pos.expired(t) then '{"error":"expired"}'::jsonb else '{"error":"unauthorized"}'::jsonb end); end if;
+  perform set_config('pos.sid', coalesce(me.store_id, 0)::text, true);
   own := me.role = 'owner';
   if me.role = 'new' and not (u in ('/api/me', '/api/logout', '/api/me/password', '/api/store/setup')) then
     return pos.r(403, '{"error":"Siapkan toko Anda dulu","code":"no-store"}');
@@ -606,11 +714,11 @@ begin
       if pe <> '' and (length(pe) > 120 or pe !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$') then return pos.r(400, '{"error":"Format alamat email tidak valid"}'); end if;
       if pp <> '' and (pp !~ '^[0-9+() -]{6,20}$' or length(regexp_replace(pp, '\D', '', 'g')) < 6) then return pos.r(400, '{"error":"Nomor telepon tidak valid"}'); end if;
       if pf <> '' and (length(pf) > 110000 or pf !~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$') then return pos.r(400, '{"error":"Foto profil tidak valid atau terlalu besar"}'); end if;
-      if exists (select 1 from pos.users where lower(email) = pe and pe <> '' and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
-      update pos.users set name = pn, email = pe, phone = pp, photo = pf,
+      if exists (select 1 from pos.t_users where lower(email) = pe and pe <> '' and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
+      update pos.t_users set name = pn, email = pe, phone = pp, photo = pf,
         address = case when b ? 'address' then left(btrim(coalesce(b ->> 'address', '')), 300) else address end where id = me.id;
       perform pos.audit(me.id, me.username, 'ubah-profil', '');
-      select * into me from pos.users where id = me.id;
+      select * into me from pos.t_users where id = me.id;
       return pos.r(200, pos.me_self(me));
     end;
   end if;
@@ -626,6 +734,29 @@ begin
     return pos.r(200, jsonb_build_object('token', pos.new_session(me.id), 'me', pos.me_self(me)));
   end if;
 
+  if u = '/api/store/setup' and m = 'POST' then
+    declare v_name text; v_tz text; v_code text; v_id bigint; i int;
+    begin
+      if me.role <> 'new' then return pos.r(409, '{"error":"Toko sudah disiapkan"}'); end if;
+      if not pos.rate('store', 5, interval '1 hour') then return pos.r(429, '{"error":"Terlalu banyak percobaan. Coba lagi nanti."}'); end if;
+      v_name := pos.clean(b ->> 'name', 60);
+      if length(v_name) < 2 then return pos.r(400, '{"error":"Nama toko wajib diisi (min. 2 karakter)"}'); end if;
+      v_tz := coalesce(nullif(btrim(b ->> 'tz'), ''), 'Asia/Jakarta');
+      if not exists (select 1 from pg_timezone_names where name = v_tz) then return pos.r(400, '{"error":"Zona waktu tidak valid"}'); end if;
+      for i in 1..8 loop
+        v_code := (select string_agg(substr('abcdefghjkmnpqrstuvwxyz23456789', 1 + get_byte(extensions.gen_random_bytes(1), 0) % 31, 1), '') from generate_series(1, 8));
+        exit when not exists (select 1 from pos.stores where stores.code = v_code);
+      end loop;
+      insert into pos.stores(code, name, owner_id) values (v_code, v_name, me.id) returning id into v_id;
+      update pos.t_users set store_id = v_id, role = 'owner', single = null where id = me.id;
+      perform set_config('pos.sid', v_id::text, true);
+      insert into pos.doc(id, json, version) values (1, null, 0);
+      insert into pos.meta(k, v) values ('rev', to_jsonb((extract(epoch from now()) * 1000)::bigint)), ('tz', to_jsonb(v_tz));
+      perform pos.audit(me.id, me.username, 'buat-toko', v_name);
+      select * into me from pos.t_users where id = me.id;
+      return pos.r(200, pos.me_self(me));
+    end;
+  end if;
   if u = '/api/me/link-email' and m = 'POST' then
     -- akun lama menambahkan email: klien mendaftar ke Supabase Auth (kind=link) memakai sandi saat ini, lalu server mencocokkan
     if me.auth_id is not null then return pos.r(409, '{"error":"Akun ini sudah punya email"}'); end if;
@@ -633,13 +764,13 @@ begin
     nm := lower(btrim(coalesce(b ->> 'email', '')));
     if nm !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$' or length(nm) > 120 then return pos.r(400, '{"error":"Format alamat email tidak valid"}'); end if;
     if not pos.pw_ok(me, coalesce(b ->> 'password', '')) then return pos.r(403, '{"error":"Sandi saat ini salah"}'); end if;
-    if exists (select 1 from pos.users where lower(email) = nm and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
-    select a.id into v_auth from auth.users a where lower(a.email) = nm and not exists (select 1 from pos.users x where x.auth_id = a.id)
+    if exists (select 1 from pos.t_users where lower(email) = nm and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
+    select a.id into v_auth from auth.users a where lower(a.email) = nm and not exists (select 1 from pos.t_users x where x.auth_id = a.id)
       and a.encrypted_password = extensions.crypt(b ->> 'password', a.encrypted_password);
     if v_auth is null then return pos.r(409, '{"error":"Pendaftaran email belum selesai atau email sudah terdaftar. Coba lagi."}'); end if;
-    update pos.users set auth_id = v_auth, email = nm, pw = '!' where id = me.id;
+    update pos.t_users set auth_id = v_auth, email = nm, pw = '!' where id = me.id;
     perform pos.audit(me.id, me.username, 'tambah-email', nm);
-    select * into me from pos.users where id = me.id;
+    select * into me from pos.t_users where id = me.id;
     return pos.r(200, pos.me_self(me));
   end if;
 
@@ -653,7 +784,7 @@ begin
     un := lower(btrim(coalesce(b ->> 'username', ''))); nm := coalesce(nullif(pos.clean(b ->> 'name', 40), ''), un);
     if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then return pos.r(400, '{"error":"Username 3-24 karakter: huruf kecil, angka, titik, strip, garis bawah"}'); end if;
     if coalesce(jsonb_typeof(b -> 'password'), '') <> 'string' or length(b ->> 'password') < 6 then return pos.r(400, '{"error":"Sandi minimal 6 karakter"}'); end if;
-    if exists (select 1 from pos.users where username = un) then return pos.r(409, '{"error":"Username sudah dipakai"}'); end if;
+    if exists (select 1 from pos.t_users where username = un) then return pos.r(409, '{"error":"Username sudah dipakai"}'); end if;
     nrole := case when b ->> 'role' = 'owner' then 'owner' else 'staff' end;
     nperms := case when nrole = 'owner' then '[]'::jsonb
       else pos.clean_perms(case when b -> 'perms' is null or jsonb_typeof(b -> 'perms') = 'null' then '["co","prn"]'::jsonb else b -> 'perms' end) end;
@@ -734,7 +865,7 @@ begin
     if not pos.can(me, 'set') then return pos.r(403, '{"error":"Hanya owner atau pengguna dengan izin Pengaturan yang boleh membuka/menutup pemesanan"}'); end if;
     insert into pos.meta(k, v) values ('co', jsonb_build_object('on', not (b ? 'on' and b -> 'on' = 'false'::jsonb), 'msg', pos.clean(b ->> 'msg', 200),
       'nt', case when b ? 'nt' then pos.nt_clean(b -> 'nt') else coalesce((select m.v -> 'nt' from pos.meta m where m.k = 'co'), '{}'::jsonb) end))
-      on conflict (k) do update set v = excluded.v;
+      on conflict (store_id, k) do update set v = excluded.v;
     perform pos.bump();
     return pos.r(200, pos.co_set());
   end if;
@@ -859,7 +990,7 @@ drop function if exists pos.push_new();
 create or replace function pos.push_ev(ev text, r pos.co) returns void language plpgsql as $$
 declare cfg jsonb; toks jsonb; nt jsonb; t text; b text;
 begin
-  select v into cfg from pos.meta where k = 'push';
+  select v into cfg from pos.t_meta where store_id = 0 and k = 'push';
   if cfg is null then return; end if;
   select v -> 'nt' -> ev into nt from pos.meta where k = 'co';
   if jsonb_typeof(nt) = 'object' and nt ? 'on' and nt -> 'on' = 'false'::jsonb then return; end if;
@@ -879,7 +1010,7 @@ drop function if exists pos.admin_push(text, text);
 create or replace function pos.admin_push(pu text, pk text) returns text language plpgsql as $$
 begin
   if pu !~ '^https://' or length(coalesce(pk, '')) < 8 then raise exception 'url harus https dan kunci minimal 8 karakter'; end if;
-  insert into pos.meta(k, v) values ('push', jsonb_build_object('url', pu, 'key', pk)) on conflict (k) do update set v = excluded.v;
+  insert into pos.t_meta(store_id, k, v) values (0, 'push', jsonb_build_object('url', pu, 'key', pk)) on conflict (store_id, k) do update set v = excluded.v;
   return 'notifikasi APK aktif';
 end $$;
 
@@ -893,27 +1024,32 @@ grant execute on function public.pos_api(jsonb) to anon, authenticated;
 -- ------------------------------------------------------------ alat admin (hanya dari SQL Editor)
 -- Buat / pulihkan akun owner:   select pos.admin_owner('owner', 'sandi-anda-minimal-6');
 create or replace function pos.admin_owner(nun text, npw text) returns text language plpgsql as $$
-declare u pos.users; un text; vpw text;
+declare u pos.t_users; un text; vpw text;
 begin
   un := lower(btrim(nun)); vpw := npw;
   if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then raise exception 'username 3-24 karakter: huruf kecil/angka . _ -'; end if;
   if length(coalesce(vpw, '')) < 6 or vpw = 'ganti-dengan-sandi-yang-kuat' then raise exception 'sandi minimal 6 karakter dan jangan memakai contoh'; end if;
-  select * into u from pos.users where users.username = un;
+  if not exists (select 1 from pos.stores where id = 1) then
+    insert into pos.stores(id, code, name) overriding system value values (1, substr(md5(random()::text), 1, 8), 'Octocat');
+    perform setval(pg_get_serial_sequence('pos.stores', 'id'), 1);
+    insert into pos.t_doc(store_id, id, json, version) values (1, 1, null, 0);
+    insert into pos.t_meta(store_id, k, v) values (1, 'rev', to_jsonb((extract(epoch from now()) * 1000)::bigint));
+  end if;
+  select * into u from pos.t_users where username = un;
   if u.id is null then
-    insert into pos.users(username, name, role, perms, pw) values (un, initcap(un), 'owner', '[]', extensions.crypt(vpw, extensions.gen_salt('bf', 10)));
-    perform pos.audit(null, null, 'admin', 'owner dibuat: ' || un);
+    insert into pos.t_users(username, name, role, perms, pw, store_id) values (un, initcap(un), 'owner', '[]', extensions.crypt(vpw, extensions.gen_salt('bf', 10)), 1);
     return 'owner dibuat: ' || un;
   end if;
-  update pos.users set role = 'owner', active = true, perms = '[]', pw = extensions.crypt(vpw, extensions.gen_salt('bf', 10)) where id = u.id;
+  update pos.t_users set role = 'owner', active = true, perms = '[]', pw = extensions.crypt(vpw, extensions.gen_salt('bf', 10)), store_id = coalesce(store_id, 1), auth_id = null where id = u.id;
   delete from pos.sessions where uid = u.id;
-  perform pos.audit(null, null, 'admin', 'sandi owner direset: ' || un);
   return 'sandi owner direset: ' || un;
 end $$;
 -- Zona waktu toko (nomor antrean harian):  select pos.admin_tz('Asia/Makassar');
 create or replace function pos.admin_tz(z text) returns text language plpgsql as $$
 begin
   perform now() at time zone z;
-  insert into pos.meta(k, v) values ('tz', to_jsonb(z)) on conflict (k) do update set v = excluded.v;
+  perform set_config('pos.sid', '1', true);
+  insert into pos.meta(k, v) values ('tz', to_jsonb(z)) on conflict (store_id, k) do update set v = excluded.v;
   return 'zona waktu: ' || z;
 end $$;
 revoke all on all functions in schema pos from public, anon, authenticated;
