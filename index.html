@@ -3368,12 +3368,27 @@ function accTap(){go(CL.on&&CL.me?'acc':'set')}
 function openAcct(){go('acc')}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
+  const role=m.role==='owner'?'Owner':'Karyawan';
+  const accountId=m.id||m.userId||m.username||'—';
+  const storeName=(db&&db.set&&db.set.store)||'Belum diatur';
+  const status=(CL.on&&CL.tok)?'Aktif':'Offline';
   box.innerHTML=`<div class="accp">
     <div class="accph"><span class="accav" style="display:flex;align-items:center;justify-content:center;overflow:hidden"><span id="accAv"></span></span>
-      <div class="accwho"><b>${esc(m.name)}</b><small>@${esc(m.username)} · ${m.role==='owner'?'Owner':'Karyawan'}</small></div></div>
-    <div style="margin:16px 0"><label class="fl">Nama lengkap</label><p>${esc(m.name||'—')}</p>
-    <label class="fl">Alamat email</label><p>${esc(m.email||'Belum diisi')}</p>
-    <label class="fl">Nomor telepon</label><p>${esc(m.phone||'Belum diisi')}</p></div>
+      <div class="accwho"><b>${esc(m.name||'Pengguna')}</b><small>@${esc(m.username||'—')} · ${role}</small></div></div>
+    <div style="margin:16px 0">
+      <h3 style="margin:0 0 12px">Profil Pribadi</h3>
+      <label class="fl">Nama lengkap</label><p>${esc(m.name||'—')}</p>
+      <label class="fl">Username</label><p>@${esc(m.username||'—')}</p>
+      <label class="fl">Alamat email</label><p>${esc(m.email||'Belum diisi')}</p>
+      <label class="fl">Nomor telepon</label><p>${esc(m.phone||'Belum diisi')}</p>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
+      <h3 style="margin:0 0 12px">Informasi Akun</h3>
+      <label class="fl">ID pengguna</label><p style="overflow-wrap:anywhere">${esc(accountId)}</p>
+      <label class="fl">Peran</label><p>${esc(role)}</p>
+      <label class="fl">Toko</label><p>${esc(storeName)}</p>
+      <label class="fl">Status akun</label><p>${esc(status)}</p>
+    </div>
     <button class="btn" type="button" onclick="go('editacc')">Edit Profil</button>
     <button class="btn sec" type="button" style="margin-top:8px" onclick="go('pw')">Ubah Password</button>
   </div>`;
