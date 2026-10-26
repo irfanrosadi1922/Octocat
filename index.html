@@ -2430,6 +2430,7 @@ function applyTheme(){
   const t=themePref(),d=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
   const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#ffffff');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
+  const ic=d?'icon-192.png':'icon-light-192.png';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon][href^=icon]').forEach(l=>{if(l.getAttribute('href')!==ic)l.setAttribute('href',ic)});
 }
 function setTheme(v){try{localStorage.setItem('pos_theme',v)}catch(e){}applyTheme();renderTheme()}
 function renderTheme(){
@@ -2439,6 +2440,7 @@ function renderTheme(){
 `;
 }
 try{if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(themePref()==='auto')applyTheme()})}catch(e){}
+applyTheme();  /* sekali saat awal: menyamakan favicon/apple-touch dengan tema (skrip di <head> berjalan sebelum tag ikon ada) */
 function setupPwa(){
   try{
     if(globalThis.POS_CLOUD)return;
