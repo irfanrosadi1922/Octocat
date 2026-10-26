@@ -3223,16 +3223,16 @@ function coStart(){
 }
 
 /* ---------- akun, peran, izin ---------- */
-const PERM_LBL={co:'Pesanan Online',inv:'Inventori (lihat & ubah stok)',hist:'Riwayat Penjualan',prn:'Printer',set:'Pengaturan & Desain Struk'};
-const PERM_SHORT={co:'Pesanan Online',inv:'Inventori',hist:'Riwayat',prn:'Printer',set:'Pengaturan'};
-const VIEW_PERM={pos:null,rep:'hist',inv:'inv',hist:'hist',rc:'set',prn:'prn',set:'set',co:'co',usr:'#owner'};
+const PERM_LBL={co:'Pesanan Online',inv:'Inventori (lihat & ubah stok)',hist:'Riwayat Penjualan',prn:'Printer',set:'Pengaturan & Desain Struk',att:'Absensi'};
+const PERM_SHORT={co:'Pesanan Online',inv:'Inventori',hist:'Riwayat',prn:'Printer',set:'Pengaturan',att:'Absensi'};
+const VIEW_PERM={pos:null,rep:'hist',inv:'inv',hist:'hist',rc:'set',prn:'prn',set:'set',co:'co',att:'att',usr:'#owner'};
 CL.me=null;try{CL.me=JSON.parse(localStorage.getItem('pos_me')||'null')}catch(e){}
 function setMe(m){CL.me=m||null;try{if(m)localStorage.setItem('pos_me',JSON.stringify(m));else localStorage.removeItem('pos_me')}catch(e){}}
 /* tanpa server (mode offline/standalone) tidak ada akun: semua terbuka */
 function isOwner(){return !CL.on||(!!CL.me&&CL.me.role==='owner')}
 function can(p){return !CL.on||(!!CL.me&&(CL.me.role==='owner'||(CL.me.perms||[]).includes(p)))}
 function canView(v){
-  if(v==='att')return !!CL.on&&!!CL.me;
+  if(v==='att')return CL.on&&can('att');
   const p=VIEW_PERM[v];if(p===undefined||p===null)return true;
   if(v==='co'||v==='usr')return CL.on&&(p==='#owner'?isOwner():can(p));
   return p==='#owner'?isOwner():can(p);
@@ -3413,7 +3413,7 @@ function renderEditAccPage(){
   box.innerHTML=`<div class="accp">
   <div class="accph"><button class="accav" type="button" onclick="$('#accFile').click()" aria-label="Ganti foto profil"><span id="accAv"></span><i class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i></button>
     <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
-    <div class="accwho"><b id="accNm">${esc(m.name)}</b><small>@${esc(m.username)} · ${m.role==='owner'?'Owner':'Karyawan'}</small>
+    <div class="accwho"><b id="accNm">${esc(m.name)}</b><small>@${esc(m.username)} · ${esc(usrRoleLabel(m.role))}</small>
     <button class="lnk" type="button" id="accRm" onclick="accPhotoDel()">Hapus foto</button></div></div>
   <label class="fl">Nama lengkap</label><input class="fi" id="accName" maxlength="60" value="${esc(m.name)}" autocomplete="name">
   <label class="fl">Alamat email</label><input class="fi" id="accEmail" type="email" inputmode="email" maxlength="120" placeholder="nama@contoh.com" value="${esc(m.email||'')}" autocomplete="email">
@@ -3831,7 +3831,7 @@ async function renderUsr(){
   const me=CL.me?CL.me.id:0;
   el.innerHTML=USR.list.map(u=>`<div class="coc usr ${u.active?'':'cancelled'}" style="border-left-color:${u.role==='owner'?'var(--b)':'#d4d4d4'}">
     <div class="coh"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="cn">${esc(u.name)}</span><span class="ct">@${esc(u.username)}${u.id===me?' · Anda':''}</span><time>${esc(fmtLast(u.lastLogin))}</time></div>
-    <div class="cof" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="pst ${u.role==='owner'?'w':'ok'}">${esc(u.role==='owner'?'Owner':u.role==='staff'?'Staf':u.role==='kasir'?'Kasir':u.role==='server'?'Server':u.role==='kitchen'?'Kitchen':u.role)}</span>${u.active?'':'<span class="pst">nonaktif</span>'}${u.single?'<span class="pst">1 perangkat</span>':''}
+    <div class="cof" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="pst ${u.role==='owner'?'w':'ok'}">${esc(usrRoleLabel(u.role))}</span>${u.active?'':'<span class="pst">nonaktif</span>'}${u.single?'<span class="pst">1 perangkat</span>':''}
       ${u.role==='owner'?'<span class="pchip on">Semua fitur</span>':'<span class="pchip on">Kasir</span>'+Object.keys(PERM_SHORT).map(p=>`<span class="pchip ${u.perms.includes(p)?'on':''}">${PERM_SHORT[p]}</span>`).join('')}</div>
     <div class="cob"><button class="btn sec" onclick="usrForm(${u.id})"><i class="ic" data-ic="edit"></i>Ubah</button><button class="btn sec" onclick="usrPw(${u.id})"><i class="ic" data-ic="key"></i>Reset sandi</button>
       ${u.id!==me?`<button class="btn sec" onclick="usrToggle(${u.id})">${u.active?'<i class="ic" data-ic="pause"></i>Nonaktifkan':'<i class="ic" data-ic="play"></i>Aktifkan'}</button><button class="btn sec" onclick="usrDel(${u.id})"><i class="ic" data-ic="trash"></i>Hapus</button>`:''}</div></div>`).join('')||'<div class="empty">Belum ada pengguna</div>';
@@ -3853,6 +3853,12 @@ function usrLogDraw(){
   if(l.length)el.innerHTML+=`<div class="cob" style="align-items:center;justify-content:space-between;gap:8px;margin-top:10px"><span style="color:var(--mu);font-size:12px">${start+1}–${Math.min(start+ULOG.size,l.length)} dari ${l.length} aktivitas</span><span style="display:flex;gap:6px"><button class="btn sec sm" onclick="usrLogPage(${ULOG.page-1})" ${ULOG.page===0?'disabled':''}>Sebelumnya</button><button class="btn sec sm" onclick="usrLogPage(${ULOG.page+1})" ${ULOG.page>=pages-1?'disabled':''}>Berikutnya</button></span></div>`;
 }
 function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl"><input type="checkbox" class="upm" value="${p}" ${sel.includes(p)?'checked':''}><span>${PERM_LBL[p]}</span></label>`).join('')}
+function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[];return [...new Set(['Owner','Kasir','Server','Kitchen','Staf',...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
+function usrRoleKey(s){return String(s||'').trim().toLowerCase()}
+function usrRoleLabel(s){const k=usrRoleKey(s);if(k==='owner')return 'Owner';if(k==='staff'||k==='staf')return 'Staf';const b={kasir:'Kasir',server:'Server',kitchen:'Kitchen'};return b[k]||String(s||'').replace(/(^|\\s)\\S/g,x=>x.toUpperCase())}
+function usrRoleOptions(selected){return usrRoleList().map(r=>{const v=usrRoleKey(r)==='staf'?'staff':usrRoleKey(r);return `<option value="${esc(v)}" ${v===selected?'selected':''}>${esc(usrRoleLabel(r))}</option>`}).join('')}
+function usrAddRole(){const i=$('#uNewRole'),e=$('#uRoleErr'),v=(i.value||'').trim().replace(/\\s+/g,' ');if(!v){e.textContent='Isi nama jabatan dulu';return}if(v.length>32){e.textContent='Maksimal 32 karakter';return}if(['owner','new'].includes(usrRoleKey(v))){e.textContent='Nama ini khusus sistem';return}const roles=usrRoleList();if(roles.some(x=>usrRoleKey(x)===usrRoleKey(v))){e.textContent='Jabatan sudah ada';return}if(roles.length>=30){e.textContent='Maksimal 30 jabatan';return}db.set.staffRoles=[...roles,v];save();const sel=$('#uRole');sel.innerHTML=usrRoleOptions(usrRoleKey(v));i.value='';e.textContent='Jabatan disimpan';usrRoleSw()}
+
 function usrRoleSw(){const o=$('#uRole').value.trim().toLowerCase()==='owner';const sg=$('#uSingle');if(sg&&sg.dataset.t!=='1')sg.checked=!o;$('#uPerms').style.display=o?'none':''}
 function usrForm(id){
   const u=id?USR.list.find(x=>x.id===id):null;
@@ -3861,9 +3867,9 @@ function usrForm(id){
   <label class="fl">Username (untuk login)</label><input class="fi" id="uUser" maxlength="24" value="${esc(u?u.username:'')}" ${u?'disabled':''} autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="huruf kecil/angka, mis. siti">
   ${u?'':`<label class="fl">Kata sandi awal</label><input class="fi" id="uPw" type="text" autocomplete="off" placeholder="minimal 6 karakter">`}
   <label class="fl">Status / Jabatan</label>
-  <input class="fi" id="uRole" list="uRoleOptions" maxlength="32" onchange="usrRoleSw()" value="${esc(u?(u.role==='staff'?'Staf':u.role==='kasir'?'Kasir':u.role==='server'?'Server':u.role==='kitchen'?'Kitchen':u.role==='owner'?'owner':u.role):'Staf')}" ${u&&u.id===(CL.me||{}).id?'disabled':''} placeholder="Mis. Kasir, Server, Supervisor">
-  <datalist id="uRoleOptions"><option value="Owner"><option value="Kasir"><option value="Server"><option value="Kitchen"><option value="Staf"></datalist>
-  <p class="hint">Ketik status apa pun sesuai kebutuhan. Status selain Owner tidak mendapat akses penuh otomatis.</p>
+  <select class="fi" id="uRole" onchange="usrRoleSw()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
+  <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><p class="hint">Tambah jabatan khusus untuk dipilih di sini.</p><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
+  <p class="hint">Owner memiliki akses penuh. Jabatan lain hanya mendapat izin yang dicentang.</p>
   <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?u.perms:(['kasir','server','kitchen'].includes('staff')?[]:[]))}</div>
   <label class="tgl" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span>Hanya boleh login di satu perangkat</span></label>
   <p class="hint" id="uErr" style="color:var(--bad);min-height:16px"></p>
@@ -3871,7 +3877,7 @@ function usrForm(id){
   usrRoleSw();
 }
 async function usrSave(id){
-  const rawRole=$('#uRole').value.trim();const role=rawRole.toLowerCase()==='owner'?'owner':({'kasir':'kasir','server':'server','kitchen':'kitchen','staf':'staff','staff':'staff'}[rawRole.toLowerCase()]||rawRole);const body={name:$('#uName').value.trim(),role,perms:[...document.querySelectorAll('.upm:checked')].map(x=>x.value),single:$('#uSingle').checked};
+  const rawRole=$('#uRole').value.trim();const role=usrRoleKey(rawRole)==='owner'?'owner':usrRoleKey(rawRole)==='staf'?'staff':usrRoleKey(rawRole);const body={name:$('#uName').value.trim(),role,perms:[...document.querySelectorAll('.upm:checked')].map(x=>x.value),single:$('#uSingle').checked};
   if(!id){body.username=$('#uUser').value.trim().toLowerCase();body.password=$('#uPw').value}
   if(!body.name){$('#uErr').textContent='Nama wajib diisi';return}
   try{
