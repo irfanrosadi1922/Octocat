@@ -24,3 +24,5 @@ Setelah memperbarui kode, jalankan ulang `setup.sql` di Supabase SQL Editor.
 
 Di halaman **Pengguna**, tombol **Jabatan** membuka panel untuk menambah jabatan baru, mengubah namanya (karyawan yang memakainya ikut diperbarui),
 menghapusnya dari daftar, dan mengatur izin awal tiap jabatan, termasuk Absensi. Pengaturan ini berlaku per toko dan hanya bisa diubah owner.
+
+Semua jabatan kecuali Owner dan Staf bisa dihapus dari daftar supaya tidak terlalu banyak. Jabatan bawaan yang dihapus hanya disembunyikan: muncul di blok "Jabatan yang disembunyikan" di bawah panel dan bisa dipulihkan satu per satu atau sekaligus, dengan izin awal yang sama. Karyawan yang sudah memakai jabatan itu tidak berubah. Tidak ada perubahan skema, jadi `setup.sql` tidak perlu dijalankan ulang.

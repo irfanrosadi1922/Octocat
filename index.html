@@ -3856,7 +3856,9 @@ function usrLogDraw(){
   if(l.length)el.innerHTML+=`<div class="cob" style="align-items:center;justify-content:space-between;gap:8px;margin-top:10px"><span style="color:var(--mu);font-size:12px">${start+1}–${Math.min(start+ULOG.size,l.length)} dari ${l.length} aktivitas</span><span style="display:flex;gap:6px"><button class="btn sec sm" onclick="usrLogPage(${ULOG.page-1})" ${ULOG.page===0?'disabled':''}>Sebelumnya</button><button class="btn sec sm" onclick="usrLogPage(${ULOG.page+1})" ${ULOG.page>=pages-1?'disabled':''}>Berikutnya</button></span></div>`;
 }
 function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl"><input type="checkbox" class="upm" value="${p}" ${sel.includes(p)?'checked':''}><span>${PERM_LBL[p]}</span></label>`).join('')}
-function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[];return [...new Set(['Owner','Kasir','Pelayan','Koki','Barista','Manajer','Admin Gudang','Server','Kitchen','Staf',...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
+/* jabatan bawaan yang disembunyikan owner (per toko, db.set.hiddenRoles = array kunci). Owner dan Staf tidak bisa disembunyikan. */
+function jbHidden(){return Array.isArray(db.set.hiddenRoles)?db.set.hiddenRoles:[]}
+function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[],hid=jbHidden();return [...new Set(['Owner',...JB_BASE.filter(r=>jbKey(r)==='staff'||!hid.includes(jbKey(r))),...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
 /* izin awal tiap jabatan bawaan; terisi otomatis saat jabatan dipilih, tetap bisa diubah per karyawan */
 const ROLE_PERMS={kasir:['co','prn'],pelayan:['co'],koki:['co'],barista:['co','prn'],manajer:['co','inv','hist','prn','set','att'],'admin gudang':['inv'],server:['co'],kitchen:['co'],staff:['co','prn'],staf:['co','prn']};
 function rolePermsOf(k){const o=db.set.rolePerms&&db.set.rolePerms[k];return Array.isArray(o)?o:ROLE_PERMS[k]}
@@ -3870,10 +3872,14 @@ function jbOpen(msg,bad){
     const k=jbKey(r),isC=cus.some(x=>usrRoleKey(x)===usrRoleKey(r)),n=jbCount(k),pm=rolePermsOf(k)||['co'];
     return `<div class="coc" style="margin:8px 0"><div class="coh" style="flex-wrap:wrap;gap:6px">${isC?`<input class="fi" style="flex:1 1 150px;min-width:0;margin:0" maxlength="32" value="${esc(usrRoleLabel(r))}" aria-label="Nama jabatan" onchange="jbRename('${esc(k)}',this.value)">`:`<span class="cn">${esc(usrRoleLabel(r))}</span>`}<span class="ct">${isC?'buatan sendiri':'bawaan'} · ${n} karyawan</span></div>
     <div style="margin-top:6px">${Object.keys(PERM_LBL).map(pk=>`<label class="tgl"><input type="checkbox" ${pm.includes(pk)?'checked':''} onchange="jbPerm('${esc(k)}','${pk}',this.checked)"><span>${PERM_LBL[pk]}</span></label>`).join('')}</div>
-    ${isC?`<div class="cob"><button class="btn sec" onclick="jbDel('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:''}</div>`}).join('');
+    ${isC?`<div class="cob"><button class="btn sec" onclick="jbDel('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:(k!=='staff'?`<div class="cob"><button class="btn sec" onclick="jbHide('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:'')}</div>`}).join('');
+  const hidL=JB_BASE.filter(r=>jbHidden().includes(jbKey(r))),
+  hid=hidL.length?`<div class="coc" style="margin:12px 0"><div class="coh"><span class="cn">Jabatan yang disembunyikan</span><span class="ct">${hidL.length}</span></div>
+    ${hidL.map(r=>`<div class="dbs"><span>${esc(usrRoleLabel(r))}</span><button class="btn sec sm" style="width:auto;margin:0" onclick="jbRestore('${esc(jbKey(r))}')">Pulihkan</button></div>`).join('')}
+    <div class="cob"><button class="btn sec" onclick="jbRestoreAll()">Pulihkan semua</button></div></div>`:'';
   openModal(`<h3>Kelola Jabatan</h3><p class="hint">Izin di bawah dipakai sebagai izin awal saat jabatan dipilih untuk karyawan baru. Izin tiap karyawan tetap bisa diubah sendiri.</p>
   <div style="display:flex;gap:8px"><input class="fi" id="jbNew" maxlength="32" placeholder="Jabatan baru, mis. Kepala Dapur" style="min-width:0;flex:1;margin:0"><button class="btn sm" style="width:auto;margin:0" onclick="jbAdd()">Tambah</button></div>
-  <p class="hint" id="jbMsg" style="min-height:16px;${bad?'color:var(--bad)':''}">${esc(msg||'')}</p>${rows}<button class="btn sec" onclick="closeModal()">Tutup</button>`);
+  <p class="hint" id="jbMsg" style="min-height:16px;${bad?'color:var(--bad)':''}">${esc(msg||'')}</p>${rows}${hid}<button class="btn sec" onclick="closeModal()">Tutup</button>`);
   if(!msg&&$('#jbNew'))$('#jbNew').focus();
 }
 function jbCheck(v,except){
@@ -3883,6 +3889,7 @@ function jbCheck(v,except){
   return[null,v]}
 function jbAdd(){
   const [er,v]=jbCheck($('#jbNew').value);if(er)return jbOpen(er,true);
+  if(jbHidden().includes(jbKey(v))&&JB_BASE.some(r=>jbKey(r)===jbKey(v)))return jbRestore(jbKey(v));
   if(usrRoleList().length>=30)return jbOpen('Maksimal 30 jabatan',true);
   db.set.staffRoles=[...usrRoleCustom(),v];db.set.rolePerms=Object.assign({},db.set.rolePerms,{[jbKey(v)]:['co']});save();jbOpen('Jabatan "'+v+'" ditambahkan. Atur izin awalnya di bawah.');
 }
@@ -3898,6 +3905,13 @@ async function jbRename(k,nv){
   const rp=Object.assign({},db.set.rolePerms);if(rp[k]){rp[nk]=rp[k];if(nk!==k)delete rp[k]}db.set.rolePerms=rp;save();
   await renderUsr();jbOpen('Nama jabatan diubah'+(users.length?' ('+users.length+' karyawan ikut diperbarui)':''));
 }
+function jbHide(k){
+  if(k==='staff'||k==='owner'||!JB_BASE.some(r=>jbKey(r)===k))return;
+  const n=jbCount(k);db.set.hiddenRoles=[...new Set([...jbHidden(),k])];save();   // izin awal di rolePerms sengaja dibiarkan agar pulih sama
+  jbOpen('Jabatan '+usrRoleLabel(k)+' dihapus dari daftar'+(n?' ('+n+' karyawan tetap memakainya)':''));
+}
+function jbRestore(k){db.set.hiddenRoles=jbHidden().filter(x=>x!==k);save();jbOpen('Jabatan '+usrRoleLabel(k)+' dipulihkan');}
+function jbRestoreAll(){const n=jbHidden().length;db.set.hiddenRoles=[];save();jbOpen(n+' jabatan dipulihkan');}
 function jbDel(k){
   const n=jbCount(k);
   db.set.staffRoles=usrRoleCustom().filter(x=>usrRoleKey(x)!==k);const rp=Object.assign({},db.set.rolePerms);delete rp[k];db.set.rolePerms=rp;save();
