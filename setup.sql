@@ -234,7 +234,7 @@ create or replace function pos.clean_perms(j jsonb) returns jsonb language sql i
     where x in ('co','inv','hist','prn','set','att') group by x) s $;
 
 create or replace function pos.perms_of(u pos.users) returns jsonb language sql immutable as
-$$ select case when u.role = 'owner' then '["co","inv","hist","prn","set"]'::jsonb else pos.clean_perms(u.perms) end $$;
+$$ select case when u.role = 'owner' then '["co","inv","hist","prn","set","att"]'::jsonb else pos.clean_perms(u.perms) end $$;
 
 create or replace function pos.can(u pos.users, k text) returns boolean language sql immutable as
 $$ select u.role = 'owner' or pos.perms_of(u) ? k $$;
@@ -776,7 +776,7 @@ begin
 
   if u = '/api/users' and m = 'GET' then
     if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
-    return pos.r(200, jsonb_build_object('perms', '["co","inv","hist","prn","set"]'::jsonb,
+    return pos.r(200, jsonb_build_object('perms', '["co","inv","hist","prn","set","att"]'::jsonb,
       'users', coalesce((select jsonb_agg(pos.me_view(uu) order by (uu.role = 'owner') desc, uu.username) from pos.users uu), '[]')));
   end if;
   if u = '/api/users' and m = 'POST' then
