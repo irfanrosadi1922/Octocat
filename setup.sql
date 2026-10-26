@@ -10,10 +10,13 @@ create schema if not exists pos;
 
 -- ---- multi-toko: tabel data diganti nama menjadi pos.t_* dan diberi VIEW bernama lama yang otomatis hanya menampilkan
 -- data toko milik sesi (pos.sid()). Seluruh fungsi di bawah memakai nama lama, jadi tak bisa melihat data toko lain.
-do $$ declare f record; t text;
+do $$ declare f text; t text; sigs text[];
 begin
-  for f in select p.oid::regprocedure as sig from pg_proc p where p.pronamespace = 'pos'::regnamespace loop
-    execute 'drop function if exists ' || f.sig || ' cascade';
+  -- daftar tanda tangan fungsi diambil SEKALIGUS di awal: drop ... cascade bisa ikut menghapus fungsi lain,
+  -- dan oid yang sudah hilang tercetak sebagai angka (membuat setup.sql gagal saat dijalankan ulang)
+  select coalesce(array_agg(p.oid::regprocedure::text), '{}') into sigs from pg_proc p where p.pronamespace = 'pos'::regnamespace;
+  foreach f in array sigs loop
+    execute 'drop function if exists ' || f || ' cascade';
   end loop;
   foreach t in array array['users', 'audit', 'doc', 'snapshots', 'co', 'att', 'meta', 'push_tokens'] loop
     if to_regclass('pos.' || t) is not null and to_regclass('pos.t_' || t) is null
@@ -231,7 +234,7 @@ end $$;
 create or replace function pos.clean_perms(j jsonb) returns jsonb language sql immutable as $$
   select coalesce(jsonb_agg(x order by o), '[]'::jsonb) from (
     select x, min(o) o from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end) with ordinality t(x, o)
-    where x in ('co','inv','hist','prn','set','att') group by x) s $;
+    where x in ('co','inv','hist','prn','set','att') group by x) s $$;
 
 create or replace function pos.perms_of(u pos.users) returns jsonb language sql immutable as
 $$ select case when u.role = 'owner' then '["co","inv","hist","prn","set","att"]'::jsonb else pos.clean_perms(u.perms) end $$;

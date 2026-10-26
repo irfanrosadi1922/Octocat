@@ -3367,7 +3367,7 @@ function accTap(){go(CL.on&&CL.me?'acc':'set')}
 function openAcct(){go('acc')}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
-  const role=m.role==='owner'?'Owner':'Karyawan';
+  const role=usrRoleLabel(m.role);
   const localStore=String(db&&db.set&&db.set.store||'').trim();
   const storeName=localStore&&localStore!=='Ordela'?localStore:'Belum diatur';
   const status=(CL.on&&CL.tok)?'Aktif':'Offline';
@@ -3853,11 +3853,25 @@ function usrLogDraw(){
   if(l.length)el.innerHTML+=`<div class="cob" style="align-items:center;justify-content:space-between;gap:8px;margin-top:10px"><span style="color:var(--mu);font-size:12px">${start+1}–${Math.min(start+ULOG.size,l.length)} dari ${l.length} aktivitas</span><span style="display:flex;gap:6px"><button class="btn sec sm" onclick="usrLogPage(${ULOG.page-1})" ${ULOG.page===0?'disabled':''}>Sebelumnya</button><button class="btn sec sm" onclick="usrLogPage(${ULOG.page+1})" ${ULOG.page>=pages-1?'disabled':''}>Berikutnya</button></span></div>`;
 }
 function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl"><input type="checkbox" class="upm" value="${p}" ${sel.includes(p)?'checked':''}><span>${PERM_LBL[p]}</span></label>`).join('')}
-function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[];return [...new Set(['Owner','Kasir','Server','Kitchen','Staf',...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
+function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[];return [...new Set(['Owner','Kasir','Pelayan','Koki','Barista','Manajer','Admin Gudang','Server','Kitchen','Staf',...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
+/* izin awal tiap jabatan bawaan; terisi otomatis saat jabatan dipilih, tetap bisa diubah per karyawan */
+const ROLE_PERMS={kasir:['co','prn'],pelayan:['co'],koki:['co'],barista:['co','prn'],manajer:['co','inv','hist','prn','set','att'],'admin gudang':['inv'],server:['co'],kitchen:['co'],staff:['co','prn'],staf:['co','prn']};
+function usrRolePick(){
+  usrRoleSw();const k=usrRoleKey($('#uRole').value),pr=ROLE_PERMS[k];
+  if(pr&&k!=='owner')document.querySelectorAll('.upm').forEach(x=>x.checked=pr.includes(x.value));
+  usrRoleDelShow();
+}
+function usrRoleCustom(){return Array.isArray(db.set.staffRoles)?db.set.staffRoles:[]}
+function usrRoleDelShow(){const b=$('#uRoleDel');if(!b)return;const k=usrRoleKey($('#uRole').value);b.style.display=usrRoleCustom().some(x=>usrRoleKey(x)===k)?'':'none'}
+function usrRoleDel(){
+  const k=usrRoleKey($('#uRole').value);if(!usrRoleCustom().some(x=>usrRoleKey(x)===k))return;
+  db.set.staffRoles=usrRoleCustom().filter(x=>usrRoleKey(x)!==k);save();
+  $('#uRole').innerHTML=usrRoleOptions('staff');usrRolePick();$('#uRoleErr').textContent='Jabatan dihapus dari daftar (karyawan lama tetap memakainya)';
+}
 function usrRoleKey(s){return String(s||'').trim().toLowerCase()}
-function usrRoleLabel(s){const k=usrRoleKey(s);if(k==='owner')return 'Owner';if(k==='staff'||k==='staf')return 'Staf';const b={kasir:'Kasir',server:'Server',kitchen:'Kitchen'};return b[k]||String(s||'').replace(/(^|\\s)\\S/g,x=>x.toUpperCase())}
-function usrRoleOptions(selected){return usrRoleList().map(r=>{const v=usrRoleKey(r)==='staf'?'staff':usrRoleKey(r);return `<option value="${esc(v)}" ${v===selected?'selected':''}>${esc(usrRoleLabel(r))}</option>`}).join('')}
-function usrAddRole(){const i=$('#uNewRole'),e=$('#uRoleErr'),v=(i.value||'').trim().replace(/\\s+/g,' ');if(!v){e.textContent='Isi nama jabatan dulu';return}if(v.length>32){e.textContent='Maksimal 32 karakter';return}if(['owner','new'].includes(usrRoleKey(v))){e.textContent='Nama ini khusus sistem';return}const roles=usrRoleList();if(roles.some(x=>usrRoleKey(x)===usrRoleKey(v))){e.textContent='Jabatan sudah ada';return}if(roles.length>=30){e.textContent='Maksimal 30 jabatan';return}db.set.staffRoles=[...roles,v];save();const sel=$('#uRole');sel.innerHTML=usrRoleOptions(usrRoleKey(v));i.value='';e.textContent='Jabatan disimpan';usrRoleSw()}
+function usrRoleLabel(s){const k=usrRoleKey(s);if(k==='owner')return 'Owner';if(k==='staff'||k==='staf')return 'Staf';const b={kasir:'Kasir',server:'Server',kitchen:'Kitchen'};return b[k]||String(s||'').replace(/(^|\s)\S/g,x=>x.toUpperCase())}
+function usrRoleOptions(selected){const L=usrRoleList();if(selected&&!L.some(r=>(usrRoleKey(r)==='staf'?'staff':usrRoleKey(r))===selected))L.push(selected);return L.map(r=>{const v=usrRoleKey(r)==='staf'?'staff':usrRoleKey(r);return `<option value="${esc(v)}" ${v===selected?'selected':''}>${esc(usrRoleLabel(r))}</option>`}).join('')}
+function usrAddRole(){const i=$('#uNewRole'),e=$('#uRoleErr'),v=(i.value||'').trim().replace(/\s+/g,' ');if(!v){e.textContent='Isi nama jabatan dulu';return}if(v.length>32){e.textContent='Maksimal 32 karakter';return}if(['owner','new'].includes(usrRoleKey(v))){e.textContent='Nama ini khusus sistem';return}const roles=usrRoleList();if(roles.some(x=>usrRoleKey(x)===usrRoleKey(v))){e.textContent='Jabatan sudah ada';return}if(roles.length>=30){e.textContent='Maksimal 30 jabatan';return}db.set.staffRoles=[...roles,v];save();const sel=$('#uRole');sel.innerHTML=usrRoleOptions(usrRoleKey(v));i.value='';e.textContent='Jabatan disimpan';usrRolePick()}
 
 function usrRoleSw(){const o=$('#uRole').value.trim().toLowerCase()==='owner';const sg=$('#uSingle');if(sg&&sg.dataset.t!=='1')sg.checked=!o;$('#uPerms').style.display=o?'none':''}
 function usrForm(id){
@@ -3867,14 +3881,15 @@ function usrForm(id){
   <label class="fl">Username (untuk login)</label><input class="fi" id="uUser" maxlength="24" value="${esc(u?u.username:'')}" ${u?'disabled':''} autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="huruf kecil/angka, mis. siti">
   ${u?'':`<label class="fl">Kata sandi awal</label><input class="fi" id="uPw" type="text" autocomplete="off" placeholder="minimal 6 karakter">`}
   <label class="fl">Status / Jabatan</label>
-  <select class="fi" id="uRole" onchange="usrRoleSw()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
+  <select class="fi" id="uRole" onchange="usrRolePick()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
+  <button type="button" class="btn sec" id="uRoleDel" style="display:none;margin-top:6px" onclick="usrRoleDel()"><i class="ic" data-ic="trash"></i>Hapus jabatan ini dari daftar</button>
   <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><p class="hint">Tambah jabatan khusus untuk dipilih di sini.</p><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
   <p class="hint">Owner memiliki akses penuh. Jabatan lain hanya mendapat izin yang dicentang.</p>
   <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
   <label class="tgl" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span>Hanya boleh login di satu perangkat</span></label>
   <p class="hint" id="uErr" style="color:var(--bad);min-height:16px"></p>
   <button class="btn" onclick="usrSave(${id||0})">Simpan</button><button class="btn sec" onclick="closeModal()">Batal</button>`);
-  usrRoleSw();
+  usrRoleSw();usrRoleDelShow();
 }
 async function usrSave(id){
   const rawRole=$('#uRole').value.trim();const role=usrRoleKey(rawRole)==='owner'?'owner':usrRoleKey(rawRole)==='staf'?'staff':usrRoleKey(rawRole);const body={name:$('#uName').value.trim(),role,perms:[...document.querySelectorAll('.upm:checked')].map(x=>x.value),single:$('#uSingle').checked};

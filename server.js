@@ -56,7 +56,7 @@ async function checkPw(user, pw) { // selalu menjalankan scrypt agar waktu respo
   const a = Buffer.from(h, 'hex'), b = Buffer.from(user.hash, 'hex');
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
-const PERMS = ['co', 'inv', 'hist', 'prn', 'set'];
+const PERMS = ['co', 'inv', 'hist', 'prn', 'set', 'att'];
 const DEFAULT_STAFF_PERMS = ['co', 'prn'];
 const cleanPerms = (a) => [...new Set((Array.isArray(a) ? a : []).filter((x) => PERMS.includes(x)))];
 const userPerms = (u) => (u.role === 'owner' ? PERMS.slice() : cleanPerms(JSON.parse(u.perms || '[]')));
@@ -781,6 +781,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     /* ----- absensi ----- */
+    if (p.startsWith('/api/att') && !can(me, 'att')) return json(res, 403, { error: 'Anda tidak punya izin Absensi' });
     if (p === '/api/att' && req.method === 'POST') {
       const b = await rd(260 * 1024); if (!b) return json(res, 400, { error: 'bad json' });
       const r = attDo(me, b);

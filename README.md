@@ -9,3 +9,13 @@ Aplikasi POS Ordela
 3. Authentication → Sign In / Providers → Email: biarkan **Confirm email** menyala (verifikasi boleh nanti, login tidak diblokir), set panjang sandi minimal 8.
 4. Authentication → Emails: sesuaikan template *Confirm signup* dan *Reset password*; pasang SMTP sendiri untuk pengiriman nyata (SMTP bawaan sangat terbatas).
 5. Opsional: aktifkan CAPTCHA di Authentication → Attack Protection (pengaturan dashboard, tanpa kode).
+
+## Jabatan karyawan & izin Absensi
+
+Di menu **Pengguna**, owner memilih **jabatan** karyawan dari daftar (Kasir, Pelayan, Koki, Barista, Manajer, Admin Gudang, dll.) atau menambah
+jabatan sendiri lewat **Kelola Jabatan** (maks. 32 karakter). Jabatan buatan sendiri tersimpan per toko, muncul di pilihan berikutnya, dan bisa
+dihapus dari daftar oleh owner (jabatan bawaan tidak bisa dihapus; karyawan lama tetap memakai jabatannya). Memilih jabatan mengisi izin awal
+otomatis, dan izin tetap bisa diubah per karyawan.
+
+Izin **Absensi** diatur per karyawan (default mati): bila mati, menu Absensi disembunyikan dan `/api/att` menjawab 403.
+Setelah memperbarui kode, jalankan ulang `setup.sql` di Supabase SQL Editor.
