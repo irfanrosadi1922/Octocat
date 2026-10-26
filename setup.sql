@@ -51,7 +51,7 @@ alter table pos.t_users add column if not exists address text not null default '
 do $$ begin
   alter table pos.t_users drop constraint if exists users_role_check;
   alter table pos.t_users drop constraint if exists t_users_role_check;
-  alter table pos.t_users add constraint users_role_check check (role in ('owner', 'staff', 'new'));
+  alter table pos.t_users add constraint users_role_check check (role = 'new' or length(btrim(role)) between 1 and 32);
 end $$;
 create unique index if not exists users_auth_id_u on pos.t_users(auth_id) where auth_id is not null;
 do $$ begin
@@ -231,7 +231,7 @@ end $$;
 create or replace function pos.clean_perms(j jsonb) returns jsonb language sql immutable as $$
   select coalesce(jsonb_agg(x order by o), '[]'::jsonb) from (
     select x, min(o) o from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end) with ordinality t(x, o)
-    where x in ('co','inv','hist','prn','set') group by x) s $$;
+    where x in ('co','inv','hist','prn','set','att') group by x) s $;
 
 create or replace function pos.perms_of(u pos.users) returns jsonb language sql immutable as
 $$ select case when u.role = 'owner' then '["co","inv","hist","prn","set"]'::jsonb else pos.clean_perms(u.perms) end $$;
@@ -785,7 +785,7 @@ begin
     if un !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then return pos.r(400, '{"error":"Username 3-24 karakter: huruf kecil, angka, titik, strip, garis bawah"}'); end if;
     if coalesce(jsonb_typeof(b -> 'password'), '') <> 'string' or length(b ->> 'password') < 6 then return pos.r(400, '{"error":"Sandi minimal 6 karakter"}'); end if;
     if exists (select 1 from pos.t_users where username = un) then return pos.r(409, '{"error":"Username sudah dipakai"}'); end if;
-    nrole := case when b ->> 'role' = 'owner' then 'owner' else 'staff' end;
+    nrole := case when lower(btrim(coalesce(b ->> 'role', ''))) = 'owner' then 'owner' else left(btrim(coalesce(b ->> 'role', 'staff')), 32) end;
     nperms := case when nrole = 'owner' then '[]'::jsonb
       else pos.clean_perms(case when b -> 'perms' is null or jsonb_typeof(b -> 'perms') = 'null' then '["co","prn"]'::jsonb else b -> 'perms' end) end;
     insert into pos.users(username, name, role, perms, pw, single) values (un, nm, nrole, nperms, extensions.crypt(b ->> 'password', extensions.gen_salt('bf', 10)),
@@ -806,7 +806,7 @@ begin
       perform pos.audit(me.id, me.username, 'hapus-user', tu.username);
       return pos.r(200, '{"ok":true}');
     end if;
-    nrole := case when b ? 'role' then (case when b ->> 'role' = 'owner' then 'owner' else 'staff' end) else tu.role end;
+    nrole := case when b ? 'role' then (case when lower(btrim(coalesce(b ->> 'role', ''))) = 'owner' then 'owner' else left(btrim(coalesce(b ->> 'role', 'staff')), 32) end) else tu.role end;
     act := case when b ? 'active' then coalesce((b ->> 'active') in ('true', '1'), false) else tu.active end;
     nm := case when b ? 'name' then coalesce(nullif(pos.clean(b ->> 'name', 40), ''), tu.name) else tu.name end;
     nperms := case when nrole = 'owner' then '[]'::jsonb else pos.clean_perms(case when b ? 'perms' then b -> 'perms' else tu.perms end) end;
@@ -832,9 +832,10 @@ begin
   end if;
 
   -- absensi
-  if u = '/api/att' and m = 'POST' then return pos.att_do(me, b); end if;
-  if u = '/api/att' and m = 'GET' then return pos.att_list(me, q, own); end if;
+  if u = '/api/att' and m = 'POST' then if not pos.can(me, 'att') then return pos.r(403, '{"error":"Anda tidak punya akses absensi"}'); end if; return pos.att_do(me, b); end if;
+  if u = '/api/att' and m = 'GET' then if not pos.can(me, 'att') then return pos.r(403, '{"error":"Anda tidak punya akses absensi"}'); end if; return pos.att_list(me, q, own); end if;
   if u = '/api/att/photo' and m = 'GET' then
+    if not pos.can(me, 'att') then return pos.r(403, '{"error":"Anda tidak punya akses absensi"}'); end if;
     select jsonb_build_object('photo', a.photo) into x from pos.att a where a.id = pos.num(q -> 'id')::bigint and (own or a.uid = me.id);
     if x is null then return pos.r(404, '{"error":"tidak ada"}'); end if;
     return pos.r(200, x);
