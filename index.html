@@ -3832,7 +3832,7 @@ async function renderUsr(){
   el.innerHTML=USR.list.map(u=>`<div class="coc usr ${u.active?'':'cancelled'}" style="border-left-color:${u.role==='owner'?'var(--b)':'#d4d4d4'}">
     <div class="coh"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="cn">${esc(u.name)}</span><span class="ct">@${esc(u.username)}${u.id===me?' · Anda':''}</span><time>${esc(fmtLast(u.lastLogin))}</time></div>
     <div class="cof" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="pst ${u.role==='owner'?'w':'ok'}">${esc(usrRoleLabel(u.role))}</span>${u.active?'':'<span class="pst">nonaktif</span>'}${u.single?'<span class="pst">1 perangkat</span>':''}
-      ${u.role==='owner'?'<span class="pchip on">Semua fitur</span>':'<span class="pchip on">Kasir</span>'+Object.keys(PERM_SHORT).map(p=>`<span class="pchip ${u.perms.includes(p)?'on':''}">${PERM_SHORT[p]}</span>`).join('')}</div>
+      ${u.role==='owner'?'<span class="pchip on">Semua fitur</span>':'<span class="pchip on">'+esc(usrRoleLabel(u.role))+'</span>'+Object.keys(PERM_SHORT).map(p=>`<span class="pchip ${u.perms.includes(p)?'on':''}">${PERM_SHORT[p]}</span>`).join('')}</div>
     <div class="cob"><button class="btn sec" onclick="usrForm(${u.id})"><i class="ic" data-ic="edit"></i>Ubah</button><button class="btn sec" onclick="usrPw(${u.id})"><i class="ic" data-ic="key"></i>Reset sandi</button>
       ${u.id!==me?`<button class="btn sec" onclick="usrToggle(${u.id})">${u.active?'<i class="ic" data-ic="pause"></i>Nonaktifkan':'<i class="ic" data-ic="play"></i>Aktifkan'}</button><button class="btn sec" onclick="usrDel(${u.id})"><i class="ic" data-ic="trash"></i>Hapus</button>`:''}</div></div>`).join('')||'<div class="empty">Belum ada pengguna</div>';
   usrLogDraw();
@@ -3870,7 +3870,7 @@ function usrForm(id){
   <select class="fi" id="uRole" onchange="usrRoleSw()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
   <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><p class="hint">Tambah jabatan khusus untuk dipilih di sini.</p><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
   <p class="hint">Owner memiliki akses penuh. Jabatan lain hanya mendapat izin yang dicentang.</p>
-  <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?(u.perms||[]):['att'])}</div>
+  <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
   <label class="tgl" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span>Hanya boleh login di satu perangkat</span></label>
   <p class="hint" id="uErr" style="color:var(--bad);min-height:16px"></p>
   <button class="btn" onclick="usrSave(${id||0})">Simpan</button><button class="btn sec" onclick="closeModal()">Batal</button>`);
