@@ -19,3 +19,8 @@ otomatis, dan izin tetap bisa diubah per karyawan.
 
 Izin **Absensi** diatur per karyawan (default mati): bila mati, menu Absensi disembunyikan dan `/api/att` menjawab 403.
 Setelah memperbarui kode, jalankan ulang `setup.sql` di Supabase SQL Editor.
+
+### Kelola Jabatan
+
+Di halaman **Pengguna**, tombol **Jabatan** membuka panel untuk menambah jabatan baru, mengubah namanya (karyawan yang memakainya ikut diperbarui),
+menghapusnya dari daftar, dan mengatur izin awal tiap jabatan, termasuk Absensi. Pengaturan ini berlaku per toko dan hanya bisa diubah owner.

@@ -782,7 +782,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
       <div class="panel" id="pwPage" style="max-width:560px"></div>
     </section>
     <section id="v-usr" hidden>
-      <div class="bar"><h2><i class="ic" data-ic="users"></i>Pengguna</h2><button class="btn sm" style="width:auto;margin:0" onclick="usrForm(0)"><i class="ic" data-ic="plus"></i>Tambah</button></div>
+      <div class="bar"><h2><i class="ic" data-ic="users"></i>Pengguna</h2><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn sm sec" style="width:auto;margin:0" onclick="jbOpen()"><i class="ic" data-ic="edit"></i>Jabatan</button><button class="btn sm" style="width:auto;margin:0" onclick="usrForm(0)"><i class="ic" data-ic="plus"></i>Tambah</button></span></div>
       
       <div id="usrList"></div>
       <div class="panel" style="margin-top:14px"><h3>Aktivitas</h3><div class="logbar" id="usrLogBar"></div><div id="usrLog"></div></div>
@@ -3856,8 +3856,52 @@ function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl">
 function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[];return [...new Set(['Owner','Kasir','Pelayan','Koki','Barista','Manajer','Admin Gudang','Server','Kitchen','Staf',...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
 /* izin awal tiap jabatan bawaan; terisi otomatis saat jabatan dipilih, tetap bisa diubah per karyawan */
 const ROLE_PERMS={kasir:['co','prn'],pelayan:['co'],koki:['co'],barista:['co','prn'],manajer:['co','inv','hist','prn','set','att'],'admin gudang':['inv'],server:['co'],kitchen:['co'],staff:['co','prn'],staf:['co','prn']};
+function rolePermsOf(k){const o=db.set.rolePerms&&db.set.rolePerms[k];return Array.isArray(o)?o:ROLE_PERMS[k]}
+/* panel Kelola Jabatan: tambah, ubah nama, hapus jabatan buatan sendiri, dan atur izin awal tiap jabatan (per toko) */
+const JB_BASE=['Kasir','Pelayan','Koki','Barista','Manajer','Admin Gudang','Server','Kitchen','Staf'];
+function jbKey(n){const k=usrRoleKey(n);return k==='staf'?'staff':k}
+function jbCount(k){return (USR.list||[]).filter(u=>usrRoleKey(u.role)===k).length}
+function jbOpen(msg,bad){
+  if(!isOwner())return;
+  const cus=usrRoleCustom(),rows=usrRoleList().filter(r=>usrRoleKey(r)!=='owner').map(r=>{
+    const k=jbKey(r),isC=cus.some(x=>usrRoleKey(x)===usrRoleKey(r)),n=jbCount(k),pm=rolePermsOf(k)||['co'];
+    return `<div class="coc" style="margin:8px 0"><div class="coh" style="flex-wrap:wrap;gap:6px">${isC?`<input class="fi" style="flex:1 1 150px;min-width:0;margin:0" maxlength="32" value="${esc(usrRoleLabel(r))}" aria-label="Nama jabatan" onchange="jbRename('${esc(k)}',this.value)">`:`<span class="cn">${esc(usrRoleLabel(r))}</span>`}<span class="ct">${isC?'buatan sendiri':'bawaan'} · ${n} karyawan</span></div>
+    <div style="margin-top:6px">${Object.keys(PERM_LBL).map(pk=>`<label class="tgl"><input type="checkbox" ${pm.includes(pk)?'checked':''} onchange="jbPerm('${esc(k)}','${pk}',this.checked)"><span>${PERM_LBL[pk]}</span></label>`).join('')}</div>
+    ${isC?`<div class="cob"><button class="btn sec" onclick="jbDel('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:''}</div>`}).join('');
+  openModal(`<h3>Kelola Jabatan</h3><p class="hint">Izin di bawah dipakai sebagai izin awal saat jabatan dipilih untuk karyawan baru. Izin tiap karyawan tetap bisa diubah sendiri.</p>
+  <div style="display:flex;gap:8px"><input class="fi" id="jbNew" maxlength="32" placeholder="Jabatan baru, mis. Kepala Dapur" style="min-width:0;flex:1;margin:0"><button class="btn sm" style="width:auto;margin:0" onclick="jbAdd()">Tambah</button></div>
+  <p class="hint" id="jbMsg" style="min-height:16px;${bad?'color:var(--bad)':''}">${esc(msg||'')}</p>${rows}<button class="btn sec" onclick="closeModal()">Tutup</button>`);
+  if(!msg&&$('#jbNew'))$('#jbNew').focus();
+}
+function jbCheck(v,except){
+  v=(v||'').trim().replace(/\s+/g,' ');if(!v)return['Isi nama jabatan dulu'];if(v.length>32)return['Maksimal 32 karakter'];
+  if(['owner','new'].includes(usrRoleKey(v)))return['Nama ini khusus sistem'];
+  if(usrRoleList().some(x=>usrRoleKey(x)===usrRoleKey(v)&&usrRoleKey(x)!==except))return['Jabatan sudah ada'];
+  return[null,v]}
+function jbAdd(){
+  const [er,v]=jbCheck($('#jbNew').value);if(er)return jbOpen(er,true);
+  if(usrRoleList().length>=30)return jbOpen('Maksimal 30 jabatan',true);
+  db.set.staffRoles=[...usrRoleCustom(),v];db.set.rolePerms=Object.assign({},db.set.rolePerms,{[jbKey(v)]:['co']});save();jbOpen('Jabatan "'+v+'" ditambahkan. Atur izin awalnya di bawah.');
+}
+function jbPerm(k,pk,on){
+  const cur=(rolePermsOf(k)||['co']).filter(x=>x!==pk);if(on)cur.push(pk);
+  db.set.rolePerms=Object.assign({},db.set.rolePerms,{[k]:Object.keys(PERM_LBL).filter(x=>cur.includes(x))});save();
+}
+async function jbRename(k,nv){
+  const [er,v]=jbCheck(nv,k);if(er)return jbOpen(er,true);
+  const nk=jbKey(v),users=(USR.list||[]).filter(u=>usrRoleKey(u.role)===k);
+  try{for(const u of users){const r=await api('/api/users/'+u.id,{method:'PUT',body:JSON.stringify({role:nk})});if(!r.ok){const j=await r.json().catch(()=>({}));return jbOpen(j.error||'Gagal mengubah nama',true)}}}catch(e){return}
+  db.set.staffRoles=usrRoleCustom().map(x=>usrRoleKey(x)===k?v:x);
+  const rp=Object.assign({},db.set.rolePerms);if(rp[k]){rp[nk]=rp[k];if(nk!==k)delete rp[k]}db.set.rolePerms=rp;save();
+  await renderUsr();jbOpen('Nama jabatan diubah'+(users.length?' ('+users.length+' karyawan ikut diperbarui)':''));
+}
+function jbDel(k){
+  const n=jbCount(k);
+  db.set.staffRoles=usrRoleCustom().filter(x=>usrRoleKey(x)!==k);const rp=Object.assign({},db.set.rolePerms);delete rp[k];db.set.rolePerms=rp;save();
+  jbOpen('Jabatan dihapus dari daftar'+(n?' ('+n+' karyawan tetap memakainya)':''));
+}
 function usrRolePick(){
-  usrRoleSw();const k=usrRoleKey($('#uRole').value),pr=ROLE_PERMS[k];
+  usrRoleSw();const k=usrRoleKey($('#uRole').value),pr=rolePermsOf(k);
   if(pr&&k!=='owner')document.querySelectorAll('.upm').forEach(x=>x.checked=pr.includes(x.value));
   usrRoleDelShow();
 }
