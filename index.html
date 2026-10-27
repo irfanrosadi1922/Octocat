@@ -3431,6 +3431,8 @@ function renderAccPage(){
       if(token!==CL.tok||!el)return;
       const name=String(j.store||'').trim();
       el.textContent=name&&name!=='Ordela'?name:'Belum diatur';
+      const phoneEl=$('#accStorePhone');
+      if(phoneEl){const phone=String(j.phone||'').trim();phoneEl.textContent=phone||'Belum diisi'}
     }).catch(()=>{});
   }
 }
