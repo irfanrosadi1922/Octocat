@@ -30,3 +30,7 @@ Semua jabatan kecuali Owner dan Staf bisa dihapus dari daftar supaya tidak terla
 ## Pergantian akun di satu perangkat
 
 Data lokal aplikasi (menu, pesanan, pengaturan, cadangan) dicatat milik satu toko. Bila akun dari toko lain login di perangkat yang sama, data toko sebelumnya dibuang sebelum sinkron pertama sehingga tidak tertulis ke toko baru. Login ulang ke toko yang sama tidak menghapus apa pun. Perubahan yang belum tersinkron dari toko sebelumnya hilang saat pergantian; aplikasi sudah memperingatkannya saat keluar.
+
+## Akun yang hanya punya izin Absensi
+
+Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Meja, Beranda, dan Notifikasi disembunyikan, bottom nav tidak tampil, aplikasi langsung membuka halaman Absensi, dan server menolak (403) setiap perubahan pesanan atau stok dari akun itu. Karyawan dengan izin lain (atau tanpa izin tambahan) tetap memakai Kasir seperti biasa. Setelah memperbarui kode, jalankan ulang `setup.sql` di Supabase SQL Editor agar penolakan di server aktif.

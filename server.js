@@ -510,6 +510,7 @@ function guardWrite(me, cur, next) {
   if (me.role === 'owner') return null;
   if (!cur) return 'Hanya owner yang boleh menyiapkan data awal';
   const perms = userPerms(me), has = (k) => perms.includes(k);
+  if (perms.length > 0 && perms.every((p) => p === 'att') && (sj(cur.orders || []) !== sj(next.orders || []) || sj(cur.items || []) !== sj(next.items || []))) return 'Akun ini hanya punya izin Absensi dan tidak bisa membuat transaksi';
   const co = new Map((cur.orders || []).map((o) => [String(o.no), sj(o)])), nn = new Map((next.orders || []).map((o) => [String(o.no), sj(o)]));
   for (const [k, v] of co) if (nn.get(k) !== v) return 'Riwayat penjualan hanya bisa ditambah, tidak boleh diubah atau dihapus (khusus owner)';
   { /* karyawan (izin Inventori pun) hanya boleh mengubah stok; menu, harga, modal, kategori khusus owner */

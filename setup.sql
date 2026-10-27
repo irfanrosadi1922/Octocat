@@ -373,6 +373,11 @@ begin
   if me.role = 'owner' then return null; end if;
   if cur is null then return 'Hanya owner yang boleh menyiapkan data awal'; end if;
   pm := pos.perms_of(me);
+  -- akun yang HANYA punya izin Absensi tidak boleh membuat transaksi atau mengubah stok
+  if jsonb_array_length(pm) > 0 and pm <@ '["att"]'::jsonb
+     and ((cur -> 'orders') is distinct from (nxt -> 'orders') or (cur -> 'items') is distinct from (nxt -> 'items')) then
+    return 'Akun ini hanya punya izin Absensi dan tidak bisa membuat transaksi';
+  end if;
   if exists (select o ->> 'no', o from jsonb_array_elements(coalesce(cur -> 'orders', '[]')) o
              except select x ->> 'no', x from jsonb_array_elements(coalesce(nxt -> 'orders', '[]')) x) then
     return 'Riwayat penjualan hanya bisa ditambah, tidak boleh diubah atau dihapus (khusus owner)';

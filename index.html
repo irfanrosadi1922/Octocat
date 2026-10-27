@@ -471,6 +471,8 @@ select.fi{appearance:auto}
 .ic[data-ic=food]{--m:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23000%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M7%203v6a2%202%200%200%200%204%200V3M9%2011v10M17%203c-2.2%201.6-3%204-3%207h3v11%22/%3E%3C/svg%3E")}
 .bar h2 .ic{color:var(--bt);margin-right:.4em}
 .drawer .ic{width:20px;height:20px}
+.attonly .bnav{display:none!important}
+.attonly .main{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))!important}
 .drawer svg.kic{display:inline-block;width:20px;height:20px;flex:none;margin:0;vertical-align:-.2em}  /* ikon Kasir: SVG garis yang sama dengan bottom nav (bukan ikon bermasker .ic) */
 .dg{margin:16px 10px 6px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mu)}.dg:first-of-type{margin-top:0}
 .stabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
@@ -923,7 +925,7 @@ function toggleDrawer(){$('#drawer').classList.toggle('open');$('#scrim').classL
 function closeAll(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('on')}
 function go(v){
   if(v==='acc'&&!(CL.on&&CL.me))v='set';
-  if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v='pos'}
+  if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v=landing()}
   S.view=v;closeAll();toggleInv(false);
   ['pos','home','table','rep','alert','inv','hist','rc','prn','set','co','usr','acc','editacc','pw','att'].forEach(x=>$('#v-'+x).hidden=x!==v);
   document.querySelectorAll('.drawer button,.bnav button,.rail button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
@@ -3234,7 +3236,12 @@ function setMe(m){CL.me=m||null;try{if(m)localStorage.setItem('pos_me',JSON.stri
 /* tanpa server (mode offline/standalone) tidak ada akun: semua terbuka */
 function isOwner(){return !CL.on||(!!CL.me&&CL.me.role==='owner')}
 function can(p){return !CL.on||(!!CL.me&&(CL.me.role==='owner'||(CL.me.perms||[]).includes(p)))}
+/* karyawan yang HANYA punya izin Absensi: tidak boleh memakai Kasir, Meja, Beranda, atau Notifikasi (tidak ada transaksi) */
+function attOnly(){const m=CL.on&&CL.me;if(!m||m.role==='owner')return false;const p=m.perms||[];return p.length>0&&p.every(x=>x==='att')}
+const ATT_BLOCKED=['pos','home','table','alert'];
+function landing(){return attOnly()?'att':'pos'}
 function canView(v){
+  if(attOnly()&&ATT_BLOCKED.includes(v))return false;
   if(v==='att')return CL.on&&can('att');
   const p=VIEW_PERM[v];if(p===undefined||p===null)return true;
   if(v==='co'||v==='usr')return CL.on&&(p==='#owner'?isOwner():can(p));
@@ -3257,7 +3264,8 @@ function applyAccess(){
   if(typeof coBadge==='function')coBadge();
   navGroups();
   renderAcct();
-  if(S.view&&!canView(S.view))go('pos');
+  document.body.classList.toggle('attonly',attOnly());
+  if(S.view&&!canView(S.view))go(landing());
 }
 function renderAcct(){
   const ba=$('#bnAcc'),lo=$('#lgout'),an=$('#accNav'),on=!!(CL.on&&CL.me);
