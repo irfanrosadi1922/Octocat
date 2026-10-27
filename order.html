@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f6">
 <meta name="robots" content="noindex">
-<link rel="icon" href="icon-192.png"><script src="config.js"></script><script src="sbapi.js"></script>
+<link rel="icon" href="icon-192.png"><script src="config.js"></script><script src="sbapi.js"></script><script src="qr.js"></script><script src="qris.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Pesan Menu</title>
@@ -210,7 +210,7 @@ total:['Total','Total','Jumlah','总计'],
 payment:['Pembayaran','Payment','Pembayaran','付款方式'],
 payCash:['Bayar di kasir','Pay at the counter','Bayar di kaunter','在收银台付款'],
 payOnline:['Bayar online','Pay online','Bayar dalam talian','线上付款'],
-noteOnline:['Setelah pesanan terkirim, Anda akan melihat <b>QR DuitNow</b> (bisa dibayar lewat Touch \'n Go eWallet atau aplikasi bank). Scan, bayar sesuai total, lalu unggah bukti pembayaran.','After you send the order you will see a <b>DuitNow QR</b> (payable with Touch \'n Go eWallet or a banking app). Scan it, pay the total, then upload your payment proof.','Selepas pesanan dihantar, anda akan melihat <b>QR DuitNow</b> (boleh dibayar melalui Touch \'n Go eWallet atau aplikasi bank). Imbas, bayar mengikut jumlah, kemudian muat naik bukti pembayaran.','提交订单后会显示 <b>DuitNow 二维码</b>（可用 Touch \'n Go eWallet 或银行应用支付）。扫码、按总额付款，然后上传付款凭证。'],
+noteOnline:['Setelah pesanan terkirim, Anda akan melihat <b>QRIS</b> dengan nominal sudah terisi (bisa dibayar lewat GoPay, OVO, DANA, ShopeePay, LinkAja, atau m-banking). Scan, bayar, lalu unggah bukti pembayaran.','After you send the order you will see a <b>QRIS</b> code with the amount already filled in (payable with GoPay, OVO, DANA, ShopeePay, LinkAja or a mobile banking app). Scan it, pay, then upload your payment proof.','Selepas pesanan dihantar, anda akan melihat kod <b>QRIS</b> dengan jumlah yang sudah diisi (boleh dibayar melalui GoPay, OVO, DANA, ShopeePay, LinkAja atau aplikasi bank). Imbas, bayar, kemudian muat naik bukti pembayaran.','提交订单后会显示已填好金额的 <b>QRIS</b> 二维码（可用 GoPay、OVO、DANA、ShopeePay、LinkAja 或手机银行支付）。扫码付款后上传付款凭证。'],
 noteCash:['Pembayaran dilakukan di kasir. Pesanan Anda akan langsung diterima oleh dapur/kasir.','Payment is made at the counter. Your order goes straight to the kitchen/cashier.','Pembayaran dibuat di kaunter. Pesanan anda akan terus diterima oleh dapur/juruwang.','在收银台付款。您的订单会直接送到厨房/收银台。'],
 sending:['Mengirim…','Sending…','Menghantar…','提交中…'],
 needName:['Isi nama Anda dulu agar pesanan mudah dikenali.','Please enter your name so we can identify your order.','Sila isi nama anda supaya pesanan mudah dikenali.','请先填写您的姓名，方便识别订单。'],
@@ -249,12 +249,13 @@ changePhoto:['Ganti foto','Change photo','Tukar gambar','更换照片'],
 pickPhoto:['Pilih foto / screenshot','Choose photo / screenshot','Pilih gambar / tangkap layar','选择照片/截图'],
 altPreview:['Pratinjau bukti pembayaran','Payment proof preview','Pratonton bukti pembayaran','付款凭证预览'],
 sendProof:['Kirim bukti pembayaran','Send payment proof','Hantar bukti pembayaran','提交付款凭证'],
-payTitle:['Bayar dengan DuitNow / Touch \'n Go','Pay with DuitNow / Touch \'n Go','Bayar dengan DuitNow / Touch \'n Go','使用 DuitNow / Touch \'n Go 付款'],
-altQr:['QR DuitNow untuk pembayaran','DuitNow QR for payment','QR DuitNow untuk pembayaran','DuitNow 付款二维码'],
+payTitle:['Bayar dengan QRIS','Pay with QRIS','Bayar dengan QRIS','使用 QRIS 付款'],
+qrisErr:['QRIS belum bisa ditampilkan. Silakan bayar di kasir.','QRIS cannot be shown right now. Please pay at the cashier.','QRIS belum dapat dipaparkan. Sila bayar di juruwang.','暂时无法显示 QRIS，请到收银台付款。'],
+altQr:['QRIS untuk pembayaran','QRIS for payment','QRIS untuk pembayaran','QRIS 付款二维码'],
 saveQr:['⬇ Simpan gambar QR','⬇ Save QR image','⬇ Simpan imej QR','⬇ 保存二维码图片'],
 exactAmt:['Bayar sesuai total · {0}','Pay the exact total · {0}','Bayar mengikut jumlah · {0}','按总额付款 · {0}'],
-s1:['Buka Touch \'n Go eWallet atau aplikasi bank Anda.','Open Touch \'n Go eWallet or your banking app.','Buka Touch \'n Go eWallet atau aplikasi bank anda.','打开 Touch \'n Go eWallet 或您的银行应用。'],
-s2:['Pilih <b>Scan</b> lalu arahkan ke QR di atas (atau pilih gambar QR dari galeri).','Choose <b>Scan</b> and point it at the QR above (or pick the QR image from your gallery).','Pilih <b>Imbas</b> kemudian halakan ke QR di atas (atau pilih imej QR dari galeri).','选择<b>扫描</b>并对准上方二维码（或从相册选择二维码图片）。'],
+s1:['Buka aplikasi e-wallet atau m-banking Anda.','Open your e-wallet or mobile banking app.','Buka aplikasi e-dompet atau perbankan mudah alih anda.','打开您的电子钱包或手机银行应用。'],
+s2:['Pilih <b>Scan</b> lalu arahkan ke QRIS di atas (atau pilih gambar QRIS dari galeri).','Choose <b>Scan</b> and point it at the QRIS above (or pick the QRIS image from your gallery).','Pilih <b>Imbas</b> kemudian halakan ke QRIS di atas (atau pilih imej QRIS dari galeri).','选择<b>扫描</b>并对准上方 QRIS（或从相册选择二维码图片）。'],
 s3:['Bayar sesuai total, lalu screenshot bukti pembayarannya.','Pay the total, then take a screenshot of the payment proof.','Bayar mengikut jumlah, kemudian tangkap layar bukti pembayaran.','按总额付款，然后截图保存付款凭证。'],
 s4:['Kembali ke sini dan unggah screenshot itu di bawah.','Come back here and upload the screenshot below.','Kembali ke sini dan muat naik tangkap layar itu di bawah.','回到此页，在下方上传截图。'],
 pickImg:['Pilih file gambar (foto atau screenshot)','Choose an image file (photo or screenshot)','Pilih fail imej (gambar atau tangkap layar)','请选择图片文件（照片或截图）'],
@@ -408,11 +409,11 @@ function renderCart(){
   <label class="fl" for="cNote">${esc(t('note'))}</label><textarea class="fi" id="cNote" rows="2" maxlength="200" placeholder="${esc(t('noteEx'))}">${esc(nt)}</textarea>
   <input id="hp" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true">
   <div class="sum"><div><span>${esc(t('subtotal'))}</span><span>${money(t0.sub)}</span></div>${M.tax?`<div><span>${esc(t('tax',M.tax))}</span><span>${money(t0.tax)}</span></div>`:''}<div class="t"><span>${esc(t('total'))}</span><span>${money(t0.total)}</span></div></div>
-  ${payOn()?`<label class="fl" id="pyL">${esc(t('payment'))}</label><div class="seg" role="group" aria-labelledby="pyL"><button type="button" class="${payM==='cash'?'on':''}" onclick="setPayM('cash')">${esc(t('payCash'))}</button><button type="button" class="${payM==='duitnow'?'on':''}" onclick="setPayM('duitnow')">${esc(t('payOnline'))}</button></div>`:''}`;
+  ${payOn()?`<label class="fl" id="pyL">${esc(t('payment'))}</label><div class="seg" role="group" aria-labelledby="pyL"><button type="button" class="${payM==='cash'?'on':''}" onclick="setPayM('cash')">${esc(t('payCash'))}</button><button type="button" class="${payM==='qris'?'on':''}" onclick="setPayM('qris')">${esc(t('payOnline'))}</button></div>`:''}`;
   if(U.has('debug')){const y=M.pay,m=!y?'TIDAK ADA di server: setup.sql belum dijalankan ulang di Supabase':!y.qr?'server menerima pengaturan tapi QR kosong / bukan gambar valid (simpan ulang QR, tunggu Tersinkron)':!y.on?'QR ada tapi opsi bayar online belum dicentang/belum tersinkron':'AKTIF';$('#shBody').insertAdjacentHTML('beforeend','<div class="note" style="background:#e8f0ff;color:#123">Diagnosa bayar online: '+esc(m)+'</div>')}
   $('#sendBtn').textContent=t('send')+' · '+money(t0.total);
 }
-const payOn=()=>!!(M&&M.pay&&M.pay.on&&M.pay.qr);
+const payOn=()=>!!(M&&M.pay&&M.pay.on&&M.pay.qris);
 function setPayM(m){payM=m;renderCart()}
 function setType(t){type=t;const b=document.querySelectorAll('.seg button');b[0].classList.toggle('on',t==='Dine In');b[1].classList.toggle('on',t==='Takeaway')}
 
@@ -427,7 +428,7 @@ async function send(){
   if(!idem)idem=(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));
   sending=true;const btn=$('#sendBtn'),old=btn.textContent;btn.disabled=true;btn.textContent=t('sending');
   try{
-    const r=await fetch('/api/public/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({s:SC,name,table:$('#cTbl').value.trim(),type,note:$('#cNote').value.trim(),items,key:idem,pay:payOn()&&payM==='duitnow'?'duitnow':'',website:$('#hp').value})});
+    const r=await fetch('/api/public/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({s:SC,name,table:$('#cTbl').value.trim(),type,note:$('#cNote').value.trim(),items,key:idem,pay:payOn()&&payM==='qris'?'qris':'',website:$('#hp').value})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){
       if(r.status===409){idem=null;await loadMenu().catch(()=>{});renderCart();$('#err').textContent=(trErr(j.error)||t('stockChanged'))+t('adjusted');}
@@ -445,15 +446,22 @@ async function send(){
 /* ---------- status pesanan ---------- */
 const STATK={new:['st_new_t','st_new_d'],accepted:['st_acc_t','st_acc_d'],done:['st_done_t','st_done_d'],cancelled:['st_can_t','st_can_d']};
 let proofData='';
+const isOnl=o=>!!o&&(o.pay==='qris'||o.pay==='duitnow');
+/* QRIS dinamis: QRIS statis toko + nominal pesanan ini, dibuat di perangkat pelanggan */
+function qrisBox(y,o){
+  if(!y.qris)return '';
+  try{const dq=QRIS.dynamic(y.qris,o.total);return `<div class="qr" role="img" aria-label="${esc(t('altQr'))}" style="background:#fff;padding:10px;border-radius:12px">${qrSvg(dq,260)}</div>`}
+  catch(e){return `<p class="rj">${esc(t('qrisErr'))}</p>`}
+}
 function payCard(o){
-  if(o.pay!=='duitnow'||o.status==='cancelled')return '';
+  if(!isOnl(o)||o.status==='cancelled')return '';
   const y=(M&&M.pay)||{},rcp=y.name?`<div class="rcp">${esc(t('payee'))} <b>${esc(y.name)}</b></div>`:'';
   if(o.pst===2)return `<div class="payc"><h3 class="ok">${esc(t('paidOk'))}</h3><div class="rcp">${esc(t('paidThanks',money(o.total)))}</div></div>`;
   if(!(o.status==='new'||o.status==='accepted'))return '';
   const wait=o.pst===1?`<p class="wt">${esc(t('proofSent'))}</p><label class="again">${esc(t('wrongPhoto'))} <u>${esc(t('resend'))}</u><input type="file" accept="image/*" hidden onchange="pickProof(this)"></label>${proofData?`<img class="pf" src="${proofData}" alt="${esc(t('altProof'))}">`:''}`
   :`${o.pst===3?`<p class="rj">${esc(t('rejected'))}</p>`:''}<div class="up"><b>${esc(t('paidQ'))}</b><label class="pick">${esc(proofData?t('changePhoto'):t('pickPhoto'))}<input type="file" accept="image/*" hidden onchange="pickProof(this)"></label>${proofData?`<img class="pf" src="${proofData}" alt="${esc(t('altPreview'))}"><button class="go" style="margin-top:10px" onclick="sendProof()">${esc(t('sendProof'))}</button>`:''}</div>`;
   return `<div class="payc"><h3>${esc(t('payTitle'))}</h3>${rcp}
-  ${y.qr?`<img class="qr" src="${esc(y.qr)}" alt="${esc(t('altQr'))}"><a class="dl" href="${esc(y.qr)}" download="qr-pembayaran.png">${esc(t('saveQr'))}</a>`:''}
+  ${qrisBox(y,o)}
   <div class="amt">${money(o.total)}</div><div class="rcp">${esc(t('exactAmt',o.num))}</div>
   
   ${y.note?`<div class="note">${esc(y.note)}</div>`:''}${wait}</div>`;
@@ -489,7 +497,7 @@ function showStatus(o){
   const st=o.status,s=(STATK[st]||STATK.new).map(k=>t(k)),x=st==='cancelled',step=st==='new'?0:st==='accepted'?1:2;
   $('#vDone').innerHTML=`<div class="done ${x?'x':''}"><div class="ck" aria-hidden="true">${x?'✕':'✓'}</div><h2>${s[0]}</h2>
   <div class="no" aria-label="${esc(t('orderNoLbl'))}">${esc(o.num)}</div><div class="who">${esc(t('onBehalf'))} <b>${esc(o.name)}</b>${o.tbl?' · '+esc(t('table'))+' '+esc(o.tbl):''} · ${esc(o.type==='Dine In'?t('dineIn'):t('takeaway'))}</div>
-  <p style="color:var(--mu);margin:12px 0 0">${o.pay==='duitnow'&&st==='accepted'&&o.pst!==2?t('procOnline'):s[1]}</p>
+  <p style="color:var(--mu);margin:12px 0 0">${isOnl(o)&&st==='accepted'&&o.pst!==2?t('procOnline'):s[1]}</p>
   ${payCard(o)}
   ${x?'':`<div class="trk" aria-hidden="true"><div class="${step>0?'dn':'on'}"><i></i>${esc(t('trkSent'))}</div><div class="${step>1?'dn':step===1?'on':''}"><i></i>${esc(t('trkPrep'))}</div><div class="${step===2?'on':''}"><i></i>${esc(t('trkDone'))}</div></div>`}
   <div class="card">${o.lines.map(l=>`<div class="r"><span>${l.qty}× ${esc(l.name)}</span><span>${money(l.price*l.qty)}</span></div>`).join('')}${o.tax?`<div class="r" style="color:var(--mu)"><span>${esc(t('taxS'))}</span><span>${money(o.tax)}</span></div>`:''}<div class="r tt"><span>${esc(t('total'))}</span><span>${money(o.total)}</span></div></div>
@@ -509,7 +517,7 @@ async function shareOrder(){
 function backToMenu(){stopPoll();cur=null;$('#vDone').hidden=true;$('#vMenu').hidden=false;if(st(cur)!=='x')LS.d('co_tok');loadMenu().catch(()=>{});renderBar()}
 function st(){return 'x'}
 async function cancelOrder(){
-  if(!cur||!confirm(t('confirmCancel')+(cur.pay==='duitnow'&&(cur.pst===1||cur.pst===2)?t('refundNote'):'')))return;
+  if(!cur||!confirm(t('confirmCancel')+(isOnl(cur)&&(cur.pst===1||cur.pst===2)?t('refundNote'):'')))return;
   try{
     const r=await fetch('/api/public/order/'+encodeURIComponent(LS.g('co_tok'))+'/cancel',{method:'POST'});
     const j=await r.json();

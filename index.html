@@ -637,7 +637,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
   fit();
 })();
 </script>
-<script src="native.js"></script><script src="config.js"></script><script src="sbapi.js"></script>
+<script src="native.js"></script><script src="config.js"></script><script src="sbapi.js"></script><script src="qr.js"></script><script src="qris.js"></script>
 </head>
 <body>
 <div class="splash" id="splash" hidden><img id="splashLogo" alt=""><div class="spn" id="splashName"></div></div>
@@ -874,7 +874,7 @@ const LOG_MAX=1000;
 const PRN_DEF={mode:'browser',auto:false,autoNew:true,cut:true,drawer:false,baud:9600,chunk:100,delay:15,uuid:'',autoConn:true};
 const DEF_LOGO='https://raw.githubusercontent.com/irfanrosadi1922/Ordela/main/icon-512.png';
 const GV_DEF={mode:'grid',colsD:0,colsM:2,stock:true,cats:true,tap:'add'};
-function fixDb(d){d.set=d.set||{};if(d.set.fsAuto==null)d.set.fsAuto=true;if(d.set.logoApp==null)d.set.logoApp=true;if(d.set.rc&&d.set.rc.logo&&!d.set.logo){d.set.logo=d.set.rc.logo;d.set.rc.logo=''}d.set.logo=d.set.logo||'';d.set.gv={...GV_DEF,...(d.set.gv||{})};delete d.set.gv.size;d.set.lang=d.set.lang||'id';if(d.set.dec==null)d.set.dec=0;d.set.loc=d.set.loc||'id-ID';d.set.curPos=d.set.curPos||'before';d.set.cur=d.set.cur||'Rp';d.set.curCode=d.set.curCode||(d.set.cur==='Rp'?'IDR':'CUSTOM');d.set.rc={...RC_DEF,...(d.set.rc||{})};d.set.pay={on:false,qr:'',name:'',note:'',...(d.set.pay&&typeof d.set.pay==='object'?d.set.pay:{})};d.set.prn={...PRN_DEF,...(d.set.prn||{})};d.set.att={on:false,tz:'',lat:'',lng:'',radius:100,strict:false,shifts:[],assign:{},...(d.set.att&&typeof d.set.att==='object'?d.set.att:{})};d.set.paper=d.set.paper||'80';d.log=d.log||[];d.orders=d.orders||[];d.cats=d.cats||[];
+function fixDb(d){d.set=d.set||{};if(d.set.fsAuto==null)d.set.fsAuto=true;if(d.set.logoApp==null)d.set.logoApp=true;if(d.set.rc&&d.set.rc.logo&&!d.set.logo){d.set.logo=d.set.rc.logo;d.set.rc.logo=''}d.set.logo=d.set.logo||'';d.set.gv={...GV_DEF,...(d.set.gv||{})};delete d.set.gv.size;d.set.lang=d.set.lang||'id';if(d.set.dec==null)d.set.dec=0;d.set.loc=d.set.loc||'id-ID';d.set.curPos=d.set.curPos||'before';d.set.cur=d.set.cur||'Rp';d.set.curCode=d.set.curCode||(d.set.cur==='Rp'?'IDR':'CUSTOM');d.set.rc={...RC_DEF,...(d.set.rc||{})};d.set.pay={on:false,qris:'',name:'',note:'',...(d.set.pay&&typeof d.set.pay==='object'?d.set.pay:{})};delete d.set.pay.qr;d.set.prn={...PRN_DEF,...(d.set.prn||{})};d.set.att={on:false,tz:'',lat:'',lng:'',radius:100,strict:false,shifts:[],assign:{},...(d.set.att&&typeof d.set.att==='object'?d.set.att:{})};d.set.paper=d.set.paper||'80';d.log=d.log||[];d.orders=d.orders||[];d.cats=d.cats||[];
   if(d.set.store==='Sushi POS'||d.set.store==='Octocat')d.set.store='Ordela';
   if(d.set.logo&&((d.set.logo.length===9895&&d.set.logo.slice(0,40)==='data:image/jpeg;base64,/9j/4AAQSkZJRgABA')||(d.set.logo.length===22538&&d.set.logo.slice(-24)==='YWBpBFcIAAAAAElFTkSuQmCC')))d.set.logo=DEF_LOGO; /* ganti logo bawaan lama */
   if(!d.set.logo){d.set.logo=DEF_LOGO;if(!d.set.logoInit)d.set.rc.showLogo=false}
@@ -1069,12 +1069,12 @@ function clearCart(){S.cart={};S.dVal=0;renderGrid();renderInvoice()}
 
 /* ---------- payment & receipt ---------- */
 function payForm(){
-  const c=calc(),co=S.coId?CO.list.find(x=>x.id===S.coId):null,pre=co&&co.pay==='duitnow'?'DuitNow':'Tunai';S.pay={m:pre,paid:c.total};
+  const c=calc(),co=S.coId?CO.list.find(x=>x.id===S.coId):null,pre=isOnl(co)?'QRIS':'Tunai';S.pay={m:pre,paid:c.total};
   openModal(`<h3>Pembayaran</h3><div class="big" id="pTot">${money(c.total)}</div>
   <div class="two"><div><label class="fl" for="pCust">Nama pelanggan</label><input class="fi" id="pCust" placeholder="Opsional"></div>
   <div><label class="fl" for="pTbl">No. meja</label><input class="fi" id="pTbl" maxlength="12" inputmode="text" autocapitalize="characters" placeholder="Mis. 7" style="font-weight:700"></div></div>
-  <label class="fl">Metode</label><div class="chips" id="pM">${['Tunai','Kartu','QRIS','DuitNow','E-Wallet'].map(m=>`<button class="chip ${m===pre?'on':''}" data-m="${m}" onclick="setM('${m}')">${m}</button>`).join('')}</div>
-  ${co&&co.pay==='duitnow'?`<div class="chg ${co.pst===2?'':'neg'}" style="margin:8px 0"><span>${co.pst===2?'<i class="ic" data-ic="card"></i>Pelanggan membayar lewat DuitNow, sudah Anda konfirmasi.':co.pst===1?'<i class="ic" data-ic="card"></i>Pelanggan mengaku sudah bayar lewat DuitNow. Cek mutasi dulu sebelum lanjut.':'<i class="ic" data-ic="card"></i>Pelanggan memilih DuitNow tetapi belum menandai sudah bayar.'}</span></div>`:''}
+  <label class="fl">Metode</label><div class="chips" id="pM">${['Tunai','Kartu','QRIS','E-Wallet'].map(m=>`<button class="chip ${m===pre?'on':''}" data-m="${m}" onclick="setM('${m}')">${m}</button>`).join('')}</div>
+  ${isOnl(co)?`<div class="chg ${co.pst===2?'':'neg'}" style="margin:8px 0"><span>${co.pst===2?'<i class="ic" data-ic="card"></i>Pelanggan membayar lewat QRIS, sudah Anda konfirmasi.':co.pst===1?'<i class="ic" data-ic="card"></i>Pelanggan mengaku sudah bayar lewat QRIS. Cek mutasi dulu sebelum lanjut.':'<i class="ic" data-ic="card"></i>Pelanggan memilih QRIS tetapi belum menandai sudah bayar.'}</span></div>`:''}
   <div id="cashBox" style="${pre==='Tunai'?'':'display:none'}"><label class="fl">Uang diterima</label><input class="fi" id="pPaid" type="number" step="any" min="0" value="${c.total}" oninput="calcChange()">
   <div class="chips"><button class="chip" onclick="quick(${c.total})">Uang Pas</button>${quickAmts().map(v=>`<button class="chip" onclick="quick(${v})">${amtLbl(v)}</button>`).join('')}</div>
   <div class="chg" id="pChg"><span>Kembalian</span><span>${money(0)}</span></div></div>
@@ -2668,115 +2668,13 @@ function cloudStart(){
   syncNow();
 }
 
-/* QR encoder ringkas: mode byte, koreksi galat M, versi 1-10 (hingga 213 byte). Tanpa dependensi. */
-function qrMatrix(text){
-  const bytes=Array.from(new TextEncoder().encode(String(text)));
-  const ECC=[0,10,16,26,18,24,16,18,22,22,26],NB=[0,1,1,1,2,2,4,4,4,5,5];
-  const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const a=Math.floor(v/7)+2;r-=(25*a-10)*a-55;if(v>=7)r-=36}return r};
-  let ver=0,dcw=0;
-  for(let v=1;v<=10;v++){
-    const d=Math.floor(raw(v)/8)-ECC[v]*NB[v];
-    if(4+(v<10?8:16)+8*bytes.length<=d*8){ver=v;dcw=d;break}
-  }
-  if(!ver)throw new Error('Teks terlalu panjang untuk QR');
-  const bits=[],put=(val,n)=>{for(let i=n-1;i>=0;i--)bits.push((val>>>i)&1)};
-  put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach(b=>put(b,8));
-  put(0,Math.min(4,dcw*8-bits.length));
-  while(bits.length%8)bits.push(0);
-  for(let p=0xEC;bits.length<dcw*8;p^=0xEC^0x11)put(p,8);
-  const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=b<<1|bits[i+j];data.push(b)}
-  /* Reed-Solomon */
-  const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z};
-  const divisor=n=>{const r=new Array(n).fill(0);r[n-1]=1;let root=1;for(let i=0;i<n;i++){for(let j=0;j<n;j++){r[j]=mul(r[j],root);if(j+1<n)r[j]^=r[j+1]}root=mul(root,2)}return r};
-  const remainder=(d,div)=>{const r=new Array(div.length).fill(0);for(const b of d){const f=b^r.shift();r.push(0);div.forEach((c,i)=>{r[i]^=mul(c,f)})}return r};
-  const nb=NB[ver],el=ECC[ver],rc=Math.floor(raw(ver)/8),ns=nb-rc%nb,sl=Math.floor(rc/nb),div=divisor(el),blocks=[];
-  for(let i=0,k=0;i<nb;i++){
-    const dat=data.slice(k,k+sl-el+(i<ns?0:1));k+=dat.length;
-    const ecc=remainder(dat,div);if(i<ns)dat.push(0);blocks.push(dat.concat(ecc));
-  }
-  const all=[];
-  for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sl-el||j>=ns)all.push(b[i])});
-  /* matriks */
-  const n=ver*4+17,M=Array.from({length:n},()=>new Array(n).fill(false)),F=Array.from({length:n},()=>new Array(n).fill(false));
-  const set=(x,y,d)=>{M[y][x]=d;F[y][x]=true};
-  for(let i=0;i<n;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
-  const finder=(x,y)=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),xx=x+dx,yy=y+dy;if(xx>=0&&xx<n&&yy>=0&&yy<n)set(xx,yy,d!==2&&d!==4)}};
-  finder(3,3);finder(n-4,3);finder(3,n-4);
-  if(ver>1){
-    const na=Math.floor(ver/7)+2,step=Math.ceil((ver*4+4)/(na*2-2))*2,pos=[6];
-    for(let p=n-7;pos.length<na;p-=step)pos.splice(1,0,p);
-    for(let i=0;i<na;i++)for(let j=0;j<na;j++){
-      if((i===0&&j===0)||(i===0&&j===na-1)||(i===na-1&&j===0))continue;
-      for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(pos[i]+dx,pos[j]+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1);
-    }
-  }
-  const bit=(x,i)=>((x>>>i)&1)!==0;
-  const fmt=mask=>{
-    const d=0<<3|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);
-    const b=(d<<10|r)^0x5412;
-    for(let i=0;i<=5;i++)set(8,i,bit(b,i));
-    set(8,7,bit(b,6));set(8,8,bit(b,7));set(7,8,bit(b,8));
-    for(let i=9;i<15;i++)set(14-i,8,bit(b,i));
-    for(let i=0;i<8;i++)set(n-1-i,8,bit(b,i));
-    for(let i=8;i<15;i++)set(8,n-15+i,bit(b,i));
-    set(8,n-8,true);
-  };
-  fmt(0);
-  if(ver>=7){
-    let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);
-    const b=ver<<12|r;
-    for(let i=0;i<18;i++){const a=n-11+i%3,c=Math.floor(i/3);set(a,c,bit(b,i));set(c,a,bit(b,i))}
-  }
-  /* isi data zig-zag */
-  let k=0;
-  for(let right=n-1;right>=1;right-=2){
-    if(right===6)right=5;
-    for(let v=0;v<n;v++)for(let j=0;j<2;j++){
-      const x=right-j,up=((right+1)&2)===0,y=up?n-1-v:v;
-      if(!F[y][x]&&k<all.length*8){M[y][x]=bit(all[k>>>3],7-(k&7));k++}
-    }
-  }
-  const mask=m=>{for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-    let inv;
-    switch(m){case 0:inv=(x+y)%2===0;break;case 1:inv=y%2===0;break;case 2:inv=x%3===0;break;case 3:inv=(x+y)%3===0;break;
-      case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2===0;break;case 5:inv=x*y%2+x*y%3===0;break;
-      case 6:inv=(x*y%2+x*y%3)%2===0;break;default:inv=((x+y)%2+x*y%3)%2===0}
-    if(!F[y][x]&&inv)M[y][x]=!M[y][x];
-  }};
-  const penalty=()=>{
-    let s=0;
-    const line=g=>{ // runs + pola mirip finder
-      let run=1;
-      for(let i=1;i<n;i++){if(g(i)===g(i-1)){run++;if(run===5)s+=3;else if(run>5)s++}else run=1}
-      for(let i=0;i+10<n+0;i++){
-        const a=[1,0,1,1,1,0,1,0,0,0,0],b=[0,0,0,0,1,0,1,1,1,0,1];
-        let ma=true,mb=true;for(let j=0;j<11;j++){const v=g(i+j)?1:0;if(v!==a[j])ma=false;if(v!==b[j])mb=false}
-        if(ma)s+=40;if(mb)s+=40;
-      }
-    };
-    for(let y=0;y<n;y++)line(i=>M[y][i]);
-    for(let x=0;x<n;x++)line(i=>M[i][x]);
-    for(let y=0;y<n-1;y++)for(let x=0;x<n-1;x++){const c=M[y][x];if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1])s+=3}
-    let dark=0;for(const r of M)for(const c of r)if(c)dark++;
-    s+=(Math.ceil(Math.abs(dark*20-n*n*10)/(n*n))-1)*10;
-    return s;
-  };
-  let best=0,bp=1e9;
-  for(let m=0;m<8;m++){mask(m);fmt(m);const p=penalty();if(p<bp){bp=p;best=m}mask(m)}
-  mask(best);fmt(best);
-  return M;
-}
-function qrSvg(text,px){
-  const M=qrMatrix(text),n=M.length,q=4;let d='';
-  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])d+='M'+(x+q)+' '+(y+q)+'h1v1h-1z';
-  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+q*2} ${n+q*2}" width="${px||240}" height="${px||240}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
-}
 
 /* ---------- pesanan online (QR pelanggan) ---------- */
 const CO={rev:0,list:[],set:{on:true,msg:''},seen:new Set(),mine:new Set(),run:false,err:false,tries:{},pr:false,ring:0,aud:null,wl:null,pend:[],title:'Ordela',perr:''};
 function coPref(k,d){try{const p=JSON.parse(localStorage.getItem('pos_co')||'{}');return p[k]==null?d:p[k]}catch(e){return d}}
 function coSetPref(k,v){let p={};try{p=JSON.parse(localStorage.getItem('pos_co')||'{}')}catch(e){}p[k]=v;try{localStorage.setItem('pos_co',JSON.stringify(p))}catch(e){}}
 const coNew=()=>CO.list.filter(o=>o.status==='new');
+const isOnl=o=>!!o&&(o.pay==='qris'||o.pay==='duitnow');   /* 'duitnow' = pesanan lama sebelum QRIS */
 /* alamat publik untuk QR: pengaturan manual > alamat dari build APK > alamat halaman ini (bukan localhost) */
 function pubBase(){
   let b=String(db.set.pubUrl||'').trim()||String(window.POS_PUBLIC_URL||'').trim();
@@ -3033,7 +2931,7 @@ async function coProof(id){
   <button class="btn sec" onclick="closeModal()">Tutup</button>`);
 }
 function coRejectPay(id){if(confirm('Tolak bukti ini? Pelanggan akan diminta mengunggah ulang.')){closeModal();coAct(id,'reject')}}
-function coCancel(id){const o=CO.list.find(x=>x.id===id);if(o&&confirm('Batalkan pesanan '+o.num+' atas nama '+o.name+'?'+(o.pay==='duitnow'&&(o.pst===1||o.pst===2)?'\n\nPelanggan sudah membayar lewat DuitNow. Kembalikan uangnya secara manual.':'')))coAct(id,'cancel')}
+function coCancel(id){const o=CO.list.find(x=>x.id===id);if(o&&confirm('Batalkan pesanan '+o.num+' atas nama '+o.name+'?'+(isOnl(o)&&(o.pst===1||o.pst===2)?'\n\nPelanggan sudah membayar lewat QRIS. Kembalikan uangnya secara manual.':'')))coAct(id,'cancel')}
 function coPay(id){
   const o=CO.list.find(x=>x.id===id);if(!o)return;
   if(Object.keys(S.cart).length&&!confirm('Keranjang kasir saat ini akan diganti dengan pesanan '+o.num+'. Lanjutkan?'))return;
@@ -3138,8 +3036,8 @@ function renderCo(full){
     const ps=o.printed===2?'<span class="pst ok"><i class="ic" data-ic="check"></i>tercetak</span>':o.printed===1?'<span class="pst w">mencetak…</span>':(o.status==='new'||o.status==='accepted')?'<span class="pst w">belum tercetak</span>':'';
     const btn=o.status==='new'?`<button class="btn" onclick="coAct(${o.id},'accept')"><i class="ic" data-ic="check"></i>Terima</button><button class="btn sec" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:o.status==='accepted'?`<button class="btn" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:'';
     const act=(o.status==='new'||o.status==='accepted')?`${btn}<button class="btn sec" onclick="coPrint(${o.id})"><i class="ic" data-ic="print"></i>Cetak</button><button class="btn sec" onclick="coCancel(${o.id})"><i class="ic" data-ic="x"></i>Batal</button>`:'';
-    const pb=o.pay==='duitnow'?(o.pst===2?'<span class="pst ok"><i class="ic" data-ic="card"></i>DuitNow · diterima</span>':o.pst===1?'<span class="pst w"><i class="ic" data-ic="card"></i>DuitNow · '+(o.hp?'bukti masuk, perlu dicek':'pelanggan klaim sudah bayar')+'</span>':o.pst===3?'<span class="pst"><i class="ic" data-ic="card"></i>DuitNow · bukti ditolak</span>':'<span class="pst w"><i class="ic" data-ic="card"></i>DuitNow · belum dibayar</span>'):'';
-    const pbtn=(o.pay==='duitnow'&&(o.status==='new'||o.status==='accepted'))?(o.pst===1&&o.hp?`<button class="btn" onclick="coProof(${o.id})"><i class="ic" data-ic="image"></i>Lihat bukti bayar</button>`:o.pst===2?`<button class="btn sec" onclick="coAct(${o.id},'unpaid')"><i class="ic" data-ic="undo"></i>Batalkan konfirmasi bayar</button>`:`<button class="btn" onclick="coConfirmPay(${o.id})"><i class="ic" data-ic="check"></i>Pembayaran diterima</button>`):'';
+    const pb=isOnl(o)?(o.pst===2?'<span class="pst ok"><i class="ic" data-ic="card"></i>QRIS · diterima</span>':o.pst===1?'<span class="pst w"><i class="ic" data-ic="card"></i>QRIS · '+(o.hp?'bukti masuk, perlu dicek':'pelanggan klaim sudah bayar')+'</span>':o.pst===3?'<span class="pst"><i class="ic" data-ic="card"></i>QRIS · bukti ditolak</span>':'<span class="pst w"><i class="ic" data-ic="card"></i>QRIS · belum dibayar</span>'):'';
+    const pbtn=(isOnl(o)&&(o.status==='new'||o.status==='accepted'))?(o.pst===1&&o.hp?`<button class="btn" onclick="coProof(${o.id})"><i class="ic" data-ic="image"></i>Lihat bukti bayar</button>`:o.pst===2?`<button class="btn sec" onclick="coAct(${o.id},'unpaid')"><i class="ic" data-ic="undo"></i>Batalkan konfirmasi bayar</button>`:`<button class="btn" onclick="coConfirmPay(${o.id})"><i class="ic" data-ic="check"></i>Pembayaran diterima</button>`):'';
     const tag=o.status==='cancelled'?'<span class="pst">dibatalkan</span>':o.status==='done'?`<span class="pst ok">selesai${o.saleNo?' · '+esc(o.saleNo):''}</span>`:o.status==='accepted'?'<span class="pst ok">diterima</span>':'<span class="pst w">baru</span>';
     return`<div class="coc ${o.status}"><div class="coh"><span class="no">${esc(o.num)}</span><span class="cn">${esc(o.name)}</span><span class="ct">${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${esc(o.type==='Dine In'?'Dine In':'Takeaway')}</span><time>${ago(o.t)}</time></div>
     <ul>${o.lines.map(l=>`<li><b>${l.qty}x</b><span>${esc(l.name)}</span></li>`).join('')}</ul>
@@ -3147,7 +3045,7 @@ function renderCo(full){
     <div class="cof"><span>${money(o.total)}</span><span style="display:flex;gap:6px;flex-wrap:wrap">${tag}${pb}${ps}</span></div>
     ${act?`<div class="cob">${pbtn}${act}</div>`:''}</div>`;
   };
-  const finRow=o=>`<button class="li" onclick="coDet(${o.id})"><span class="l"><b>${esc(o.num)} · ${esc(o.name)}</b><small>${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${o.type==='Dine In'?'Dine In':'Takeaway'} · ${ago(o.u||o.t)}</small></span><span class="r"><b>${money(o.total)}</b><small>${o.status==='cancelled'?'dibatalkan':'selesai'}${o.pay==='duitnow'?' · DuitNow'+(o.pst===2?' <i class="ic solo" data-ic="check"></i>':''):''}</small></span><span class="ch">›</span></button>`;
+  const finRow=o=>`<button class="li" onclick="coDet(${o.id})"><span class="l"><b>${esc(o.num)} · ${esc(o.name)}</b><small>${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${o.type==='Dine In'?'Dine In':'Takeaway'} · ${ago(o.u||o.t)}</small></span><span class="r"><b>${money(o.total)}</b><small>${o.status==='cancelled'?'dibatalkan':'selesai'}${isOnl(o)?' · QRIS'+(o.pst===2?' <i class="ic solo" data-ic="check"></i>':''):''}</small></span><span class="ch">›</span></button>`;
   $('#coList').innerHTML=(act.length?`<div class="sech"><h3>Aktif (${act.length})</h3></div>${act.map(card).join('')}`:'<div class="empty" style="padding:30px 10px">Belum ada pesanan aktif.<br><small>Pesanan dari QR akan muncul di sini.</small></div>')
     +(fin.length?`<div class="sech" style="margin-top:14px"><h3>Selesai / batal (${fin.length})</h3></div><div class="panel"><div class="lst">${fin.map(finRow).join('')}</div></div>`:'');
 }
@@ -3159,7 +3057,7 @@ function coDet(id){
   <tr><td>Masuk</td><td>${tm(o.t)}</td></tr>${o.u&&o.u!==o.t?`<tr><td>Terakhir diubah</td><td>${tm(o.u)}</td></tr>`:''}
   <tr><td>Tipe</td><td>${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${o.type==='Dine In'?'Dine In':'Takeaway'}</td></tr>
   ${o.saleNo?`<tr><td>Invoice</td><td>${esc(o.saleNo)}</td></tr>`:''}
-  <tr><td>Pembayaran</td><td>${o.pay==='duitnow'?'DuitNow / Touch \'n Go · '+(o.pst===2?'diterima':o.pst===1?(o.hp?'bukti masuk, menunggu persetujuan':'pelanggan klaim sudah bayar'):o.pst===3?'bukti ditolak':'belum dibayar'):'Bayar di kasir'}</td></tr>
+  <tr><td>Pembayaran</td><td>${isOnl(o)?'QRIS · '+(o.pst===2?'diterima':o.pst===1?(o.hp?'bukti masuk, menunggu persetujuan':'pelanggan klaim sudah bayar'):o.pst===3?'bukti ditolak':'belum dibayar'):'Bayar di kasir'}</td></tr>
   <tr><td>Tiket</td><td>${o.printed===2?'tercetak':'belum tercetak'}</td></tr></table>
   <table class="dl">${o.lines.map(l=>`<tr><td>${l.qty}× ${esc(l.name)}<br><small>${money(l.price)}</small></td><td>${money(l.price*l.qty)}</td></tr>`).join('')}
   <tr><td>Subtotal</td><td>${money(o.sub)}</td></tr>${o.tax?`<tr><td>Pajak</td><td>${money(o.tax)}</td></tr>`:''}<tr class="tt"><td>Total</td><td>${money(o.total)}</td></tr></table>
@@ -3170,37 +3068,48 @@ function coDet(id){
   <button class="btn sec" onclick="closeModal()">Tutup</button>`);
 }
 function setPay(k,v){db.set.pay[k]=v;save();renderPay()}
-function pickPayQr(inp){
-  const f=inp.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=e=>{
-    const im=new Image();
-    im.onload=()=>{
-      const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');
-      c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
-      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;x.drawImage(im,0,0,c.width,c.height);
-      let d=c.toDataURL('image/png');if(d.length>400000)d=c.toDataURL('image/jpeg',.92);
-      if(d.length>600000){toast('Gambar QR terlalu besar');return}
-      db.set.pay.qr=d;if(!db.set.pay.name)db.set.pay.name=db.set.store||'';save();renderPay();toast('QR pembayaran disimpan');
-    };
-    im.onerror=()=>toast('Gambar tidak valid');
-    im.src=e.target.result;
-  };
-  rd.readAsDataURL(f);inp.value='';
+/* simpan kode QRIS statis toko (teks). Diperiksa dulu: format, CRC, dan harus QRIS Indonesia. */
+function payQrisSave(txt){
+  txt=String(txt||'').replace(/[\r\n\t]+/g,'').trim();
+  if(!txt){db.set.pay.qris='';db.set.pay.on=false;save();renderPay();return}
+  const c=QRIS.check(txt);
+  if(!c.ok){toast(c.err);renderPay();return}
+  if(c.dynamic||c.hasAmount){toast('Ini QRIS dinamis (sudah ada nominal). Pakai QRIS statis dari aplikasi merchant Anda.');renderPay();return}
+  db.set.pay.qris=txt;if(!db.set.pay.name)db.set.pay.name=c.name||db.set.store||'';
+  save();renderPay();toast('QRIS tersimpan: '+(c.name||'merchant'))
+}
+async function payQrisImg(inp){
+  const f=inp.files[0];inp.value='';if(!f)return;
+  try{
+    const t=await QRIS.decodeImage(f);
+    if(!t){toast('QR tidak terbaca dari foto itu. Coba foto yang lebih jelas, atau tempel kodenya.');return}
+    payQrisSave(t);
+  }catch(e){toast(e&&e.message==='nosupport'?'Browser ini belum bisa membaca QR dari foto. Tempel kode QRIS-nya (lihat petunjuk).':'Foto tidak bisa dibaca')}
+}
+/* uji coba: tampilkan QRIS dinamis Rp 1.000 supaya owner bisa memindainya dengan aplikasi bank sendiri */
+function payQrisTest(){
+  const y=db.set.pay;let q='';
+  try{q=QRIS.dynamic(y.qris,1000)}catch(e){toast(e.message);return}
+  openModal(`<h3>Uji QRIS dinamis</h3><p class="mu" style="margin:0 0 8px">Pindai dengan aplikasi e-wallet/m-banking. Nominal harus muncul otomatis <b>${money(1000)}</b>. Kalau tidak muncul, QRIS statis Anda tidak mendukung nominal dinamis; hubungi penyedia QRIS Anda.</p><div style="text-align:center;background:#fff;padding:10px;border-radius:12px">${qrSvg(q,260)}</div><button class="btn sec" style="margin-top:12px" onclick="closeModal()">Tutup</button>`);
 }
 function renderPay(){
   const p=$('#payForm');if(!p)return;
   if(!(CL.on&&can('co')&&can('set'))){p.hidden=true;applySetTab();return}
-  p.hidden=false;const y=db.set.pay;
-  p.innerHTML=`<h3>Pembayaran Online (DuitNow / Touch 'n Go)</h3>
-    <label class="tgl"><input type="checkbox" ${y.on&&y.qr?'checked':''} ${y.qr?'':'disabled'} onchange="setPay('on',this.checked)"><span>Tawarkan bayar online saat pelanggan memesan lewat QR</span></label>
-    <div class="up"><div class="pv payqr">${y.qr?`<img src="${y.qr}" alt="QR pembayaran">`:'<i class="ic solo" data-ic="bank"></i>'}</div>
-    <div><button class="btn sm sec" onclick="$('#pqF').click()">${y.qr?'Ganti gambar QR':'Upload gambar QR'}</button> ${y.qr?`<button class="mini" style="color:var(--bt)" onclick="setPay('qr','');setPay('on',false)">Hapus</button>`:''}
-    <input type="file" id="pqF" accept="image/*" hidden onchange="pickPayQr(this)"></div></div>
+  p.hidden=false;const y=db.set.pay,c=y.qris?QRIS.check(y.qris):null,ok=!!(c&&c.ok);
+  p.innerHTML=`<h3>Pembayaran Online (QRIS dinamis)</h3>
+    <label class="tgl"><input type="checkbox" ${y.on&&ok?'checked':''} ${ok?'':'disabled'} onchange="setPay('on',this.checked)"><span>Tawarkan bayar online saat pelanggan memesan lewat QR</span></label>
+    <p class="mu" style="margin:6px 0 10px">Aplikasi mengubah QRIS statis toko Anda menjadi <b>QRIS dinamis</b>: nominal pesanan terisi otomatis di aplikasi bank pelanggan. Pembayaran tetap Anda konfirmasi lewat bukti bayar atau mutasi.</p>
+    <label class="fl">Kode QRIS statis toko</label>
+    <textarea class="fi" rows="3" maxlength="520" spellcheck="false" placeholder="Tempel kode QRIS yang diawali 000201…" onchange="payQrisSave(this.value)">${esc(y.qris||'')}</textarea>
+    ${y.qris?(ok?`<div class="chg" style="margin:8px 0"><span><i class="ic" data-ic="check"></i>QRIS valid · ${esc(c.name||'merchant')}</span></div>`:`<div class="chg neg" style="margin:8px 0"><span>${esc((c&&c.err)||'Kode tidak valid')}</span></div>`):''}
+    <div class="cob"><button class="btn sm sec" onclick="$('#pqF').click()"><i class="ic" data-ic="image"></i>Baca dari foto QRIS</button>
+    ${ok?`<button class="btn sm" onclick="payQrisTest()"><i class="ic" data-ic="qr"></i>Uji QR dinamis</button><button class="mini" style="color:var(--bt)" onclick="if(confirm('Hapus QRIS toko?'))payQrisSave('')">Hapus</button>`:''}
+    <input type="file" id="pqF" accept="image/*" hidden onchange="payQrisImg(this)"></div>
+    <details style="margin:8px 0"><summary>Cara mendapatkan kode QRIS</summary><p class="mu" style="margin:6px 0">Pindai stiker QRIS toko Anda dengan aplikasi pemindai QR apa pun (atau tombol baca foto di atas pada Chrome Android), lalu salin teks hasilnya. Teks itu panjang dan diawali <code>000201</code>. Gunakan QRIS <b>statis</b> milik toko Anda sendiri; QRIS dari pelanggan atau yang sudah ada nominalnya akan ditolak.</p></details>
     <label class="fl">Nama penerima (tampil ke pelanggan)</label>
     <input class="fi" value="${esc(y.name||'')}" maxlength="60" placeholder="mis. Ordela" onchange="setPay('name',this.value.trim())">
     <label class="fl">Petunjuk tambahan (opsional)</label>
-    <textarea class="fi" rows="2" maxlength="300" placeholder="mis. Tulis nomor pesanan di kolom catatan transfer" onchange="setPay('note',this.value.trim())">${esc(y.note||'')}</textarea>
+    <textarea class="fi" rows="2" maxlength="300" placeholder="mis. Tulis nomor pesanan di kolom catatan" onchange="setPay('note',this.value.trim())">${esc(y.note||'')}</textarea>
 `;
 }
 function renderCoSet(){

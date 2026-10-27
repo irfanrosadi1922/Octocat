@@ -420,10 +420,13 @@ begin
 end $$;
 
 -- ------------------------------------------------------------ menu & pesanan pelanggan
+create or replace function pos.qris_ok(q text) returns boolean language sql immutable as $$
+  select coalesce(length(q) between 36 and 512 and q ~ '^000201[ -~]+$' and position('5802ID' in q) > 0 and q ~ '6304[0-9A-Fa-f]{4}$', false) $$;
+
 create or replace function pos.pay_cfg(s jsonb) returns jsonb language sql immutable as $$
   select jsonb_build_object(
-    'on', coalesce((s #>> '{pay,on}') = 'true', false) and coalesce((s #>> '{pay,qr}') ~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$', false),
-    'qr', case when coalesce((s #>> '{pay,qr}') ~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$', false) then s #>> '{pay,qr}' else '' end,
+    'on', coalesce((s #>> '{pay,on}') = 'true', false) and pos.qris_ok(s #>> '{pay,qris}'),
+    'qris', case when pos.qris_ok(s #>> '{pay,qris}') then s #>> '{pay,qris}' else '' end,
     'name', left(coalesce(s #>> '{pay,name}', ''), 60), 'note', left(coalesce(s #>> '{pay,note}', ''), 300)) $$;
 
 create or replace function pos.pub_menu(q jsonb) returns jsonb language plpgsql stable as $$
@@ -503,9 +506,9 @@ begin
   tx := round(sub * tx_pct / 100, dec); tot := round(sub + tx, dec);
   v_day := (now() at time zone pos.tz())::date;
   select count(*) + 1 into n from pos.co where co.day = v_day;
-  if b ->> 'pay' = 'duitnow' then
+  if b ->> 'pay' in ('qris', 'duitnow') then
     if not (pos.pay_cfg(s) ->> 'on')::boolean then return pos.r(400, '{"error":"Pembayaran online sedang tidak tersedia. Silakan bayar di kasir."}'); end if;
-    v_pay := 'duitnow';
+    v_pay := 'qris';
   end if;
   tk := encode(extensions.gen_random_bytes(16), 'hex');
   tp := case when b ->> 'type' = 'Dine In' then 'Dine In' else 'Takeaway' end;
@@ -671,7 +674,7 @@ begin
     if r.id is null then return pos.r(404, '{"error":"tidak ada"}'); end if;
     if mt[2] = '/paid' then
       if m <> 'POST' then return pos.r(405, '{"error":"method"}'); end if;
-      if r.pay <> 'duitnow' or r.status not in ('new', 'accepted') then return pos.r(409, '{"error":"Pesanan ini tidak bisa dibayar online."}'); end if;
+      if r.pay not in ('qris', 'duitnow') or r.status not in ('new', 'accepted') then return pos.r(409, '{"error":"Pesanan ini tidak bisa dibayar online."}'); end if;
       if r.pst = 2 then return pos.r(200, pos.cust_view(r)); end if;
       v_proof := coalesce(b ->> 'proof', '');
       if v_proof <> '' and (length(v_proof) > 700000 or v_proof !~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$') then
@@ -902,7 +905,7 @@ begin
       return pos.r(200, '{"ok":true}');
     end if;
     if b ->> 'action' in ('paid', 'unpaid', 'reject') then
-      if r.pay <> 'duitnow' then return pos.r(400, '{"error":"bukan pesanan bayar online"}'); end if;
+      if r.pay not in ('qris', 'duitnow') then return pos.r(400, '{"error":"bukan pesanan bayar online"}'); end if;
       if r.status = 'cancelled' then return pos.r(409, jsonb_build_object('error', 'sudah selesai', 'status', r.status)); end if;
       update pos.co set pst = case b ->> 'action' when 'paid' then 2 when 'reject' then 3 else 0 end,
         proof = case when b ->> 'action' = 'reject' then '' else proof end, updated_at = now() where id = r.id returning * into r;

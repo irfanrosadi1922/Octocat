@@ -42,3 +42,10 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - GitHub → Settings → Pages → *Custom domain*: isi `ordela.my.id`, tunggu pemeriksaan DNS selesai, lalu centang **Enforce HTTPS**.
 - Supabase → Authentication → URL Configuration: ubah **Site URL** menjadi `https://ordela.my.id/` dan tambahkan `https://ordela.my.id/**` ke Redirect URLs (tautan reset sandi dan verifikasi email memakai alamat ini).
 - Build APK otomatis memakai isi `CNAME` sebagai alamat QR, kecuali variabel `APP_URL` diisi.
+
+## Pembayaran online: QRIS dinamis
+- Pengaturan → **Pembayaran Online**: tempel kode QRIS **statis** toko (teks berawalan `000201`, bisa dibaca dari foto di Chrome Android). Aplikasi memeriksa format dan CRC-nya, lalu menyimpannya.
+- Saat pelanggan memilih **Bayar online**, aplikasi membuat QRIS **dinamis** di perangkat pelanggan: salinan QRIS toko dengan nominal pesanan sudah terisi (EMVCo tag 54, CRC dihitung ulang). Pelanggan tinggal memindai dan membayar tanpa mengetik angka.
+- Tombol **Uji QR dinamis** menampilkan QR senilai Rp 1.000 untuk dipindai owner sendiri. Kalau aplikasi bank tidak mengisi nominal otomatis, QRIS statis toko tidak mendukungnya.
+- Pembayaran tetap dikonfirmasi kasir lewat bukti bayar atau mutasi ("Pembayaran diterima"). Konfirmasi otomatis hanya mungkin lewat payment gateway (belum ada).
+- Pesanan lama bertanda `duitnow` tetap dikenali dan ditampilkan sebagai QRIS. Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.

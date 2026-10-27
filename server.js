@@ -152,6 +152,7 @@ const q = {
   insLine: db.prepare('INSERT INTO order_lines(no,name,qty,price,cost) VALUES(?,?,?,?,?)'),
 };
 const num = (v) => (Number.isFinite(+v) ? +v : 0);
+const qrisOk = (q) => typeof q === 'string' && /^000201[\x20-\x7E]{30,500}$/.test(q) && q.includes('5802ID') && /6304[0-9A-Fa-f]{4}$/.test(q);
 
 function getDoc() {
   const r = q.get.get();
@@ -226,6 +227,9 @@ const STATIC = {
   '/config.js': ['text/javascript', 'no-cache'],
   '/sbapi.js': ['text/javascript', 'no-cache'],
   '/native.js': ['text/javascript', 'no-cache'],
+  '/qr.js': ['text/javascript', 'no-cache'],
+  '/qris.js': ['text/javascript', 'no-cache'],
+  '/auth.js': ['text/javascript', 'no-cache'],
   '/icon-192.png': ['image/png', 'public, max-age=86400'],
   '/icon-512.png': ['image/png', 'public, max-age=86400'],
 };
@@ -426,8 +430,8 @@ function pubBuild() {
   };
   const s = d.set || {};
   const items = d.items.map((i) => ({ id: String(i.id), name: String(i.name || ''), cat: String(i.cat || ''), price: num(i.price), stock: Math.max(0, Math.floor(num(i.stock))), emoji: String(i.emoji || '🍽️').slice(0, 8), img: /^[\w-]+$/.test(String(i.id)) ? putImg(String(i.id), i.img) : '' }));
-  const sp = isObj(s.pay) ? s.pay : {}, payQr = putImg('payqr', sp.qr);
-  const pay = { on: sp.on === true && !!payQr, qr: payQr, name: String(sp.name || '').slice(0, 60), note: String(sp.note || '').slice(0, 300) };
+  const sp = isObj(s.pay) ? s.pay : {}, payQr = qrisOk(sp.qris) ? sp.qris : '';
+  const pay = { on: sp.on === true && !!payQr, qris: payQr, name: String(sp.name || '').slice(0, 60), note: String(sp.note || '').slice(0, 300) };
   const used = new Set(items.map((i) => i.cat));
   pub = {
     ver, imgs,
@@ -484,7 +488,7 @@ function createOrder(b, ip) {
   const num = '#' + String(n).padStart(3, '0'), tok = crypto.randomBytes(16).toString('base64url');
   const type = b.type === 'Dine In' ? 'Dine In' : 'Takeaway';
   let pay = '';
-  if (b.pay === 'duitnow') { if (!P.menu.pay.on) return [400, { error: 'Pembayaran online sedang tidak tersedia. Silakan bayar di kasir.' }]; pay = 'duitnow'; }
+  if (b.pay === 'qris' || b.pay === 'duitnow') { if (!P.menu.pay.on) return [400, { error: 'Pembayaran online sedang tidak tersedia. Silakan bayar di kasir.' }]; pay = 'qris'; }
   const r = coq.ins.run(tok, key, day, num, name, clean(b.table, 12), type, clean(b.note, 200), JSON.stringify(lines), sub, tax, total, 'new', now.toISOString(), now.toISOString(), pay);
   coBump();
   try { pushNotify(); } catch (e) {}
@@ -653,7 +657,7 @@ const server = http.createServer(async (req, res) => {
       if (!r) return json(res, 404, { error: 'tidak ada' });
       if (pm[2] === '/paid') {
         if (req.method !== 'POST') return json(res, 405, { error: 'method' });
-        if (r.pay !== 'duitnow' || !['new', 'accepted'].includes(r.status)) return json(res, 409, { error: 'Pesanan ini tidak bisa dibayar online.' });
+        if (!['qris', 'duitnow'].includes(r.pay) || !['new', 'accepted'].includes(r.status)) return json(res, 409, { error: 'Pesanan ini tidak bisa dibayar online.' });
         if (r.pst !== 2) {
           let b = {}; try { b = JSON.parse((await readBody(req, 900 * 1024)) || '{}') || {}; } catch (e) { return json(res, e && e.code === 413 ? 413 : 400, { error: e && e.code === 413 ? 'Foto terlalu besar.' : 'bad json' }); }
           const pf = typeof b.proof === 'string' ? b.proof : '';
@@ -839,7 +843,7 @@ const server = http.createServer(async (req, res) => {
         return json(res, 200, { ok: true });
       }
       if (b.action === 'paid' || b.action === 'unpaid' || b.action === 'reject') {
-        if (r.pay !== 'duitnow') return json(res, 400, { error: 'bukan pesanan bayar online' });
+        if (!['qris', 'duitnow'].includes(r.pay)) return json(res, 400, { error: 'bukan pesanan bayar online' });
         if (r.status === 'cancelled') return json(res, 409, { error: 'sudah selesai', status: r.status });
         if (b.action === 'reject') coq.rejProof.run(new Date().toISOString(), r.id);
         else coq.setPst.run(b.action === 'paid' ? 2 : 0, new Date().toISOString(), r.id);
