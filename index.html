@@ -3084,7 +3084,7 @@ function coQr(){
   <button class="btn sec" onclick="closeModal()">Tutup</button>`);
   coQrDraw();
 }
-function coQrDraw(){const t=($('#qrT').value||'').trim();S.coT=t;const u=coUrl(t);$('#qrBox').innerHTML=qrSvg(u,260);$('#qrU').textContent=u;const w=$('#qrWarn');if(w)w.style.display=urlLocal()?'':'none'}
+function coQrDraw(){if(!storeCode()&&!coQrDraw.busy){coQrDraw.busy=1;api('/api/me').then(r=>r.json()).then(m=>{if(m&&m.username){setMe(m)}}).catch(()=>{}).finally(()=>{coQrDraw.busy=0;if(storeCode()&&$('#qrBox'))coQrDraw()})}const t=($('#qrT').value||'').trim();S.coT=t;const u=coUrl(t);$('#qrBox').innerHTML=qrSvg(u,260);$('#qrU').textContent=u;const w=$('#qrWarn');if(w)w.style.display=urlLocal()?'':'none'}
 function coQrPrint(){
   const t=S.coT||'',u=coUrl(t);
   $('#pageStyle').textContent='@media print{@page{size:auto;margin:8mm}}';
