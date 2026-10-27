@@ -433,7 +433,7 @@ function pubBuild() {
     ver, imgs,
     doc: { items: new Map(items.map((i) => [i.id, i])), tax: num(s.tax), dec: Math.max(0, Math.min(4, num(s.dec))) },
     menu: {
-      store: String(s.store || 'Ordela'), logo: putImg('logo', s.logo) || '/icon-192.png',
+      store: String(s.store || 'Ordela'), phone: String(s.phone || ''), address: String(s.addr || ''), logo: putImg('logo', s.logo) || '/icon-192.png',
       cur: String(s.cur || 'Rp'), curPos: s.curPos === 'after' ? 'after' : 'before', dec: Math.max(0, Math.min(4, num(s.dec))), loc: String(s.loc || 'id-ID'),
       tax: num(s.tax), pay, cats: (d.cats || []).filter((c) => used.has(c)).concat([...used].filter((c) => !(d.cats || []).includes(c))), items,
     },
