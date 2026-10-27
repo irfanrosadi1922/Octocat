@@ -344,6 +344,7 @@ async function wzFinish(){
     const j=await r.json().catch(()=>({}));
     if(!r.ok)return msg(j.error||'Gagal menyiapkan toko. Coba lagi.');
     setMe(j);
+    try{if(j.store&&j.store.code)localStorage.setItem('pos_dbstore',j.store.code)}catch(e){}   // data lokal berikut milik toko baru ini
     const d=seed();d.items=[];d.cats=[];d.orders=[];d.log=[];d.seq=1;
     const dec=WZ.cur==='Rp'||WZ.cur==='₱'?0:2;
     d.set={...d.set,store:WZ.name,addr:WZ.addr,phone:WZ.phone?'+'+WZ.cc+' '+WZ.phone:'',tax:parseFloat(WZ.tax)||0,cur:WZ.cur,dec,logo:WZ.logo,tz:WZ.tz};

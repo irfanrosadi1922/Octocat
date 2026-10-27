@@ -3280,6 +3280,19 @@ function showLogin(msg){
   $('#loginUser').value=u;w.hidden=false;
   setTimeout(()=>{const i=u?$('#loginPw'):$('#loginUser');if(i)i.focus()},60);
 }
+/* Data lokal (menu, pesanan, pengaturan, cadangan) milik satu toko. Bila yang login berasal dari toko lain, data toko sebelumnya dibuang
+   sebelum sinkron pertama, supaya tidak tertulis ke toko ini. Login ulang ke toko yang sama tidak menghapus apa pun. */
+async function localOwnerGuard(m){
+  const code=m&&m.store&&m.store.code;if(!code)return false;
+  let prev=null;try{prev=localStorage.getItem('pos_dbstore')}catch(e){}
+  if(prev===code)return false;
+  try{localStorage.setItem('pos_dbstore',code)}catch(e){}
+  if(prev===null&&CL.dirty)return false;     // perangkat lama tanpa penanda dan ada perubahan belum tersinkron: dipakai apa adanya agar tidak hilang
+  try{localStorage.removeItem(KEY)}catch(e){}
+  db=fixDb(seed());S.cart={};S.sel.clear();CL.ver=0;CL.dirty=false;persistMeta();
+  try{await idbReq('readwrite',s=>s.clear());await idbSet('main',dbJson())}catch(e){}   // salinan, dasar penggabungan, dan snapshot toko sebelumnya
+  applyBrand();return true;
+}
 async function doLogin(){
   const un=$('#loginUser').value.trim().toLowerCase(),pw=$('#loginPw').value,err=$('#loginErr'),btn=$('#loginBtn');
   if(!un||!pw){err.textContent='Isi username dan kata sandi';return}
@@ -3291,7 +3304,7 @@ async function doLogin(){
     if(r.status===403){err.textContent=j.error||'Akun tidak aktif';return}
     if(r.status===429){err.textContent='Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';return}
     if(!r.ok)throw 0;
-    CL.tok=j.token;setMe(j.me);
+    CL.tok=j.token;setMe(j.me);await localOwnerGuard(j.me);
     try{localStorage.setItem('pos_tok',CL.tok);localStorage.setItem('pos_user',un)}catch(e){}
     $('#loginPw').value='';$('#login').hidden=true;ssStamp();ssWarnHide();
     applyAccess();if(!canView(S.view))go('pos');else render();

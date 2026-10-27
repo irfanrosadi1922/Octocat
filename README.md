@@ -26,3 +26,7 @@ Di halaman **Pengguna**, tombol **Jabatan** membuka panel untuk menambah jabatan
 menghapusnya dari daftar, dan mengatur izin awal tiap jabatan, termasuk Absensi. Pengaturan ini berlaku per toko dan hanya bisa diubah owner.
 
 Semua jabatan kecuali Owner dan Staf bisa dihapus dari daftar supaya tidak terlalu banyak. Jabatan bawaan yang dihapus hanya disembunyikan: muncul di blok "Jabatan yang disembunyikan" di bawah panel dan bisa dipulihkan satu per satu atau sekaligus, dengan izin awal yang sama. Karyawan yang sudah memakai jabatan itu tidak berubah. Tidak ada perubahan skema, jadi `setup.sql` tidak perlu dijalankan ulang.
+
+## Pergantian akun di satu perangkat
+
+Data lokal aplikasi (menu, pesanan, pengaturan, cadangan) dicatat milik satu toko. Bila akun dari toko lain login di perangkat yang sama, data toko sebelumnya dibuang sebelum sinkron pertama sehingga tidak tertulis ke toko baru. Login ulang ke toko yang sama tidak menghapus apa pun. Perubahan yang belum tersinkron dari toko sebelumnya hilang saat pergantian; aplikasi sudah memperingatkannya saat keluar.
