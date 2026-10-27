@@ -139,10 +139,11 @@ window.authRegister=function(){
       if(!r.ok)return msg(gtErr(r));
       const u=r.j&&(r.j.user||r.j);
       if(u&&Array.isArray(u.identities)&&u.identities.length===0)return msg('Email ini sudah terdaftar.');
+      // Jangan otomatis login setelah daftar. Akun harus membuka tautan verifikasi email terlebih dahulu.
+      try{if(r.j&&r.j.session&&r.j.session.access_token)await gt('/logout',{bearer:r.j.session.access_token})}catch(e){}
       try{cdSet(RESEND_KEY)}catch(e){}
-      hide();$('#loginUser').value=un;$('#loginPw').value=pw;$('#login').hidden=false;
-      window.__authFresh=true;
-      await doLogin();
+      hide();showLogin();
+      toast('Akun berhasil dibuat. Buka email dan verifikasi alamat email sebelum masuk. Periksa folder spam jika belum terlihat.');
     }catch(e){msg('Tidak bisa terhubung. Periksa koneksi lalu coba lagi.')}
     finally{setBusy(b,false)}
   });
