@@ -3394,6 +3394,7 @@ function renderAccPage(){
   const role=usrRoleLabel(m.role);
   const localStore=String(db&&db.set&&db.set.store||'').trim();
   const storeName=localStore&&localStore!=='Ordela'?localStore:'Belum diatur';
+  const storePhone=String(db&&db.set&&db.set.phone||'').trim();
   const status=(CL.on&&CL.tok)?'Aktif':'Offline';
   const joined=m.createdAt?new Date(m.createdAt):null;
   const joinedText=joined&&!Number.isNaN(joined.getTime())?joined.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'Belum tersedia';
@@ -3411,6 +3412,7 @@ function renderAccPage(){
       <h3 style="margin:0 0 12px">Informasi Akun</h3>
       <label class="fl">Peran</label><p>${esc(role)}</p>
       <label class="fl">Nama toko</label><p id="accStoreName">${esc(storeName)}</p>
+      <label class="fl">Nomor telepon toko</label><p id="accStorePhone">${esc(storePhone||'Belum diisi')}</p>
       <label class="fl">Tanggal bergabung</label><p>${esc(joinedText)}</p>
       <label class="fl">Status akun</label><p>${esc(status)}</p>
     </div>
