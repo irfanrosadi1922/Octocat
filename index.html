@@ -3313,7 +3313,7 @@ function accDate(iso,withTime){
 /* nama & telepon toko: salinan sinkron di pengaturan toko (db.set), nama cadangan dari data akun */
 function accStore(m){
   const n=String(db&&db.set&&db.set.store||'').trim(),sn=String(m&&m.store&&m.store.name||'').trim();
-  return{name:(n&&n!=='Ordela'?n:'')||(sn&&sn!=='Ordela'?sn:''),phone:String(db&&db.set&&db.set.phone||'').trim(),code:String(m&&m.store&&m.store.code||'')};
+  return{name:n||sn,phone:String(db&&db.set&&db.set.phone||'').trim(),code:String(m&&m.store&&m.store.code||'')};
 }
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
