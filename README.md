@@ -49,3 +49,10 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Tombol **Uji QR dinamis** menampilkan QR senilai Rp 1.000 untuk dipindai owner sendiri. Kalau aplikasi bank tidak mengisi nominal otomatis, QRIS statis toko tidak mendukungnya.
 - Pembayaran tetap dikonfirmasi kasir lewat bukti bayar atau mutasi ("Pembayaran diterima"). Konfirmasi otomatis hanya mungkin lewat payment gateway (belum ada).
 - Pesanan lama bertanda `duitnow` tetap dikenali dan ditampilkan sebagai QRIS. Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.
+
+## Akun saya: profil, email terverifikasi, foto
+- **Akun Saya** menampilkan profil (nama, username, email + status verifikasi, telepon, tanggal lahir, alamat) dan informasi akun (peran, toko, kode toko untuk owner, tanggal bergabung, login terakhir, status akun, koneksi).
+- **Edit Profil** bisa mengubah semua kolom itu. Owner juga bisa mengubah username, nama toko, dan nomor telepon toko. Username karyawan terkunci (dipakai untuk login dan jadwal shift) dan hanya owner yang bisa mengubahnya.
+- **Ganti email** wajib verifikasi: tombol *Ubah email* meminta email baru dan sandi saat ini, lalu Supabase Auth mengirim tautan ke email baru. Email lama tetap berlaku sampai tautan dibuka; setelah itu email di aplikasi ikut berganti otomatis (trigger `pos_on_auth_email`). Server menolak perubahan email lewat `PUT /api/me`.
+- **Foto profil**: pilih foto, geser dan zoom, lalu *Gunakan Foto* dan *Simpan Perubahan*. Isian dan foto yang sedang diubah tidak lagi hilang saat aplikasi menyinkronkan data di latar belakang.
+- Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.

@@ -68,6 +68,8 @@ html.hasvb body{padding-top:calc(34px + env(safe-area-inset-top,0px))}
 .vst b{padding:2px 10px;border-radius:999px;font-size:11.5px}
 .vst b.y{background:#dcfce7;color:#15803d}.vst b.n{background:#fee2e2;color:#b91c1c}
 .vst .lnk{font-size:12.5px}
+.vst .lnk2{background:none;color:var(--tx);font-size:12.5px;font-weight:700;text-decoration:underline;padding:2px 0}
+.vst .pend{flex-basis:100%;font-size:12.5px;color:var(--tx2);background:var(--peach);border-radius:10px;padding:8px 10px;line-height:1.45}
 .wz{display:flex;gap:6px;justify-content:center;margin:0 0 10px}.wz i{width:28px;height:4px;border-radius:2px;background:var(--ln,#ddd)}.wz i.on{background:#111}
 .lgup{display:flex;align-items:center;gap:12px;margin-top:6px}.lgup .lpv{width:64px;height:64px;border-radius:50%;border:1.5px dashed var(--ln,#ccc);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg,#f5f5f5);flex:none}.lgup .lpv img{width:100%;height:100%;object-fit:cover}
 `;
@@ -207,7 +209,7 @@ function handleHash(){
   if(p.error||p.error_code){toast(/expired|invalid/i.test((p.error_code||'')+(p.error_description||''))?'Tautan sudah kedaluwarsa. Minta tautan baru.':'Tautan tidak valid.');
     if(p.type==='recovery'||/recover/i.test(p.error_description||''))setTimeout(authForgot,300);return}
   if(p.type==='recovery'&&p.access_token){newPwScreen(p.access_token);return}
-  if(p.type==='signup'||p.type==='email_change'||p.type==='invite'||p.type==='magiclink'){toast('Email berhasil diverifikasi');setTimeout(()=>{try{refreshMe()}catch(e){}},400)}
+  if(p.type==='signup'||p.type==='email_change'||p.type==='invite'||p.type==='magiclink'){toast('Email berhasil diverifikasi');setTimeout(async()=>{try{await refreshMe();renderAccVerif();if(S.view==='acc')renderAccPage()}catch(e){}},400)}
 }
 
 /* ---------- spanduk verifikasi email ---------- */
@@ -231,20 +233,65 @@ window.authResend=async function(){
   renderAccVerif();
 };
 
-/* ---------- status verifikasi + tambah email di halaman Profil ---------- */
+/* ---------- status verifikasi + ubah/tambah email di halaman Profil ---------- */
 function renderAccVerif(){
-  const m=CL.me,inp=document.getElementById('accEmail');if(!m||!inp)return;
-  let box=document.getElementById('accVst');if(box)box.remove();
-  box=document.createElement('div');box.id='accVst';box.className='vst';
-  if(m.hasAuth){
-    inp.readOnly=true;
-    const left=cdLeft(RESEND_KEY);
-    box.innerHTML=m.emailVerified?'<b class="y">Terverifikasi</b>':`<b class="n">Belum diverifikasi</b><button class="lnk" type="button" ${left?'disabled':''} onclick="authResend()">${left?'Kirim ulang ('+left+' dtk)':'Kirim ulang email verifikasi'}</button>`;
-  }else{
-    box.innerHTML='<span style="color:var(--mu)">Akun ini belum memakai email.</span><button class="lnk" type="button" onclick="authAddEmail()">Tambah email</button>';
+  const m=CL.me;if(!m)return;
+  for(const id of ['accVst','accVstV']){
+    const box=document.getElementById(id);if(!box)continue;
+    const left=cdLeft(RESEND_KEY),edit=id==='accVst';
+    let h='';
+    if(m.hasAuth){
+      h+=m.emailVerified?'<b class="y">Terverifikasi</b>':'<b class="n">Belum diverifikasi</b>';
+      if(!m.emailVerified)h+=`<button class="lnk" type="button" ${left?'disabled':''} onclick="authResend()">${left?'Kirim ulang ('+left+' dtk)':'Kirim ulang email verifikasi'}</button>`;
+      if(m.pendingEmail)h+=`<span class="pend">Menunggu verifikasi email baru <b>${E(m.pendingEmail)}</b>. Buka tautan yang kami kirim ke sana.</span><button class="lnk" type="button" ${left?'disabled':''} onclick="authResendChange()">${left?'Kirim ulang ('+left+' dtk)':'Kirim ulang tautan'}</button>`;
+      h+=`<button class="lnk2" type="button" onclick="authChangeEmail()">Ubah email</button>`;
+      if(edit)h+='<span class="hint" style="flex-basis:100%">Email baru baru berlaku setelah Anda membuka tautan verifikasi yang dikirim ke alamat itu.</span>';
+    }else{
+      h+=`<span style="color:var(--mu)">${m.email?'Email belum terhubung ke akun.':'Akun ini belum memakai email.'}</span><button class="lnk2" type="button" onclick="authAddEmail()">${m.email?'Hubungkan &amp; verifikasi email':'Tambah email'}</button>`;
+    }
+    box.className='vst';box.innerHTML=h;
   }
-  inp.insertAdjacentElement('afterend',box);
 }
+window.renderAccVerif=renderAccVerif;
+window.authResendChange=async function(){
+  const m=CL.me;if(!m||!m.pendingEmail||cdLeft(RESEND_KEY)>0)return;
+  cdSet(RESEND_KEY);renderAccVerif();
+  try{const r=await gt('/resend?redirect_to='+encodeURIComponent(REDIR),{body:{type:'email_change',email:m.pendingEmail}});
+    toast(r.ok?'Tautan verifikasi dikirim ulang ke '+m.pendingEmail:gtErr(r))}catch(e){toast('Tidak bisa terhubung')}
+  renderAccVerif();
+};
+/* ubah email: butuh sandi saat ini (masuk ke Supabase Auth), lalu tautan verifikasi dikirim ke email BARU */
+window.authChangeEmail=function(){
+  const m=CL.me;if(!m||!m.hasAuth)return;
+  const f=show(`<h2>Ubah email</h2><p class="lsub">Email saat ini: <b>${E(m.email)}</b>. Kami kirim tautan verifikasi ke email baru; email lama tetap dipakai sampai tautan itu dibuka.</p>
+  <label class="fl" for="cEm">Alamat email baru</label><input class="fi" id="cEm" type="email" inputmode="email" autocomplete="email" autocapitalize="none" maxlength="120" placeholder="nama@contoh.com">
+  <label class="fl" for="cPw">Kata sandi saat ini</label><div class="pw"><input class="fi" type="password" id="cPw" autocomplete="current-password" maxlength="72"><button type="button" class="eye" onclick="authEye('cPw',this)">Tampilkan</button></div>
+  <p class="fe" id="aErr" role="alert"></p>
+  <button class="btn" id="cBtn" type="submit">Kirim tautan verifikasi</button>
+  <span class="alt"><a onclick="authClose()">Batal</a></span>`);
+  f.addEventListener('submit',async()=>{
+    const em=val('cEm').trim().toLowerCase(),pw=val('cPw'),b=$('#cBtn');msg('');
+    if(!EMAIL_RE.test(em)||em.length>120)return msg('Alamat email tidak valid.');
+    if(em===String(m.email||'').toLowerCase())return msg('Itu sudah email Anda saat ini.');
+    if(!pw)return msg('Isi kata sandi saat ini.');
+    if(cdLeft(RESEND_KEY)>0)return msg('Tunggu sebentar sebelum mencoba lagi.');
+    setBusy(b,true,'Mengirim…');
+    try{
+      const ck=await rc({email:em});if(ck&&ck.limited)return msg('Terlalu sering mencoba. Coba lagi nanti.');if(ck&&ck.emailFree===false)return msg('Email ini sudah dipakai akun lain.');
+      const t=await gt('/token?grant_type=password',{body:{email:m.email,password:pw}});
+      if(!t.ok){const c=String((t.j&&(t.j.error_code||t.j.code))||'')+String((t.j&&(t.j.msg||t.j.error_description))||'');
+        return msg(/email_not_confirmed|not confirmed/i.test(c)?'Verifikasi email lama Anda dulu (kirim ulang tautan di halaman Profil), baru ganti email.':/invalid|credentials/i.test(c)?'Kata sandi salah.':gtErr(t))}
+      const u=await gt('/user?redirect_to='+encodeURIComponent(REDIR),{method:'PUT',bearer:t.j.access_token,body:{email:em}});
+      if(!u.ok)return msg(gtErr(u));
+      cdSet(RESEND_KEY);hide();
+      try{await refreshMe()}catch(e){}
+      renderAccVerif();vRender();
+      toast('Tautan verifikasi dikirim ke '+em+'. Buka tautan itu untuk menyelesaikan.');
+    }catch(e){if(e&&e.message!=='auth')msg('Tidak bisa terhubung. Coba lagi.')}
+    finally{setBusy(b,false)}
+  });
+  setTimeout(()=>$('#cEm').focus(),60);
+};
 window.authAddEmail=function(){
   const f=show(`<h2>Tambah email</h2><p class="lsub">Email dipakai untuk reset sandi. Verifikasi bisa dilakukan nanti.</p>
   <label class="fl" for="aEm">Alamat email</label><input class="fi" id="aEm" type="email" inputmode="email" autocomplete="email" autocapitalize="none" maxlength="120" placeholder="nama@contoh.com">

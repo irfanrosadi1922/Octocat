@@ -370,11 +370,6 @@ button[hidden]{display:none!important}
 .av{width:36px;height:36px;border-radius:50%;background:var(--b);color:#fff;display:inline-grid;place-items:center;font-weight:700;flex:none}
 .av.lg{width:52px;height:52px;font-size:22px}
 .av{overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;display:block}
-.accph{display:flex;gap:16px;align-items:center;margin-bottom:6px}
-.accav{position:relative;width:84px;height:84px;border-radius:50%;background:var(--b);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:700;flex:none;padding:0;box-shadow:0 8px 20px rgba(17,17,17,.3)}
-.accav #accAv{width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center}.accav img{width:100%;height:100%;object-fit:cover}
-.accav .cam{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--card);color:var(--bt);display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.2)}
-.accwho{min-width:0;display:flex;flex-direction:column;gap:2px}.accwho b{font-size:18px;overflow-wrap:anywhere}.accwho small{color:var(--mu)}
 .lnk{align-self:flex-start;background:none;color:var(--bad);font-size:12.5px;font-weight:600;padding:2px 0;margin-top:2px}
 .accpw{margin:14px 0 4px;border:1px solid var(--ln);border-radius:16px;padding:12px 14px}.accpw summary{font-weight:600;cursor:pointer;list-style:none}.accpw summary::after{content:'▾';float:right;color:var(--mu)}.accpw[open] summary::after{content:'▴'}.accpw[open] summary{margin-bottom:10px}
 .lgo{text-align:center}.lgo h3{margin:10px 0 6px}.lgo p{margin:0 0 14px;color:var(--mu);line-height:1.5}
@@ -615,6 +610,16 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .accp .phr{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:10px}.accp .btn{min-height:48px;margin-top:18px}.accp .btn.sec{margin-top:10px}.accp .hint{font-size:12px;line-height:1.55;color:var(--mu)}
 .acc-summary{display:grid;gap:10px}.acc-field{padding:13px 15px;border:1px solid var(--ln);border-radius:14px;background:var(--card)}.acc-field small{display:block;color:var(--mu);font-size:11px;margin-bottom:4px}.acc-field b{font-size:14px;overflow-wrap:anywhere}
 .cropbox{width:min(100%,340px);margin:0 auto}.cropstage{width:100%;aspect-ratio:1;overflow:hidden;border-radius:50%;background:#171717;touch-action:none;cursor:grab;border:2px solid var(--ln)}.cropstage:active{cursor:grabbing}.cropstage canvas{display:block;width:100%;height:100%;touch-action:none}.cropcontrols{margin:18px 0 8px}.cropcontrols label{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:8px}.cropcontrols input{width:100%;accent-color:var(--b)}.cropnote{font-size:12px;color:var(--mu);text-align:center;margin:10px 0 0}.cropactions{display:flex;gap:10px;margin-top:18px}.cropactions .btn{margin:0;min-width:0}.cropactions .btn.sec{background:var(--peach2);color:var(--tx)}
+.accav{overflow:visible}button.accav{cursor:pointer;color:var(--tx)}
+.accav #accAv{width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center;font-size:28px;font-weight:700;color:var(--tx);line-height:1}
+.accav .cam{position:absolute;right:-3px;bottom:-3px;width:28px;height:28px;border-radius:50%;background:var(--card);color:var(--tx);display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.2);border:1px solid var(--ln)}
+.accsec{border-top:1px solid var(--ln);padding-top:6px;margin:18px 0 20px}.accsec:first-of-type{border-top:0;margin-top:4px}
+.accsec h3,.accp .acch{margin:14px 0 0;font-size:16px}
+.accp .accv{margin:0;font-size:15px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-line}
+.accp textarea.fi{resize:vertical;font:inherit;min-height:72px}
+.accp .fi[readonly]{background:var(--bg2);color:var(--tx2)}
+.accp .vst{margin:8px 0 0}
+.accp .hint{margin:6px 0 0}
 @media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
@@ -926,6 +931,7 @@ function closeAll(){$('#drawer').classList.remove('open');$('#scrim').classList.
 function go(v){
   if(v==='acc'&&!(CL.on&&CL.me))v='set';
   if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v=landing()}
+  if(v==='editacc'&&S.view!=='editacc'){const eb=$('#editAccPage');if(eb)eb.dataset.built=''}
   S.view=v;closeAll();toggleInv(false);
   ['pos','home','table','rep','alert','inv','hist','rc','prn','set','co','usr','acc','editacc','pw','att'].forEach(x=>$('#v-'+x).hidden=x!==v);
   document.querySelectorAll('.drawer button,.bnav button,.rail button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
@@ -3298,67 +3304,80 @@ function avHtml(m,cls){const ph=m&&m.photo;return `<span class="av ${cls||''}">$
 let ACC={photo:null};
 function accTap(){go(CL.on&&CL.me?'acc':'set')}
 function openAcct(){go('acc')}
+function accRow(l,v,id){return `<label class="fl">${l}</label><p class="accv"${id?` id="${id}"`:''}>${v}</p>`}
+function accDate(iso,withTime){
+  if(!iso)return '';const d=new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso)?iso+'T00:00:00':iso);if(Number.isNaN(d.getTime()))return '';
+  const o={day:'2-digit',month:'long',year:'numeric'};if(withTime){o.hour='2-digit';o.minute='2-digit'}
+  return d.toLocaleDateString('id-ID',o)
+}
+/* nama & telepon toko: salinan sinkron di pengaturan toko (db.set), nama cadangan dari data akun */
+function accStore(m){
+  const n=String(db&&db.set&&db.set.store||'').trim(),sn=String(m&&m.store&&m.store.name||'').trim();
+  return{name:(n&&n!=='Ordela'?n:'')||(sn&&sn!=='Ordela'?sn:''),phone:String(db&&db.set&&db.set.phone||'').trim(),code:String(m&&m.store&&m.store.code||'')};
+}
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
-  const role=usrRoleLabel(m.role);
-  const localStore=String(db&&db.set&&db.set.store||'').trim();
-  const storeName=localStore&&localStore!=='Ordela'?localStore:'Belum diatur';
-  const storePhone=String(db&&db.set&&db.set.phone||'').trim();
-  const status=(CL.on&&CL.tok)?'Aktif':'Offline';
-  const joined=m.createdAt?new Date(m.createdAt):null;
-  const joinedText=joined&&!Number.isNaN(joined.getTime())?joined.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}):'Belum tersedia';
+  const role=usrRoleLabel(m.role),st=accStore(m),own=m.role==='owner';
+  const none='<span style="color:var(--mu)">Belum diisi</span>';
   box.innerHTML=`<div class="accp">
-    <div class="accph"><span class="accav" style="display:flex;align-items:center;justify-content:center;overflow:hidden"><span id="accAv"></span></span>
-      <div class="accwho"><b>${esc(m.name||'Pengguna')}</b><small>@${esc(m.username||'—')} · ${role}</small></div></div>
-    <div style="margin:16px 0">
-      <h3 style="margin:0 0 12px">Profil Pribadi</h3>
-      <label class="fl">Nama lengkap</label><p>${esc(m.name||'—')}</p>
-      <label class="fl">Username</label><p>@${esc(m.username||'—')}</p>
-      <label class="fl">Alamat email</label><p>${esc(m.email||'Belum diisi')}</p>
-      <label class="fl">Nomor telepon</label><p>${esc(m.phone||'Belum diisi')}</p>
+    <div class="accph"><span class="accav"><span id="accAvV"></span></span>
+      <div class="accwho"><b>${esc(m.name||'Pengguna')}</b><small>@${esc(m.username||'—')} · ${esc(role)}</small></div></div>
+    <div class="accsec">
+      <h3>Profil Pribadi</h3>
+      ${accRow('Nama lengkap',esc(m.name||'—'))}
+      ${accRow('Username','@'+esc(m.username||'—'))}
+      <label class="fl">Alamat email</label><p class="accv">${m.email?esc(m.email):none}</p><div id="accVstV" class="vst"></div>
+      ${accRow('Nomor telepon',m.phone?esc(m.phone):none)}
+      ${accRow('Tanggal lahir',accDate(m.birth)?esc(accDate(m.birth)):none)}
+      ${accRow('Alamat',m.address?esc(m.address):none)}
     </div>
-    <div style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px">
-      <h3 style="margin:0 0 12px">Informasi Akun</h3>
-      <label class="fl">Peran</label><p>${esc(role)}</p>
-      <label class="fl">Nama toko</label><p id="accStoreName">${esc(storeName)}</p>
-      <label class="fl">Nomor telepon toko</label><p id="accStorePhone">${esc(storePhone||'Belum diisi')}</p>
-      <label class="fl">Tanggal bergabung</label><p>${esc(joinedText)}</p>
-      <label class="fl">Status akun</label><p>${esc(status)}</p>
+    <div class="accsec">
+      <h3>Informasi Akun</h3>
+      ${accRow('Peran / jabatan',esc(role))}
+      ${accRow('Nama toko',st.name?esc(st.name):'<span style="color:var(--mu)">Belum diatur</span>')}
+      ${accRow('Nomor telepon toko',st.phone?esc(st.phone):none)}
+      ${own&&st.code?accRow('Kode toko',`<code>${esc(st.code)}</code>`):''}
+      ${accRow('Tanggal bergabung',accDate(m.createdAt)?esc(accDate(m.createdAt)):'<span style="color:var(--mu)">Belum tersedia</span>')}
+      ${accRow('Login terakhir',accDate(m.lastLogin,1)?esc(accDate(m.lastLogin,1)):'<span style="color:var(--mu)">Belum tersedia</span>')}
+      ${accRow('Status akun',m.active===false?'<span class="pst bad">Dinonaktifkan</span>':'<span class="pst ok">Aktif</span>')}
+      ${accRow('Koneksi',(CL.on&&CL.tok)?(navigator.onLine===false?'Tidak ada internet':'Terhubung ke server'):'Mode offline')}
     </div>
     <button class="btn" type="button" onclick="go('editacc')">Edit Profil</button>
     <button class="btn sec" type="button" style="margin-top:8px" onclick="go('pw')">Ubah Password</button>
   </div>`;
   accAvDraw();
-  // Ambil nama toko dari data bersama di server agar akun staf tidak bergantung
-  // pada salinan pengaturan lokal di perangkatnya.
-  if(CL.on&&CL.tok){
-    const token=CL.tok;
-    api('/api/public/menu').then(async r=>{
-      if(!r.ok)return;
-      const j=await r.json();
-      const el=$('#accStoreName');
-      if(token!==CL.tok||!el)return;
-      const name=String(j.store||'').trim();
-      el.textContent=name&&name!=='Ordela'?name:'Belum diatur';
-      const phoneEl=$('#accStorePhone');
-      if(phoneEl){const phone=String(j.phone||'').trim();phoneEl.textContent=phone||'Belum diisi'}
-    }).catch(()=>{});
-  }
 }
-function renderEditAccPage(){
-  const m=CL.me,box=$('#editAccPage');if(!m||!box)return;ACC.photo=m.photo||'';
+function renderEditAccPage(force){
+  const m=CL.me,box=$('#editAccPage');if(!m||!box)return;
+  /* render() jalan tiap sinkron data; jangan hapus isian/foto yang sedang diubah */
+  if(!force&&box.dataset.built==='1'&&box.querySelector('#accName'))return;
+  ACC.photo=m.photo||'';box.dataset.built='1';
+  const own=m.role==='owner',st=accStore(m),today=new Date().toISOString().slice(0,10);
+  const sp=phSplit(st.phone);
   box.innerHTML=`<div class="accp">
   <div class="accph"><button class="accav" type="button" onclick="$('#accFile').click()" aria-label="Ganti foto profil"><span id="accAv"></span><i class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i></button>
     <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
     <div class="accwho"><b id="accNm">${esc(m.name)}</b><small>@${esc(m.username)} · ${esc(usrRoleLabel(m.role))}</small>
     <button class="lnk" type="button" id="accRm" onclick="accPhotoDel()">Hapus foto</button></div></div>
-  <label class="fl">Nama lengkap</label><input class="fi" id="accName" maxlength="60" value="${esc(m.name)}" autocomplete="name">
-  <label class="fl">Alamat email</label><input class="fi" id="accEmail" type="email" inputmode="email" maxlength="120" placeholder="nama@contoh.com" value="${esc(m.email||'')}" autocomplete="email">
+  <h3 class="acch">Profil Pribadi</h3>
+  <label class="fl" for="accName">Nama lengkap</label><input class="fi" id="accName" maxlength="60" value="${esc(m.name)}" autocomplete="name" oninput="accAvDraw()">
+  <label class="fl" for="accUser">Username</label><input class="fi" id="accUser" maxlength="24" value="${esc(m.username)}" autocomplete="username" autocapitalize="none" spellcheck="false" ${own?'':'readonly'}>
+  <p class="hint">${own?'Dipakai untuk masuk. Huruf kecil, angka, titik, strip, garis bawah (3-24 karakter).':'Username karyawan hanya bisa diubah oleh owner (dipakai untuk login dan jadwal shift).'}</p>
+  <label class="fl" for="accEmail">Alamat email</label><input class="fi" id="accEmail" type="email" value="${esc(m.email||'')}" placeholder="Belum diisi" readonly>
+  <div id="accVst" class="vst"></div>
   <label class="fl">Nomor telepon</label><div class="phr"><select class="fi" id="accCc" aria-label="Kode negara">${phCcOpts(phSplit(m.phone).cc)}</select><input class="fi" id="accPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(phSplit(m.phone).num)}" autocomplete="tel-national"></div>
-  <p class="hint" id="accErr" style="color:var(--bad);min-height:16px;margin:6px 0 0"></p>
-  <button class="btn" id="accSave" onclick="accSave()">Simpan Perubahan</button></div>`;
+  <label class="fl" for="accBirth">Tanggal lahir</label><input class="fi" id="accBirth" type="date" min="1900-01-01" max="${today}" value="${esc(m.birth||'')}">
+  <label class="fl" for="accAddr">Alamat</label><textarea class="fi" id="accAddr" rows="2" maxlength="300" placeholder="Alamat tempat tinggal">${esc(m.address||'')}</textarea>
+  ${own?`<h3 class="acch">Toko</h3>
+  <label class="fl" for="accStore">Nama toko</label><input class="fi" id="accStore" maxlength="60" value="${esc(st.name)}" placeholder="Nama toko Anda">
+  <label class="fl">Nomor telepon toko</label><div class="phr"><select class="fi" id="accSCc" aria-label="Kode negara toko">${phCcOpts(sp.cc)}</select><input class="fi" id="accSPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(sp.num)}"></div>`:''}
+  <p class="hint" id="accErr" style="color:var(--bad);min-height:16px;margin:10px 0 0" role="alert"></p>
+  <button class="btn" id="accSave" onclick="accSave()">Simpan Perubahan</button>
+  <button class="btn sec" type="button" style="margin-top:8px" onclick="accCancel()">Batal</button></div>`;
   accAvDraw();
+  try{window.renderAccVerif&&window.renderAccVerif()}catch(e){}
 }
+function accCancel(){const b=$('#editAccPage');if(b)b.dataset.built='';go('acc')}
 function renderPwPage(){
   const box=$('#pwPage');if(!box)return;
   box.innerHTML=`<div class="accp">
@@ -3370,7 +3389,14 @@ function renderPwPage(){
     <button class="btn" onclick="changePw()">Ubah Password</button>
   </div>`;
 }
-function accAvDraw(){const m=CL.me||{};const e=$('#accAv');if(e)e.innerHTML=ACC.photo?`<img src="${esc(ACC.photo)}" alt="">`:esc(((($('#accName')||{}).value||m.name||'?')).trim().charAt(0).toUpperCase());const r=$('#accRm');if(r)r.hidden=!ACC.photo}
+function accAvDraw(){
+  const m=CL.me||{};
+  /* halaman profil (accAvV) dan halaman edit (accAv) memakai id berbeda: dua elemen berid sama membuat foto tidak berubah */
+  const nm=(($('#accName')||{}).value||m.name||'?').trim().charAt(0).toUpperCase();
+  const v=$('#accAvV');if(v)v.innerHTML=(m.photo?`<img src="${esc(m.photo)}" alt="">`:esc(String(m.name||'?').trim().charAt(0).toUpperCase()));
+  const e=$('#accAv');if(e)e.innerHTML=ACC.photo?`<img src="${esc(ACC.photo)}" alt="">`:esc(nm);
+  const r=$('#accRm');if(r)r.hidden=!ACC.photo;
+}
 let ACC_CROP=null;
 function accPhoto(inp){
   const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
@@ -3421,15 +3447,32 @@ function phFmt(d){d=String(d).replace(/\D/g,'');return d.replace(/^(\d{3})(\d{1,
 function phCcOpts(sel){return PH_CC.map(([c,n])=>`<option value="${c}" ${c===sel?'selected':''}>${n} (+${c})</option>`).join('')}
 function accPhotoDel(){ACC.photo='';accAvDraw()}
 async function accSave(){
-  const e=$('#accErr'),btn=$('#accSave'),name=$('#accName').value.trim(),email=$('#accEmail').value.trim(),phoneN=$('#accPhone').value.replace(/\D/g,'').replace(/^0+/,''),phone=phoneN?'+'+$('#accCc').value+' '+phFmt(phoneN):'';
+  const e=$('#accErr'),btn=$('#accSave'),m=CL.me,own=m&&m.role==='owner',name=$('#accName').value.trim().replace(/\s+/g,' ');
+  const num=x=>x.replace(/\D/g,'').replace(/^0+/,''),fmt=(cc,n)=>n?'+'+cc+' '+phFmt(n):'';
+  const pn=num($('#accPhone').value),phone=fmt($('#accCc').value,pn),birth=$('#accBirth').value,addr=$('#accAddr').value.trim();
   if(!name){e.textContent='Nama lengkap wajib diisi';return}
-  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){e.textContent='Format alamat email tidak valid';return}
-  if(phoneN&&(phoneN.length<6||phone.length>20)){e.textContent='Nomor telepon tidak valid';return}
+  if(pn&&(pn.length<6||phone.length>20)){e.textContent='Nomor telepon tidak valid';return}
+  if(birth&&(birth>new Date().toISOString().slice(0,10)||birth<'1900-01-01')){e.textContent='Tanggal lahir tidak valid';return}
+  const body={name,phone,photo:ACC.photo||'',birth,address:addr};
+  let sName='',sPhone='';
+  if(own){
+    const un=$('#accUser').value.trim().toLowerCase();
+    if(!/^[a-z0-9][a-z0-9._-]{2,23}$/.test(un)){e.textContent='Username 3-24 karakter: huruf kecil, angka, titik, strip, garis bawah';return}
+    body.username=un;
+    sName=($('#accStore').value||'').trim().replace(/\s+/g,' ');
+    if(sName.length<2){e.textContent='Nama toko minimal 2 karakter';return}
+    body.storeName=sName;
+    const sn=num($('#accSPhone').value);if(sn&&sn.length<6){e.textContent='Nomor telepon toko tidak valid';return}
+    sPhone=fmt($('#accSCc').value,sn);
+  }
   btn.disabled=true;e.textContent='';
   try{
-    const r=await api('/api/me',{method:'PUT',body:JSON.stringify({name,email,phone,photo:ACC.photo||''})}),j=await r.json();
+    const r=await api('/api/me',{method:'PUT',body:JSON.stringify(body)}),j=await r.json();
     if(!r.ok){e.textContent=j.error||'Gagal menyimpan';return}
-    setMe(j);renderAcct();go('acc');renderAccPage();toast('Profil disimpan');
+    setMe(j);
+    if(own){db.set.store=sName;db.set.phone=sPhone;save();try{applyBrand()}catch(x){}}
+    const b=$('#editAccPage');if(b)b.dataset.built='';
+    renderAcct();go('acc');renderAccPage();toast('Profil disimpan');
   }catch(x){if(x.message!=='auth')e.textContent='Tidak bisa terhubung ke server'}
   finally{btn.disabled=false}
 }
@@ -3935,7 +3978,7 @@ function render(){
   if(S.view==='co')renderCo(true);
   if(S.view==='usr')renderUsr();
   if(S.view==='acc')renderAccPage();
-  if(S.view==='editacc')renderEditAccPage();
+  if(S.view==='editacc')renderEditAccPage();   /* tidak menimpa isian yang sedang diubah */
   if(S.view==='pw')renderPwPage();
   if(S.view==='att')renderAtt();else ATT.built=false;
 }

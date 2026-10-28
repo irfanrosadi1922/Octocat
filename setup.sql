@@ -249,7 +249,8 @@ create or replace function pos.me_view(u pos.users) returns jsonb language sql s
 create or replace function pos.me_self(u pos.users) returns jsonb language sql stable as $$
   select pos.me_view(u) || jsonb_build_object('photo', u.photo, 'birth', coalesce(u.birth::text, ''), 'address', u.address,
     'hasAuth', u.auth_id is not null, 'store', (select jsonb_build_object('code', s.code, 'name', s.name) from pos.stores s where s.id = u.store_id),
-    'emailVerified', coalesce((select a.email_confirmed_at is not null from auth.users a where a.id = u.auth_id), false)) $$;
+    'emailVerified', coalesce((select a.email_confirmed_at is not null from auth.users a where a.id = u.auth_id), false),
+    'pendingEmail', coalesce((select nullif(lower(a.email_change), '') from auth.users a where a.id = u.auth_id), '')) $$;
 
 -- ---- sandi: akun Supabase Auth memakai hash di auth.users, akun lama (dan staf) memakai pos.users.pw
 create or replace function pos.pw_ok(u pos.users, pw text) returns boolean language plpgsql as $$
@@ -301,6 +302,22 @@ do $$ begin
   drop trigger if exists pos_on_auth_user on auth.users;
   create trigger pos_on_auth_user after insert on auth.users for each row execute function pos.on_auth_user();
 exception when others then raise notice 'trigger auth.users gagal dibuat: %', sqlerrm;
+end $$;
+
+create or replace function pos.on_auth_email() returns trigger language plpgsql security definer set search_path = '' as $$
+begin  -- email baru sudah diverifikasi di Supabase Auth: samakan di data aplikasi (dipakai untuk login lewat email)
+  if new.email is distinct from old.email and coalesce(new.email, '') <> '' then
+    update pos.t_users set email = lower(new.email) where auth_id = new.id;
+  end if;
+  return new;
+exception when unique_violation then
+  raise notice 'email % dipakai akun lain di pos.users', new.email;
+  return new;
+end $$;
+do $$ begin
+  drop trigger if exists pos_on_auth_email on auth.users;
+  create trigger pos_on_auth_email after update of email on auth.users for each row execute function pos.on_auth_email();
+exception when others then raise notice 'trigger email auth.users gagal dibuat: %', sqlerrm;
 end $$;
 
 create or replace function pos.auth(tok text) returns pos.users language plpgsql as $$
@@ -715,20 +732,36 @@ begin
 
   if u = '/api/me' and m = 'GET' then return pos.r(200, pos.me_self(me)); end if;
   if u = '/api/me' and m = 'PUT' then
-    declare pn text; pe text; pp text; pf text;
+    declare pn text; pp text; pf text; pa text; pu text; pb date; psn text;
     begin
+      -- email TIDAK diubah di sini: perubahan email harus lewat verifikasi (Supabase Auth) atau /api/me/link-email
       pn := regexp_replace(btrim(coalesce(b ->> 'name', me.name)), '\s+', ' ', 'g');
-      pe := case when me.auth_id is not null then me.email else lower(btrim(coalesce(b ->> 'email', me.email))) end;
       pp := btrim(coalesce(b ->> 'phone', me.phone));
       pf := coalesce(b ->> 'photo', me.photo);
+      pa := case when b ? 'address' then left(btrim(coalesce(b ->> 'address', '')), 300) else me.address end;
+      pu := case when b ? 'username' then lower(btrim(coalesce(b ->> 'username', ''))) else me.username end;
       if length(pn) < 1 or length(pn) > 60 then return pos.r(400, '{"error":"Nama lengkap wajib diisi (maks. 60 karakter)"}'); end if;
-      if pe <> '' and (length(pe) > 120 or pe !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$') then return pos.r(400, '{"error":"Format alamat email tidak valid"}'); end if;
+      if pu <> me.username and not own then return pos.r(403, '{"error":"Username karyawan hanya bisa diubah oleh owner (dipakai untuk login dan jadwal shift)"}'); end if;
+      if pu !~ '^[a-z0-9][a-z0-9._-]{2,23}$' then return pos.r(400, '{"error":"Username 3-24 karakter: huruf kecil, angka, titik, strip, garis bawah"}'); end if;
+      if pu <> me.username and exists (select 1 from pos.t_users where username = pu) then return pos.r(409, '{"error":"Username sudah dipakai"}'); end if;
       if pp <> '' and (pp !~ '^[0-9+() -]{6,20}$' or length(regexp_replace(pp, '\D', '', 'g')) < 6) then return pos.r(400, '{"error":"Nomor telepon tidak valid"}'); end if;
       if pf <> '' and (length(pf) > 110000 or pf !~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$') then return pos.r(400, '{"error":"Foto profil tidak valid atau terlalu besar"}'); end if;
-      if exists (select 1 from pos.t_users where lower(email) = pe and pe <> '' and id <> me.id) then return pos.r(409, '{"error":"Email sudah dipakai akun lain"}'); end if;
-      update pos.t_users set name = pn, email = pe, phone = pp, photo = pf,
-        address = case when b ? 'address' then left(btrim(coalesce(b ->> 'address', '')), 300) else address end where id = me.id;
-      perform pos.audit(me.id, me.username, 'ubah-profil', '');
+      if b ? 'birth' then
+        if coalesce(b ->> 'birth', '') = '' then pb := null;
+        elsif (b ->> 'birth') !~ '^\d{4}-\d{2}-\d{2}$' then return pos.r(400, '{"error":"Tanggal lahir tidak valid"}');
+        else
+          begin pb := (b ->> 'birth')::date; exception when others then return pos.r(400, '{"error":"Tanggal lahir tidak valid"}'); end;
+          if pb < date '1900-01-01' or pb > current_date then return pos.r(400, '{"error":"Tanggal lahir tidak valid"}'); end if;
+        end if;
+      else pb := me.birth; end if;
+      if own and b ? 'storeName' then
+        psn := pos.clean(b ->> 'storeName', 60);
+        if length(psn) < 2 then return pos.r(400, '{"error":"Nama toko minimal 2 karakter"}'); end if;
+        update pos.stores set name = psn where id = me.store_id;
+      end if;
+      update pos.t_users set name = pn, username = pu, phone = pp, photo = pf, address = pa, birth = pb where id = me.id;
+      if pu <> me.username then perform pos.audit(me.id, pu, 'ubah-username', me.username || ' -> ' || pu); end if;
+      perform pos.audit(me.id, pu, 'ubah-profil', '');
       select * into me from pos.t_users where id = me.id;
       return pos.r(200, pos.me_self(me));
     end;
