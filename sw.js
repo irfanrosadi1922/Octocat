@@ -1,5 +1,5 @@
 /* Service worker: aplikasi tetap terbuka saat internet putus. Data tidak di-cache di sini (disimpan lokal oleh aplikasi). */
-const V = 'ordela-v15';
+const V = 'ordela-v16';
 const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'icon-light-192.png', 'icon-light-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

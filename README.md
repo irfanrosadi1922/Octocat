@@ -50,6 +50,12 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Pembayaran tetap dikonfirmasi kasir lewat bukti bayar atau mutasi ("Pembayaran diterima"). Konfirmasi otomatis hanya mungkin lewat payment gateway (belum ada).
 - Pesanan lama bertanda `duitnow` tetap dikenali dan ditampilkan sebagai QRIS. Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.
 
+## Beranda: rekap penjualan + riwayat transaksi
+- Menu **Laporan** dan **Riwayat Penjualan** dihapus; isinya menyatu di **Beranda** (tautan lama otomatis diarahkan ke Beranda).
+- Satu filter periode (Hari ini, Kemarin, 7 Hari, Bulan ini, Semua, atau tanggal Dari-Sampai) mengatur seluruh Beranda: kartu ringkasan (dengan panah naik/turun dibanding periode sebelumnya), grafik, kategori, **Rekap Penjualan** (kotor, diskon, bersih, pajak, total diterima, transaksi, item terjual, rata-rata, estimasi laba, per metode bayar), menu terlaris, dan **Riwayat Transaksi** (ketuk untuk detail/struk, owner bisa hapus) serta tombol **Ekspor Excel**.
+- Rekap, riwayat, filter periode, dan ekspor hanya muncul untuk pengguna dengan izin **Riwayat**; tanpa izin itu Beranda hanya menampilkan data hari ini.
+- Menu **Akun** selalu di posisi paling bawah/terakhir di semua navigasi (sidebar, drawer, bar bawah ponsel).
+
 ## Akun saya: profil, email terverifikasi, foto
 - **Akun Saya** menampilkan profil (nama, username, email + status verifikasi, telepon, tanggal lahir, alamat) dan informasi akun (peran, toko, kode toko untuk owner, tanggal bergabung, login terakhir, status akun, koneksi).
 - **Edit Profil** bisa mengubah semua kolom itu. Owner juga bisa mengubah username, nama toko, dan nomor telepon toko. Username karyawan terkunci (dipakai untuk login dan jadwal shift) dan hanya owner yang bisa mengubahnya.
