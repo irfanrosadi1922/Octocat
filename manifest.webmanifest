@@ -8,7 +8,7 @@
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],
   "orientation": "any",
-  "background_color": "#1f1f1f",
+  "background_color": "#f6f6f6",
   "theme_color": "#f6f6f6",
   "icons": [
     {
