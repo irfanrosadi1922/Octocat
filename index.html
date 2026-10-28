@@ -128,14 +128,15 @@ input,select,textarea{font:inherit;color:inherit}
 .fab{display:none}
 .sheet-x{display:none}
 /* drawer */
-.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow:hidden;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
+.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
 .drawer>*{flex:none}
-.drawer>.dnav{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
-.drawer>.dnav::-webkit-scrollbar{display:none}
-.drawer>.dfoot{padding-top:10px;margin-top:6px;border-top:1px solid var(--ln)}
+.drawer>.dfoot{margin-top:auto;padding-top:8px}
+.drawer .dg{margin:10px 10px 4px}.drawer .dg:first-of-type{margin-top:0}
+@media (max-height:880px){.drawer{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}.drawer button{padding:8px 14px;margin-bottom:1px}.drawer .dg{margin:8px 10px 3px}.drawer h3{margin-bottom:6px}}
+@media (max-height:820px){.drawer button{padding:6px 14px}.drawer .dg{margin:6px 10px 2px}}
 .drawer.open{transform:none;visibility:visible}
-.drawer h3{margin:4px 10px 18px;color:var(--bt)}
-.drawer button{display:flex;gap:12px;align-items:center;width:100%;padding:13px 14px;border-radius:14px;font-weight:600;margin-bottom:4px;text-align:left}
+.drawer h3{margin:0 10px 10px;color:var(--bt)}
+.drawer button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 14px;border-radius:14px;font-weight:600;margin-bottom:2px;text-align:left}
 .drawer button.on{background:var(--peach2);color:var(--bt)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none}
 .scrim.on{display:block}
