@@ -128,12 +128,11 @@ input,select,textarea{font:inherit;color:inherit}
 .fab{display:none}
 .sheet-x{display:none}
 /* drawer */
-.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow:hidden;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
+.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
 .drawer>*{flex:none}
-.drawer>.dfoot{margin-top:auto;padding-top:8px}
 .drawer.open{transform:none;visibility:visible}
-.drawer h3{margin:0 10px 10px;color:var(--bt)}
-.drawer button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 14px;border-radius:14px;font-weight:600;margin-bottom:2px;text-align:left}
+.drawer h3{margin:4px 10px 18px;color:var(--bt)}
+.drawer button{display:flex;gap:12px;align-items:center;width:100%;padding:13px 14px;border-radius:14px;font-weight:600;margin-bottom:4px;text-align:left}
 .drawer button.on{background:var(--peach2);color:var(--bt)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:none}
 .scrim.on{display:block}
@@ -367,6 +366,7 @@ button[hidden]{display:none!important}
 .lfoot{text-align:center;color:var(--mu);font-size:12px;margin:12px 0 0}
 .drawer button.acct{margin:auto 0 8px;padding:10px 12px;background:var(--peach2);gap:10px}
 .drawer button.acct[hidden]{display:none}
+.drawer>button:nth-last-of-type(1):not(.acct){margin-bottom:12px}
 .av{width:36px;height:36px;border-radius:50%;background:var(--b);color:#fff;display:inline-grid;place-items:center;font-weight:700;flex:none}
 .av.lg{width:52px;height:52px;font-size:22px}
 .av{overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;display:block}
@@ -374,10 +374,11 @@ button[hidden]{display:none!important}
 .accpw{margin:14px 0 4px;border:1px solid var(--ln);border-radius:16px;padding:12px 14px}.accpw summary{font-weight:600;cursor:pointer;list-style:none}.accpw summary::after{content:'▾';float:right;color:var(--mu)}.accpw[open] summary::after{content:'▴'}.accpw[open] summary{margin-bottom:10px}
 .lgo{text-align:center}.lgo h3{margin:10px 0 6px}.lgo p{margin:0 0 14px;color:var(--mu);line-height:1.5}
 .lgi{width:64px;height:64px;border-radius:50%;background:var(--redbg);color:var(--bad);display:grid;place-items:center;margin:4px auto 0}
-.dfoot:not(:has(>:not([hidden]))){display:none}
+.drawer button.bot{margin-top:auto}
+.drawer button.bot[hidden]+.lgout{margin-top:auto}
 .drawer .av.dv{width:20px;height:20px;font-size:11px;flex:none}
 .drawer button .anm{flex:1;text-align:left}
-.drawer button.lgout{margin:0;padding:10px 12px;background:var(--redbg);color:#dc2626;gap:10px;font-weight:700}
+.drawer button.lgout{margin:0 0 8px;padding:10px 12px;background:var(--redbg);color:#dc2626;gap:10px;font-weight:700}
 .drawer button.lgout[hidden]{display:none}
 .drawer button.lgout .ic{background-color:#dc2626}
 .bnav button .av.nv{transition:transform .38s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
@@ -468,13 +469,6 @@ select.fi{appearance:auto}
 .attonly .bnav{display:none!important}
 .attonly .main{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))!important}
 .drawer svg.kic{display:inline-block;width:20px;height:20px;flex:none;margin:0;vertical-align:-.2em}  /* ikon Kasir: SVG garis yang sama dengan bottom nav (bukan ikon bermasker .ic) */
-/* drawer tanpa gulir: jarak dan ukuran menyesuaikan tinggi layar supaya semua menu selalu muat */
-.drawer{padding-top:calc(clamp(8px,1.8vh,20px) + env(safe-area-inset-top,0px));padding-bottom:calc(clamp(8px,1.8vh,20px) + env(safe-area-inset-bottom,0px))}
-.drawer h3{margin:0 10px clamp(4px,1.1vh,10px)}
-.drawer button,.drawer button.acct,.drawer button.lgout{padding:clamp(3px,1.05vh,10px) 14px;margin-bottom:clamp(0px,.2vh,2px);font-size:clamp(12.5px,1.85vh,15px)}
-.drawer .dg{margin:clamp(3px,1.1vh,10px) 10px clamp(1px,.45vh,4px)}.drawer .dg:first-of-type{margin-top:0}
-.drawer .ic,.drawer svg.kic,.drawer .av.dv{width:clamp(16px,2.3vh,20px);height:clamp(16px,2.3vh,20px)}
-.drawer button.acct{margin:0 0 clamp(0px,.2vh,2px)}.drawer .cloudst{margin-top:clamp(2px,.8vh,8px);padding:clamp(4px,1vh,10px) 12px}
 .dg{margin:16px 10px 6px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mu)}.dg:first-of-type{margin-top:0}
 .stabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .stabs button{padding:9px 16px;border-radius:999px;background:var(--card);font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
@@ -655,7 +649,6 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <div class="scrim" id="scrim" onclick="closeAll()"></div>
 <nav class="drawer" id="drawer">
   <h3 id="brand">Ordela</h3>
-  <div class="dnav">
   <div class="dg">Operasional</div>
   <button data-v="home" onclick="go('home')"><i class="ic" data-ic="dash"></i>Beranda</button>
   <button data-v="pos" onclick="go('pos')"><svg class="kic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 8V6"/><path d="M4 20.5h16"/></svg>Kasir</button>
@@ -671,12 +664,9 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
   <button data-v="set" onclick="go('set')"><i class="ic" data-ic="sliders"></i>Toko</button>
   <button data-v="rc" onclick="go('rc')"><i class="ic" data-ic="receipt"></i>Desain Struk</button>
   <button data-v="prn" onclick="go('prn')"><i class="ic" data-ic="print"></i>Printer</button>
-  </div>
-  <div class="dfoot">
-    <button class="bot" data-v="acc" id="accNav" onclick="go('acc')" hidden></button>
-    <button class="lgout" id="lgout" onclick="logoutAsk()" hidden><i class="ic" data-ic="logout"></i>Keluar</button>
-    <div class="cloudst" id="cloudRow" hidden onclick="syncNow()"><i class="ic" data-ic="cloud"></i><span id="cloudSt"></span> <span id="cloudT"></span></div>
-  </div>
+  <button class="bot" data-v="acc" id="accNav" onclick="go('acc')" hidden></button>
+  <button class="lgout" id="lgout" onclick="logoutAsk()" hidden><i class="ic" data-ic="logout"></i>Keluar</button>
+  <div class="cloudst" id="cloudRow" hidden onclick="syncNow()"><i class="ic" data-ic="cloud"></i><span id="cloudSt"></span> <span id="cloudT"></span></div>
 </nav>
 <div class="loginw" id="login" hidden><form class="loginc" onsubmit="doLogin();return false" autocomplete="on">
   <img id="loginLogo" alt=""><h2 id="loginName">Ordela</h2><p class="lsub">Masuk untuk membuka kasir</p>
