@@ -128,12 +128,9 @@ input,select,textarea{font:inherit;color:inherit}
 .fab{display:none}
 .sheet-x{display:none}
 /* drawer */
-.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
+.drawer{visibility:hidden;position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);z-index:60;transform:translateX(-105%);transition:.25s;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(20px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));width:calc(260px + env(safe-area-inset-left,0px));overflow:hidden;display:flex;flex-direction:column;border-radius:0 32px 32px 0;box-shadow:6px 0 30px rgba(0,0,0,.12)}
 .drawer>*{flex:none}
 .drawer>.dfoot{margin-top:auto;padding-top:8px}
-.drawer .dg{margin:10px 10px 4px}.drawer .dg:first-of-type{margin-top:0}
-@media (max-height:880px){.drawer{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}.drawer button{padding:8px 14px;margin-bottom:1px}.drawer .dg{margin:8px 10px 3px}.drawer h3{margin-bottom:6px}}
-@media (max-height:820px){.drawer button{padding:6px 14px}.drawer .dg{margin:6px 10px 2px}}
 .drawer.open{transform:none;visibility:visible}
 .drawer h3{margin:0 10px 10px;color:var(--bt)}
 .drawer button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 14px;border-radius:14px;font-weight:600;margin-bottom:2px;text-align:left}
@@ -471,6 +468,13 @@ select.fi{appearance:auto}
 .attonly .bnav{display:none!important}
 .attonly .main{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))!important}
 .drawer svg.kic{display:inline-block;width:20px;height:20px;flex:none;margin:0;vertical-align:-.2em}  /* ikon Kasir: SVG garis yang sama dengan bottom nav (bukan ikon bermasker .ic) */
+/* drawer tanpa gulir: jarak dan ukuran menyesuaikan tinggi layar supaya semua menu selalu muat */
+.drawer{padding-top:calc(clamp(8px,1.8vh,20px) + env(safe-area-inset-top,0px));padding-bottom:calc(clamp(8px,1.8vh,20px) + env(safe-area-inset-bottom,0px))}
+.drawer h3{margin:0 10px clamp(4px,1.1vh,10px)}
+.drawer button,.drawer button.acct,.drawer button.lgout{padding:clamp(3px,1.05vh,10px) 14px;margin-bottom:clamp(0px,.2vh,2px);font-size:clamp(12.5px,1.85vh,15px)}
+.drawer .dg{margin:clamp(3px,1.1vh,10px) 10px clamp(1px,.45vh,4px)}.drawer .dg:first-of-type{margin-top:0}
+.drawer .ic,.drawer svg.kic,.drawer .av.dv{width:clamp(16px,2.3vh,20px);height:clamp(16px,2.3vh,20px)}
+.drawer button.acct{margin:0 0 clamp(0px,.2vh,2px)}.drawer .cloudst{margin-top:clamp(2px,.8vh,8px);padding:clamp(4px,1vh,10px) 12px}
 .dg{margin:16px 10px 6px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mu)}.dg:first-of-type{margin-top:0}
 .stabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 .stabs button{padding:9px 16px;border-radius:999px;background:var(--card);font-weight:700;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
