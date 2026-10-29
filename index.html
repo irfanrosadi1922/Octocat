@@ -826,7 +826,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     </section>
 
     <section id="v-co" hidden>
-      <div class="bar"><h2><i class="ic" data-ic="cart"></i>Pesanan Online</h2><button class="btn sm" id="coGear" style="width:auto;margin:0" hidden onclick="S.setTab='co';go('set')"><i class="ic" data-ic="sliders"></i>Pengaturan QR</button></div>
+      <div class="bar"><h2><i class="ic" data-ic="cart"></i>Pesanan Online</h2><button class="btn sm" id="coGear" style="width:auto;margin:0" hidden onclick="S.setSub='coForm';go('set')"><i class="ic" data-ic="sliders"></i>Pengaturan QR</button></div>
       <div id="coStat"></div>
       <div id="coList"></div>
       <details class="panel" id="coDev" style="margin-top:18px"><summary>Pengaturan perangkat ini</summary><div id="coTop"></div></details>
@@ -859,11 +859,12 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 
     <section id="v-set" hidden>
       <div class="bar"><h2><i class="ic" data-ic="sliders"></i>Pengaturan</h2></div>
-      <div class="stabs" id="setTabs" role="tablist"><button data-t="toko" onclick="setTab('toko')">Toko</button><button data-t="co" onclick="setTab('co')">Pesanan &amp; Bayar</button><button data-t="tampil" onclick="setTab('tampil')">Tampilan</button><button data-t="data" onclick="setTab('data')">Data &amp; Cadangan</button></div>
+      <div id="setHub"></div>
+      <div id="setSubBar" hidden></div>
       <div class="panel" data-g="toko" id="setForm"></div>
       <div class="panel" data-g="toko" id="logoForm"></div>
       <div class="panel" data-g="toko" id="curForm"></div>
-      <div class="panel" data-g="toko"><h3>Kategori</h3><div id="catMgr"></div>
+      <div class="panel" data-g="toko" id="catForm"><h3>Kategori</h3><div id="catMgr"></div>
         <div class="acts" style="margin-top:10px"><input class="fi" id="newCat" placeholder="Nama kategori baru"><button class="btn sm" onclick="addCat()">Tambah</button></div></div>
       <div class="panel" data-g="co" id="coForm" hidden></div>
       <div class="panel" data-g="co" id="payForm" hidden></div>
@@ -991,6 +992,7 @@ function toggleDrawer(){$('#drawer').classList.toggle('open');$('#scrim').classL
 function closeAll(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('on')}
 const ACCV=['acc','accset','accinfo','editacc','accphoto','pw','accver','accnt','accabout','accdel','accok'];
 function go(v){
+  if(S.view==='set'&&v!=='set')S.setSub=null;
   if(v==='hist'||v==='rep')v='home';   // Riwayat & Laporan sudah menyatu di Beranda
   if(ACCV.includes(v)&&!(CL.on&&CL.me))v='set';
   if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v=landing()}
@@ -1786,13 +1788,42 @@ function renderHist(){
 
 
 /* ---------- settings ---------- */
-function setTab(k){S.setTab=k;applySetTab()}
+const SETP=[
+ ['setForm','Toko','store','Informasi Toko','Nama toko, alamat di struk, pajak, dan batas stok menipis.','nama alamat pajak stok struk gps telepon'],
+ ['logoForm','Toko','camera','Logo Perusahaan','Logo yang tampil di aplikasi dan struk.','logo gambar brand'],
+ ['curForm','Toko','coin','Mata Uang & Harga','Simbol mata uang dan jumlah desimal harga.','rupiah ringgit harga desimal currency'],
+ ['catForm','Toko','tag','Kategori','Kelola kategori menu atau produk.','kategori menu produk'],
+ ['coForm','Pesanan & Pembayaran','cart','Pesanan Online','Buka/tutup pemesanan lewat QR dan atur notifikasi pesanan.','qr pesan online tautan buka tutup'],
+ ['payForm','Pesanan & Pembayaran','shield','Pembayaran Online','QRIS dinamis dan DuitNow untuk pelanggan.','qris duitnow bayar payment'],
+ ['themeForm','Tampilan','sun','Tema','Pilih tampilan terang, gelap, atau otomatis.','gelap terang dark light warna'],
+ ['langForm','Tampilan','globe','Bahasa','Bahasa tampilan aplikasi.','language indonesia english'],
+ ['secForm','Data & Keamanan','lock','Keamanan Sesi','Keluar otomatis saat tidak dipakai.','sesi timeout idle logout'],
+ ['dbForm','Data & Keamanan','cloud','Sinkron & Cadangan','Status sinkron online, ekspor, dan cadangan data.','data backup cadangan sinkron ekspor impor excel']
+];
+function setTab(k){S.setSub=({toko:'setForm',co:'coForm',tampil:'themeForm',data:'dbForm'})[k]||null;applySetTab()}
+function setOpen(id){S.setSub=id;applySetTab();const m=$('main');if(m&&m.scrollTo)m.scrollTo(0,0);window.scrollTo(0,0)}
+function setHubList(){
+  const box=$('#setHubList');if(!box)return;
+  const q=(($('#setQ')||{}).value||'').trim().toLowerCase();
+  const its=SETP.filter(p=>{const e=$('#'+p[0]);return e&&!e.hidden}).filter(p=>!q||(p[3]+' '+p[4]+' '+p[5]+' '+p[1]).toLowerCase().includes(q));
+  if(!its.length){box.innerHTML=`<p class="pfhint" style="text-align:center;padding:28px 0">Tidak ada pengaturan yang cocok dengan “${esc(q)}”.</p>`;return}
+  let h='',g='';
+  its.forEach(p=>{
+    if(p[1]!==g){if(g)h+='</div>';g=p[1];h+=`<div class="pfgl">${esc(g)}</div><div class="pfgrp">`}
+    h+=`<button type="button" onclick="setOpen('${p[0]}')"><span class="ib2">${pfi(p[2],20)}</span><span class="tx"><b>${esc(p[3])}</b><small>${esc(p[4])}</small></span><span class="chev">${pfi('chev',18)}</span></button>`;
+  });
+  box.innerHTML=h+'</div>';
+}
 function applySetTab(){
   const sec=$('#v-set');if(!sec||!sec.querySelectorAll)return;
-  const has=g=>[...sec.querySelectorAll('.panel[data-g="'+g+'"]')].some(p=>!p.hidden);
-  let k=S.setTab||'toko';if(!has(k))k='toko';
-  sec.querySelectorAll('.panel[data-g]').forEach(p=>p.classList.toggle('gh',p.dataset.g!==k));
-  sec.querySelectorAll('#setTabs button').forEach(b=>{b.hidden=!has(b.dataset.t);b.classList.toggle('on',b.dataset.t===k)});
+  const hub=$('#setHub'),sb=$('#setSubBar');if(!hub||!sb)return;
+  let sub=S.setSub;const sp=SETP.find(p=>p[0]===sub),pe=sp&&$('#'+sub);
+  if(!pe||pe.hidden){sub=S.setSub=null}
+  if(!hub.dataset.built){hub.dataset.built='1';hub.innerHTML=`<div class="pfin pfsrch" style="margin:0 0 4px">${pfi('search',18)}<input class="fi" id="setQ" type="search" placeholder="Cari pengaturan" autocomplete="off" oninput="setHubList()" aria-label="Cari pengaturan"></div><div id="setHubList"></div>`}
+  hub.hidden=!!sub;sb.hidden=!sub;
+  sec.querySelectorAll('.panel[data-g]').forEach(p=>p.classList.toggle('gh',p.id!==sub));
+  if(sub)sb.innerHTML=pfSub(esc(sp[3]),"setOpen(null)");
+  if(!sub)setHubList();
 }
 function renderSet(){
   const s=db.set;
@@ -3419,6 +3450,10 @@ const PFI={
  id:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.8-2.3 3-2.3s2.4.7 3 2.3M15 10h3M15 13h3"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.5 3.8 3.8 0 0 1 17.5 18z"/>',
+ coin:'<circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.6-.8-1.5-1.2-2.5-1.2-1.4 0-2.5.8-2.5 2s1.1 1.7 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-1.9-.4-2.5-1.2M12 6.5V8m0 8v1.5"/>',
+ tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.8L20 7H6"/>',
  warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5"/><path d="M12 18h.01"/>',
  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'
