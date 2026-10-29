@@ -625,6 +625,21 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .accp .fi[readonly]{background:var(--bg2);color:var(--tx2)}
 .accp .vst{margin:8px 0 0}
 .accp .hint{margin:6px 0 0}
+/* Ordela profile refresh: follow the existing charcoal, warm-gold, and neutral palette. */
+.accp:has(#accAvV) .accph{flex-direction:column;text-align:center;gap:8px;padding:24px 18px;background:var(--card);box-shadow:0 8px 24px rgba(17,17,17,.05)}
+.accp:has(#accAvV) .accav{width:92px;height:92px;border-color:var(--card);box-shadow:0 0 0 3px var(--ac)}
+.accp:has(#accAvV) .accwho{align-items:center;gap:6px}
+.accp:has(#accAvV) .accwho b{font-size:19px;letter-spacing:-.3px}
+.accp:has(#accAvV) .accwho small{font-size:12px}
+.accp:has(#accAvV) .accsec{border:1px solid var(--ln);border-radius:18px;padding:16px;margin:14px 0;background:var(--card);box-shadow:0 5px 18px rgba(17,17,17,.035)}
+.accp:has(#accAvV) .accsec h3{margin:0 0 14px;font-size:15px;letter-spacing:-.15px}
+.accp:has(#accAvV) .accsec .fl{display:block;margin:12px 0 4px;font-size:11px;color:var(--mu)}
+.accp:has(#accAvV) .accsec .accv{font-size:14px;font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--ln)}
+.accp:has(#accAvV) .accsec .accv:last-child{border-bottom:0;padding-bottom:0}
+.accp:has(#accAvV) .accsec .vst{padding-bottom:8px}
+.accp:has(#accAvV) > .btn{width:100%;box-shadow:0 6px 14px rgba(17,17,17,.12);font-weight:650}
+.accp:has(#accAvV) > .btn.sec{background:var(--peach2);color:var(--tx);box-shadow:none}
+.accp:has(#accAvV) .accsec .pst{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px}
 @media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
