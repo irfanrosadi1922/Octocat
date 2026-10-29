@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="color-scheme" content="only light">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f6f6f6">
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon-192.png"><script src="config.js"></script><script src="sbapi.js"></script><script src="qr.js"></script><script src="qris.js"></script>
@@ -11,8 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Pesan Menu</title>
 <style>
-:root{color-scheme:only light;--b:#111111;--bd:#000000;--pr:#111111;--bg:#f6f6f6;--card:#fff;--tx:#161616;--mu:#6f6f6f;--ln:#ececec;--ok:#15803d;--bad:#b91c1c;--pe:#ececec;--cr:#f4f4f4}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{color-scheme:only light;--b:#111111;--bd:#000000;--pr:#111111;--bg:#F6F6F6;--ac:#FFCB74;--acx:#111111;--card:#fff;--tx:#161616;--mu:#6f6f6f;--ln:#ececec;--ok:#15803d;--bad:#b91c1c;--pe:#ececec;--cr:#f4f4f4}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 html{background:var(--bg);scroll-padding-top:150px}
 html.lock,html.lock body{overflow:hidden}
 body{margin:0;font-family:'Poppins','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;color:var(--tx);background:var(--bg);-webkit-text-size-adjust:100%;line-height:1.4}
@@ -26,7 +27,7 @@ input,textarea{font:inherit;color:inherit}
 .brand img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 .brand h1{margin:0;font-size:18px;line-height:1.2;font-weight:700}
 .brand p{margin:0;color:var(--mu);font-size:12px}
-.brand .tb{margin-left:auto;background:var(--b);color:#111;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.brand .tb{margin-left:auto;background:var(--ac);color:var(--acx);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;white-space:nowrap}
 .search{display:flex;align-items:center;gap:10px;background:#ebebeb;border-radius:18px;height:46px;padding:0 14px;margin-top:12px}
 .search svg{flex:none;color:#777}
 .search input{border:0;outline:0;background:none;width:100%;min-width:0;font-size:15px}
@@ -85,13 +86,13 @@ label.fl i{color:var(--bad);font-style:normal}
 @keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seg button{border:1.5px solid #dcdcdc;border-radius:16px;padding:11px 8px;font-weight:600;font-size:14px;background:#fff}
-.seg button.on{background:var(--bd);border-color:var(--bd);color:#fff}
+.seg button.on{background:var(--ac);border-color:var(--ac);color:var(--acx)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sum{margin-top:14px;font-size:14px}
 .sum div{display:flex;justify-content:space-between;padding:3px 0;color:var(--mu)}
 .sum .t{color:var(--tx);font-weight:700;font-size:18px;padding-top:8px;border-top:1px dashed #d9d9d9;margin-top:4px}
 .note{background:#f6f6f6;border-radius:14px;padding:10px 14px;font-size:12.5px;color:#333333;margin-top:12px}
-.go{width:100%;background:var(--bd);color:#fff;border-radius:20px;padding:15px;font-weight:700;font-size:16px;box-shadow:0 10px 22px rgba(17,17,17,.3)}
+.go{width:100%;background:var(--ac);color:var(--acx);border-radius:20px;padding:15px;font-weight:700;font-size:16px;box-shadow:0 10px 22px rgba(255,203,116,.5)}
 .go:disabled{opacity:.55;box-shadow:none}
 .ghost{width:100%;border-radius:20px;padding:13px;font-weight:600;background:#f1f1f1;margin-top:10px}
 .errm{color:var(--bad);font-size:13px;min-height:18px;margin:8px 0 0;font-weight:500}
@@ -107,7 +108,7 @@ label.fl i{color:var(--bad);font-style:normal}
 .trk div{position:relative;flex:1;font-size:12px;color:var(--mu);font-weight:500}
 .trk div i{display:block;width:28px;height:28px;border-radius:50%;background:#e2e2e2;margin:0 auto 6px;position:relative;z-index:1}
 .trk div.on{color:var(--tx);font-weight:700}
-.trk div.on i{background:var(--bd);box-shadow:0 0 0 5px rgba(17,17,17,.22)}
+.trk div.on i{background:var(--ac);box-shadow:0 0 0 5px rgba(255,203,116,.4)}
 .trk div.dn i{background:var(--ok)}
 .card{background:#fff;border-radius:24px;padding:14px 18px;margin-top:20px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.05)}
 .card .r{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px}
@@ -143,7 +144,7 @@ label.fl i{color:var(--bad);font-style:normal}
   <div class="langbar"><label for="lang" id="langLbl" aria-label="Bahasa / Language">🌐</label><select id="lang" aria-label="Bahasa / Language" onchange="setLang(this.value)"></select></div>
   <div id="vMenu" hidden>
     <header class="top">
-      <div class="brand"><img id="logo" alt=""><div><h1 id="store">Memuat…</h1><p id="tg">Pilih menu, lalu kirim pesanan Anda</p></div><span class="tb" id="tbBadge" hidden></span></div>
+      <div class="brand"><img id="logo" alt=""><div><h1 id="store">Memuat…</h1></div><span class="tb" id="tbBadge" hidden></span></div>
       <label class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Cari menu…" aria-label="Cari menu" autocomplete="off"></label>
       <div class="cats" id="cats" role="tablist"></div>
     </header>
@@ -168,6 +169,15 @@ label.fl i{color:var(--bad);font-style:normal}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS={g(k){try{return localStorage.getItem(k)}catch(e){return null}},s(k,v){try{localStorage.setItem(k,v)}catch(e){}},d(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ---------- kunci zoom dan salin teks (sama seperti kasir) ---------- */
+document.addEventListener('contextmenu',e=>{if(!/^(INPUT|TEXTAREA)$/.test(e.target.tagName))e.preventDefault()});
+document.addEventListener('selectstart',e=>{if(!/^(INPUT|TEXTAREA)$/.test(e.target.tagName||(e.target.parentNode||{}).tagName||''))e.preventDefault()});
+document.addEventListener('dragstart',e=>e.preventDefault());
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},{passive:false});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','=','-','_','0'].includes(e.key))e.preventDefault()});
 const U=new URLSearchParams(location.search);
 const SC=(U.get('s')||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,16);
 const TBL=(U.get('t')||U.get('meja')||'').replace(/[^\w\- ]/g,'').slice(0,12);
@@ -179,7 +189,6 @@ try{const c=JSON.parse(LS.g('co_cart')||'{}');if(c&&typeof c==='object')cart=c}c
 const LANGS=[['id','Bahasa Indonesia'],['en','English'],['ms','Bahasa Melayu'],['zh','中文']];
 const LI={id:0,en:1,ms:2,zh:3};
 const L={
-tag:['Pilih menu, lalu kirim pesanan Anda','Choose your items, then send your order','Pilih menu, kemudian hantar pesanan anda','选择菜单，然后提交订单'],
 search:['Cari menu…','Search menu…','Cari menu…','搜索菜单…'],
 loading:['Memuat…','Loading…','Memuatkan…','加载中…'],
 loadMenu:['Memuat menu…','Loading menu…','Memuatkan menu…','正在加载菜单…'],
@@ -311,7 +320,7 @@ function trErr(m){
 function applyStatic(){
   document.documentElement.lang=LANG==='zh'?'zh-Hans':LANG;
   const set=(sel,k,attr)=>{const e=$(sel);if(!e)return;if(attr)e.setAttribute(attr,t(k));else e.textContent=t(k)};
-  set('#tg','tag');set('#q','search','placeholder');set('#q','search','aria-label');set('#barL','viewOrder');set('#shT','yourOrder');set('#shX','close','aria-label');
+  set('#q','search','placeholder');set('#q','search','aria-label');set('#barL','viewOrder');set('#shT','yourOrder');set('#shX','close','aria-label');
   if(!M){set('#store','loading');const v=$('#vLoad');if(v&&!v.querySelector('b'))v.textContent=t('loadMenu')}
   if(!$('#sheet').classList.contains('on')&&!$('#cName'))$('#sendBtn').textContent=t('send');
   document.title=M?t('titlePre')+' · '+M.store:t('titlePre');

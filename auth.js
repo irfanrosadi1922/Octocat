@@ -91,7 +91,7 @@ const msg=(t,ok)=>{const e=document.getElementById('aErr');if(e){e.textContent=t
 
 /* ---------- daftar ---------- */
 window.authRegister=function(){
-  const f=show(`${brand()}<h2>Buat akun</h2><p class="lsub">Daftar untuk membuka toko Anda sendiri</p>
+  const f=show(`${brand()}<h2>Buat akun</h2>
   <label class="fl" for="rName">Nama lengkap</label><input class="fi" id="rName" maxlength="60" autocomplete="name" placeholder="Nama sesuai identitas">
   <label class="fl" for="rUser">Username</label><input class="fi" id="rUser" maxlength="24" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="huruf kecil, angka, . _ -">
   <p class="fe" id="rUserE"></p>
@@ -175,7 +175,7 @@ window.authForgot=function(){
 
 /* ---------- buat sandi baru (dari tautan di email) ---------- */
 function newPwScreen(token){
-  const f=show(`${brand()}<h2>Buat sandi baru</h2><p class="lsub">Masukkan kata sandi baru untuk akun Anda.</p>
+  const f=show(`${brand()}<h2>Buat sandi baru</h2>
   <label class="fl" for="nPw">Kata sandi baru</label>${eye('nPw')}
   <label class="fl" for="nPw2">Ulangi kata sandi</label>${eye('nPw2')}
   <p class="hint" style="margin:4px 0 0;font-size:12px;color:var(--mu)">Minimal 8 karakter, berisi huruf dan angka.</p>

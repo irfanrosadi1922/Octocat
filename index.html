@@ -358,7 +358,7 @@ button[hidden]{display:none!important}
 .loginw{position:fixed;inset:0;z-index:200;background:radial-gradient(120% 60% at 50% 0%,var(--peach3) 0%,var(--bg) 60%);display:flex;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px}.loginw>.loginc{margin:auto}
 .loginc{width:100%;max-width:360px;background:var(--card);border-radius:24px;padding:28px 24px;box-shadow:0 10px 40px rgba(0,0,0,.12);text-align:left}
 .loginc img{width:88px;height:88px;object-fit:cover;border-radius:50%;box-shadow:0 10px 26px rgba(17,17,17,.28);display:block;margin:0 auto 10px}
-.loginc h2{text-align:center;margin:0}
+.loginc h2{text-align:center;margin:0 0 8px}
 .loginc .lsub{text-align:center;color:var(--mu);font-size:13px;margin:4px 0 14px}
 .loginc .fi{text-align:left;margin-bottom:2px}
 .pw{position:relative}.pw .fi{padding-right:96px}
@@ -674,7 +674,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
   <div class="cloudst" id="cloudRow" hidden onclick="syncNow()"><i class="ic" data-ic="cloud"></i><span id="cloudSt"></span> <span id="cloudT"></span></div>
 </nav>
 <div class="loginw" id="login" hidden><form class="loginc" onsubmit="doLogin();return false" autocomplete="on">
-  <img id="loginLogo" alt=""><h2 id="loginName">Ordela</h2><p class="lsub">Masuk untuk membuka kasir</p>
+  <img id="loginLogo" alt=""><h2 id="loginName">Ordela</h2>
   <label class="fl" for="loginUser">Username</label>
   <input class="fi" id="loginUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="mis. owner">
   <label class="fl" for="loginPw">Kata sandi</label>
@@ -3378,7 +3378,7 @@ function accCancel(){const b=$('#editAccPage');if(b)b.dataset.built='';go('acc')
 function renderPwPage(){
   const box=$('#pwPage');if(!box)return;
   box.innerHTML=`<div class="accp">
-    <p class="hint">Masukkan password saat ini, lalu tentukan password baru.</p>
+    
     <label class="fl">Password saat ini</label><input class="fi" id="pwOld" type="password" placeholder="Password saat ini" autocomplete="current-password">
     <label class="fl" style="margin-top:10px">Password baru</label><input class="fi" id="pwNew" type="password" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password">
     <label class="fl" style="margin-top:10px">Ulangi password baru</label><input class="fi" id="pwNew2" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
@@ -3918,7 +3918,7 @@ function usrForm(id){
   <label class="fl">Status / Jabatan</label>
   <select class="fi" id="uRole" onchange="usrRolePick()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
   <button type="button" class="btn sec" id="uRoleDel" style="display:none;margin-top:6px" onclick="usrRoleDel()"><i class="ic" data-ic="trash"></i>Hapus jabatan ini dari daftar</button>
-  <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><p class="hint">Tambah jabatan khusus untuk dipilih di sini.</p><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
+  <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
   <p class="hint">Owner memiliki akses penuh. Jabatan lain hanya mendapat izin yang dicentang.</p>
   <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
   <label class="tgl" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span>Hanya boleh login di satu perangkat</span></label>
@@ -4126,7 +4126,7 @@ function renderTable(){
   const c={f:0,n:0,p:0};names.forEach(k=>c[st(k)]++);
   const lbl={f:'Kosong',n:'Pesanan baru',p:'Diproses'};
   el.innerHTML=`
-  <div class="hm-h"><div><h2>Meja</h2><small>Status meja dari pesanan online yang memakai nomor meja</small></div>
+  <div class="hm-h"><div><h2>Meja</h2></div>
     <span class="stp">Jumlah meja <button onclick="tblStep(-1)" aria-label="Kurangi">−</button>${n}<button onclick="tblStep(1)" aria-label="Tambah">+</button></span></div>
   <div class="tbg">
     <div class="panel"><div class="tbs">${names.map(k=>{const s=st(k),a=by(k);return`<div class="tbc ${s==='f'?'':s}"><b>${esc(k)}</b><small>${lbl[s]}${a.length?' · '+a.length+' pesanan':''}</small></div>`}).join('')}</div>
