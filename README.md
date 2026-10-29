@@ -57,8 +57,9 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Menu **Akun** selalu di posisi paling bawah/terakhir di semua navigasi (sidebar, drawer, bar bawah ponsel).
 
 ## Akun saya: profil, email terverifikasi, foto
-- **Akun Saya** menampilkan profil (nama, username, email + status verifikasi, telepon, tanggal lahir, alamat) dan informasi akun (peran, toko, kode toko untuk owner, tanggal bergabung, login terakhir, status akun, koneksi).
-- **Edit Profil** bisa mengubah semua kolom itu. Owner juga bisa mengubah username, nama toko, dan nomor telepon toko. Username karyawan terkunci (dipakai untuk login dan jadwal shift) dan hanya owner yang bisa mengubahnya.
+- **Profil** (menu Akun): avatar, nama, peran, kartu Email / Nomor Telepon / Status Akun, tombol *Edit Profil* dan *Pengaturan Akun*.
+- **Pengaturan Akun**: *Informasi Profil* (data lengkap + info toko), *Keamanan Akun* (ubah kata sandi), *Verifikasi Email* (status, kirim ulang, ubah email), *Notifikasi* (notifikasi, bunyi, getar pesanan masuk), *Tentang Ordela* (versi 1.0.0, muat ulang versi terbaru), dan *Keluar*.
+- **Edit Profil** bisa mengubah nama, username, email, telepon, tanggal lahir, dan alamat; layar *Profil Berhasil Diperbarui* tampil setelah simpan. Owner juga bisa mengubah username, nama toko, dan nomor telepon toko. Username karyawan terkunci.
 - **Ganti email** wajib verifikasi: tombol *Ubah email* meminta email baru dan sandi saat ini, lalu Supabase Auth mengirim tautan ke email baru. Email lama tetap berlaku sampai tautan dibuka; setelah itu email di aplikasi ikut berganti otomatis (trigger `pos_on_auth_email`). Server menolak perubahan email lewat `PUT /api/me`.
-- **Foto profil**: pilih foto, geser dan zoom, lalu *Gunakan Foto* dan *Simpan Perubahan*. Isian dan foto yang sedang diubah tidak lagi hilang saat aplikasi menyinkronkan data di latar belakang.
+- **Foto profil**: ketuk avatar atau *Ubah Foto*, pilih *Ambil Foto* / *Pilih dari Galeri* / *Hapus Foto*, geser dan zoom, lalu *Simpan Foto*. Isian dan foto yang sedang diubah tidak lagi hilang saat aplikasi menyinkronkan data di latar belakang.
 - Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.

@@ -251,8 +251,10 @@ function renderAccVerif(){
     }
     box.className='vst';box.innerHTML=h;
   }
+  try{if(window.accVerRender&&S.view==='accver')accVerRender()}catch(e){}
 }
 window.renderAccVerif=renderAccVerif;
+window.authCdLeft=function(){return cdLeft(RESEND_KEY)};
 window.authResendChange=async function(){
   const m=CL.me;if(!m||!m.pendingEmail||cdLeft(RESEND_KEY)>0)return;
   cdSet(RESEND_KEY);renderAccVerif();

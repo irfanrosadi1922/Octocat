@@ -625,60 +625,61 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .accp .fi[readonly]{background:var(--bg2);color:var(--tx2)}
 .accp .vst{margin:8px 0 0}
 .accp .hint{margin:6px 0 0}
-/* Consistent account subpages and flat, custom-drawn icons */
-.acc-setting-card{border:1px solid var(--ln);border-radius:18px;background:var(--card);padding:14px;margin:18px 0}
-.acc-setting-card h3{margin:2px 2px 10px;font-size:15px}
-.acc-setting-row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 4px;background:transparent;color:var(--tx);text-align:left;border-bottom:1px solid var(--ln)}
-.acc-setting-row:last-child{border-bottom:0}
-.acc-setting-icon{width:40px;height:40px;display:grid;place-items:center;flex:none;border-radius:12px;background:var(--peach2);color:var(--tx)}
-.acc-setting-icon svg,.acc-security-icon svg,.acc-back svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.acc-setting-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.acc-setting-copy b{font-size:13.5px}
-.acc-setting-copy small{font-size:11.5px;color:var(--mu);line-height:1.4}
-.acc-setting-chevron{color:var(--mu);font-size:24px;line-height:1}
-.acc-subhead{display:flex;align-items:center;gap:10px;margin:0 0 16px}
-.acc-back{width:40px;height:40px;display:grid;place-items:center;flex:none;border:1px solid var(--ln);border-radius:13px;background:var(--card);color:var(--tx)}
-.acc-back svg{width:19px;height:19px}
-.acc-subhead h2{margin:0;font-size:20px;letter-spacing:-.3px}
-.acc-subhead p{margin:3px 0 0;color:var(--mu);font-size:12px}
-.acc-security-hero{display:flex;align-items:center;gap:12px;padding:15px;border:1px solid var(--ln);border-radius:16px;background:var(--bg2);margin-bottom:18px}
-.acc-security-icon{width:44px;height:44px;display:grid;place-items:center;flex:none;border-radius:14px;background:var(--peach2);color:var(--tx)}
-.acc-security-hero b{display:block;font-size:14px}
-.acc-security-hero small{display:block;color:var(--mu);font-size:12px;line-height:1.45;margin-top:3px}
-/* Profile overview layout closer to the approved Ordela mockup. */
-.accp-overview .accp-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 18px 20px;gap:10px;background:var(--card);border:1px solid var(--ln);border-radius:22px;box-shadow:0 8px 24px rgba(17,17,17,.05)}
-.accp-overview .accav{width:92px;height:92px;box-shadow:0 0 0 3px var(--ac);border-color:var(--card)}
-.accp-overview .accwho{align-items:center;gap:5px}
-.accp-overview .accwho b{font-size:20px;letter-spacing:-.35px}
-.accp-overview .acc-role-pill{display:inline-flex;margin-top:3px;padding:5px 10px;border-radius:999px;background:var(--peach2);color:var(--tx);font-size:11px;font-weight:650}
-.accp-overview .acc-contact{width:100%;display:grid;gap:8px;margin-top:8px;text-align:left}
-.accp-overview .acc-contact>div{display:flex;align-items:center;gap:11px;min-width:0;padding:11px 12px;border:1px solid var(--ln);border-radius:13px;background:var(--bg2)}
-.accp-overview .acc-contact-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:var(--card);color:var(--tx);font-size:16px}
-.accp-overview .acc-contact>div>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
-.accp-overview .acc-contact small{font-size:10px;color:var(--mu)}
-.accp-overview .acc-contact b{font-size:12px;font-weight:600;overflow-wrap:anywhere}
-.accp-overview .accp-hero-edit{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
-.accp-overview .accsec{border:1px solid var(--ln);border-radius:18px;padding:16px;margin:14px 0;background:var(--card);box-shadow:0 5px 18px rgba(17,17,17,.035)}
-.accp-overview .accsec h3{margin:0 0 14px;font-size:15px}
-.accp-overview .accsec .fl{display:block;margin:12px 0 4px;font-size:11px;color:var(--mu)}
-.accp-overview .accsec .accv{font-size:14px;font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--ln)}
-.accp-overview .accsec .pst{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px}
-@media(max-width:480px){.accp-overview .accp-hero{padding:22px 14px 16px}.accp-overview .acc-contact b{font-size:12px}}
-/* Ordela profile refresh: follow the existing charcoal, warm-gold, and neutral palette. */
-.accp:has(#accAvV) .accph{flex-direction:column;text-align:center;gap:8px;padding:24px 18px;background:var(--card);box-shadow:0 8px 24px rgba(17,17,17,.05)}
-.accp:has(#accAvV) .accav{width:92px;height:92px;border-color:var(--card);box-shadow:0 0 0 3px var(--ac)}
-.accp:has(#accAvV) .accwho{align-items:center;gap:6px}
-.accp:has(#accAvV) .accwho b{font-size:19px;letter-spacing:-.3px}
-.accp:has(#accAvV) .accwho small{font-size:12px}
-.accp:has(#accAvV) .accsec{border:1px solid var(--ln);border-radius:18px;padding:16px;margin:14px 0;background:var(--card);box-shadow:0 5px 18px rgba(17,17,17,.035)}
-.accp:has(#accAvV) .accsec h3{margin:0 0 14px;font-size:15px;letter-spacing:-.15px}
-.accp:has(#accAvV) .accsec .fl{display:block;margin:12px 0 4px;font-size:11px;color:var(--mu)}
-.accp:has(#accAvV) .accsec .accv{font-size:14px;font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--ln)}
-.accp:has(#accAvV) .accsec .accv:last-child{border-bottom:0;padding-bottom:0}
-.accp:has(#accAvV) .accsec .vst{padding-bottom:8px}
-.accp:has(#accAvV) > .btn{width:100%;box-shadow:0 6px 14px rgba(17,17,17,.12);font-weight:650}
-.accp:has(#accAvV) > .btn.sec{background:var(--peach2);color:var(--tx);box-shadow:none}
-.accp:has(#accAvV) .accsec .pst{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px}
+
+/* ===== halaman profil (desain baru) ===== */
+.pfw{max-width:520px;margin:0 auto;padding-bottom:24px}
+.subh{display:flex;align-items:center;gap:12px;margin:2px 0 16px;max-width:520px;margin-left:auto;margin-right:auto}
+.subh h2{margin:0;font-size:18px;font-weight:700}
+.subh .bk{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:var(--tx);flex:none;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.pfhero{display:flex;flex-direction:column;align-items:center;text-align:center;margin:4px 0 18px;gap:4px}
+.pfav{position:relative;width:104px;height:104px;border-radius:50%;background:var(--peach2);display:grid;place-items:center;font-size:40px;font-weight:700;color:var(--tx);border:4px solid var(--card);box-shadow:0 0 0 1px var(--ln),0 10px 26px rgba(0,0,0,.08);cursor:pointer}
+.pfav>span{width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.pfav img{width:100%;height:100%;object-fit:cover;display:block}
+.pfav .cam{position:absolute;right:-2px;bottom:2px;width:34px;height:34px;border-radius:50%;background:var(--b2);color:#fff;display:grid;place-items:center;border:3px solid var(--bg);box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.pfn{font-size:20px;margin-top:10px;overflow-wrap:anywhere}.pfr{color:var(--mu);font-size:13px}
+.pfpill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 18px;border-radius:14px;background:var(--card);border:1px solid var(--ln);font-weight:600;font-size:13.5px}
+.pfcard{background:var(--card);border-radius:22px;padding:4px 18px;box-shadow:0 4px 16px rgba(0,0,0,.03)}
+.pfrow{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--ln);min-width:0}
+.pfrow:last-child{border-bottom:0}
+.pfrow>.pfi{flex:none;color:var(--tx2)}
+.pfrow .tx{min-width:0;flex:1}.pfrow small{display:block;color:var(--mu);font-size:12px;line-height:1.3}
+.pfrow .tx b,.pfrow .tx>span{display:block;font-size:14.5px;font-weight:600;overflow-wrap:anywhere;line-height:1.4}
+.pfrow .tx .mu{color:var(--mu);font-weight:400}
+.pfrow .ok{color:#16a34a}.pfrow .warn{color:#d97706}.pfrow .bad{color:var(--bad)}
+.pfbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border-radius:16px;background:var(--b2);color:#fff;font-weight:600;font-size:15px;margin-top:16px;padding:0 18px}
+.pfbtn:disabled{opacity:.6}
+.pfbtn.out{background:var(--card);color:var(--tx);border:1px solid var(--ln);justify-content:flex-start;gap:14px}
+.pfbtn.out .chev{margin-left:auto;color:var(--mu)}
+.pfbtn.danger{color:var(--bad);justify-content:center}
+.pfmenu{display:flex;flex-direction:column;gap:10px}
+.pfmenu>button{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:18px;padding:14px 16px;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.03)}
+.pfmenu .ib2{width:40px;height:40px;border-radius:50%;background:var(--bg);display:grid;place-items:center;flex:none;color:var(--tx2)}
+.pfmenu .tx{flex:1;min-width:0}.pfmenu .tx b{display:block;font-size:14.5px}.pfmenu .tx small{display:block;color:var(--mu);font-size:12px;margin-top:1px}
+.pfmenu .chev{color:var(--mu);flex:none}.pfmenu .okc{color:#16a34a;flex:none}
+.pfin{position:relative}.pfin>.pfi{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
+.pfin .fi{padding-left:46px!important}
+.pfin .eyeb{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;color:var(--mu);border-radius:50%}
+.pfin.pe .fi{padding-right:48px!important}
+.pfhint{font-size:12px;color:var(--mu);margin:6px 2px 0;line-height:1.5}
+.pfdone{text-align:center;padding:48px 8px 8px}
+.pfdone .big{width:96px;height:96px;border-radius:50%;background:var(--b2);color:#fff;display:grid;place-items:center;margin:0 auto 22px;box-shadow:0 0 0 10px rgba(47,47,47,.08),0 14px 30px rgba(0,0,0,.18)}
+.pfdone h2{margin:0 0 8px;font-size:21px}.pfdone p{margin:0 auto;max-width:300px;color:var(--mu);font-size:14px;line-height:1.55}
+.pfenv{position:relative;width:104px;height:104px;border-radius:50%;background:var(--card);display:grid;place-items:center;margin:0 auto 22px;box-shadow:0 0 0 10px rgba(47,47,47,.05);color:var(--b2)}
+.pfenv .bdg{position:absolute;right:6px;bottom:8px;width:30px;height:30px;border-radius:50%;background:var(--b2);color:#fff;display:grid;place-items:center;border:3px solid var(--bg)}
+.pfenv .bdg.w{background:#d97706}
+.pcrop .cropstage{position:relative;border-radius:18px;max-width:340px;margin:0 auto}
+.pcrop .cframe{position:absolute;inset:7%;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 999px rgba(0,0,0,.38);pointer-events:none}
+.pcrop .cropcontrols{max-width:340px;margin:14px auto 16px}
+.pfsw{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--ln);cursor:pointer}
+.pfsw:last-child{border-bottom:0}.pfsw .tx{flex:1;min-width:0}.pfsw .tx b{display:block;font-size:14.5px}.pfsw .tx small{display:block;color:var(--mu);font-size:12px;margin-top:2px;line-height:1.4}
+.pfsw .tgl{padding:0;flex:none}
+.mw.sheetm{align-items:flex-end;padding:0}
+.mw.sheetm .modal{max-width:560px;border-radius:28px 28px 0 0;padding:18px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+.shh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.shh h3{margin:0;font-size:17px}
+.shh .x{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--chip)}
+.shr{display:flex;align-items:center;gap:16px;width:100%;padding:15px 4px;font-weight:600;font-size:15px;text-align:left;border-bottom:1px solid var(--ln)}
+.shr:last-child{border-bottom:0}.shr .pfi{color:var(--tx2)}
+.pfwrap .pfi{display:block}
 @media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
@@ -821,18 +822,18 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
       <div id="attBox"></div>
     </section>
 
-    <section id="v-acc" hidden>
-      <div class="bar"><h2><i class="ic" data-ic="users"></i>Akun Saya</h2></div>
-      <div class="panel" id="accPage" style="max-width:560px"></div>
-    </section>
-    <section id="v-editacc" hidden>
-      <div class="bar"><button class="mini" type="button" onclick="go('acc')">← Kembali</button><h2>Edit Profil</h2></div>
-      <div class="panel" id="editAccPage" style="max-width:560px"></div>
-    </section>
-    <section id="v-pw" hidden>
-      <div class="bar"><button class="mini" type="button" onclick="go('acc')">← Kembali</button><h2>Ubah Password</h2></div>
-      <div class="panel" id="pwPage" style="max-width:560px"></div>
-    </section>
+    <section id="v-acc" hidden><div id="accPage"></div></section>
+    <section id="v-accset" hidden><div id="accSetPage"></div></section>
+    <section id="v-accinfo" hidden><div id="accInfoPage"></div></section>
+    <section id="v-editacc" hidden><div id="editAccPage"></div></section>
+    <section id="v-accphoto" hidden><div id="accPhotoPage"></div></section>
+    <section id="v-pw" hidden><div id="pwPage"></div></section>
+    <section id="v-accver" hidden><div id="accVerPage"></div></section>
+    <section id="v-accnt" hidden><div id="accNtPage"></div></section>
+    <section id="v-accabout" hidden><div id="accAboutPage"></div></section>
+    <section id="v-accok" hidden><div id="accOkPage"></div></section>
+    <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
+    <input type="file" id="accFileCam" accept="image/*" capture="user" hidden onchange="accPhoto(this)">
     <section id="v-usr" hidden>
       <div class="bar"><h2><i class="ic" data-ic="users"></i>Pengguna</h2><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn sm sec" style="width:auto;margin:0" onclick="jbOpen()"><i class="ic" data-ic="edit"></i>Jabatan</button><button class="btn sm" style="width:auto;margin:0" onclick="usrForm(0)"><i class="ic" data-ic="plus"></i>Tambah</button></span></div>
       
@@ -972,15 +973,18 @@ setInterval(tick,15000);
 /* ---------- navigation ---------- */
 function toggleDrawer(){$('#drawer').classList.toggle('open');$('#scrim').classList.toggle('on',$('#drawer').classList.contains('open'))}
 function closeAll(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('on')}
+const ACCV=['acc','accset','accinfo','editacc','accphoto','pw','accver','accnt','accabout','accok'];
 function go(v){
   if(v==='hist'||v==='rep')v='home';   // Riwayat & Laporan sudah menyatu di Beranda
-  if(v==='acc'&&!(CL.on&&CL.me))v='set';
+  if(ACCV.includes(v)&&!(CL.on&&CL.me))v='set';
   if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v=landing()}
-  if(v==='editacc'&&S.view!=='editacc'){const eb=$('#editAccPage');if(eb)eb.dataset.built=''}
+  if(v==='editacc'&&S.view!=='editacc'&&S.view!=='accphoto'){const eb=$('#editAccPage');if(eb)eb.dataset.built=''}
+  if(v==='pw'&&S.view!=='pw'){const pb=$('#pwPage');if(pb)pb.dataset.built=''}
   S.view=v;closeAll();toggleInv(false);
-  ['pos','home','table','alert','inv','rc','prn','set','co','usr','acc','editacc','pw','att'].forEach(x=>$('#v-'+x).hidden=x!==v);
-  document.querySelectorAll('.drawer button,.bnav button,.rail button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  navDot(v);
+  ['pos','home','table','alert','inv','rc','prn','set','co','usr','att'].concat(ACCV).forEach(x=>$('#v-'+x).hidden=x!==v);
+  const nv=ACCV.includes(v)?'acc':v;   // semua halaman profil menyalakan menu Akun
+  document.querySelectorAll('.drawer button,.bnav button,.rail button').forEach(b=>b.classList.toggle('on',b.dataset.v===nv));
+  navDot(nv);
   $('#invoice').style.display=v==='pos'?'':'none';
   $('#fab').classList.toggle('hide',v!=='pos');
   $('.search').style.visibility=(v==='pos'||v==='inv')?'visible':'hidden';
@@ -3240,7 +3244,7 @@ function renderAcct(){
   if(an){an.hidden=!on;if(on)an.innerHTML=avHtml(CL.me,'dv')+'<span class="anm">Akun</span>'}
   if(lo)lo.hidden=!on;
   if(typeof renderSec==='function')renderSec();
-  if(S.view==='acc'&&!on)go('set');
+  if(ACCV.includes(S.view)&&!on)go('set');
 }
 
 /* ----- halaman login ----- */
@@ -3366,60 +3370,104 @@ function accStore(m){
   const n=String(db&&db.set&&db.set.store||'').trim(),sn=String(m&&m.store&&m.store.name||'').trim();
   return{name:n||sn,phone:String(db&&db.set&&db.set.phone||'').trim(),code:String(m&&m.store&&m.store.code||'')};
 }
+const APP_VER='1.0.0';
+/* ikon garis 24px untuk halaman profil */
+const PFI={
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+ at:'<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
+ mail:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>',
+ phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+ check:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>',
+ tick:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+ warn:'<path d="M12 7v6"/><path d="M12 17h.01"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
+ camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+ image:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ pencil:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+ chev:'<path d="M9 6l6 6-6 6"/>',
+ back:'<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>',
+ eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3.2 3.8M6.3 7.7A17 17 0 0 0 2 12s4 7 10 7a9.8 9.8 0 0 0 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+ shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+ refresh:'<path d="M20 11a8 8 0 0 0-14-4L4 9"/><path d="M4 4v5h5"/><path d="M4 13a8 8 0 0 0 14 4l2-2"/><path d="M20 20v-5h-5"/>',
+ trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/>',
+ store:'<path d="M4 9l1.5-5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0A2.7 2.7 0 0 0 20 9"/><path d="M5 12v8h14v-8"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ pin:'<path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+ id:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.8-2.3 3-2.3s2.4.7 3 2.3M15 10h3M15 13h3"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.5 3.8 3.8 0 0 1 17.5 18z"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'
+};
+const pfi=(n,z)=>`<svg class="pfi" width="${z||22}" height="${z||22}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PFI[n]||''}</svg>`;
+const pfSub=(t,to)=>`<div class="subh"><button class="bk" type="button" onclick="${to}" aria-label="Kembali">${pfi('back',22)}</button><h2>${t}</h2></div>`;
+const NONE='<span class="mu">Belum diisi</span>';
+function accVerState(m){
+  if(m.active===false)return{k:'bad',t:'Dinonaktifkan'};
+  if(!m.hasAuth)return m.email?{k:'warn',t:'Email belum terhubung'}:{k:'ok',t:'Aktif'};
+  return m.emailVerified?{k:'ok',t:'Terverifikasi'}:{k:'warn',t:'Belum diverifikasi'};
+}
+/* ----- halaman Profil ----- */
 function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
-  const role=usrRoleLabel(m.role),st=accStore(m),own=m.role==='owner';
-  const none='<span style="color:var(--mu)">Belum diisi</span>';
-  box.innerHTML=`<div class="accp accp-overview">
-    <div class="accph accp-hero">
-      <span class="accav"><span id="accAvV"></span></span>
-      <div class="accwho">
-        <b>${esc(m.name||'Pengguna')}</b>
-        <small>@${esc(m.username||'—')}</small>
-        <span class="acc-role-pill">${esc(role)}</span>
-      </div>
-      <div class="acc-contact">
-        <div><span class="acc-contact-icon">✉</span><span><small>Email</small><b>${m.email?esc(m.email):'Belum diisi'}</b></span></div>
-        <div><span class="acc-contact-icon">☎</span><span><small>Nomor telepon</small><b>${m.phone?esc(m.phone):'Belum diisi'}</b></span></div>
-      </div>
-      <button class="btn accp-hero-edit" type="button" onclick="go('editacc')">Edit Profil <span aria-hidden="true">↗</span></button>
+  const vs=accVerState(m);
+  box.innerHTML=`<div class="pfw">
+    <div class="pfhero"><button class="pfav" type="button" onclick="accSheet('view')" aria-label="Ubah foto profil"><span id="accAvV"></span><i class="cam">${pfi('camera',16)}</i></button>
+      <b class="pfn">${esc(m.name||'Pengguna')}</b><small class="pfr">${esc(usrRoleLabel(m.role))}</small></div>
+    <div class="pfcard">
+      <div class="pfrow">${pfi('mail',20)}<div class="tx"><small>Email</small><b>${m.email?esc(m.email):NONE}</b></div></div>
+      <div class="pfrow">${pfi('phone',20)}<div class="tx"><small>Nomor Telepon</small><b>${m.phone?esc(m.phone):NONE}</b></div></div>
+      <div class="pfrow">${pfi('check',20)}<div class="tx"><small>Status Akun</small><b class="${vs.k}">${esc(vs.t)}</b></div></div>
     </div>
-    <div class="accsec">
-      <h3>Profil Pribadi</h3>
-      ${accRow('Nama lengkap',esc(m.name||'—'))}
-      ${accRow('Username','@'+esc(m.username||'—'))}
-      <label class="fl">Alamat email</label><p class="accv">${m.email?esc(m.email):none}</p><div id="accVstV" class="vst"></div>
-      ${accRow('Nomor telepon',m.phone?esc(m.phone):none)}
-      ${accRow('Tanggal lahir',accDate(m.birth)?esc(accDate(m.birth)):none)}
-      ${accRow('Alamat',m.address?esc(m.address):none)}
-    </div>
-    <div class="accsec">
-      <h3>Informasi Akun</h3>
-      ${accRow('Peran / jabatan',esc(role))}
-      ${accRow('Nama toko',st.name?esc(st.name):'<span style="color:var(--mu)">Belum diatur</span>')}
-      ${accRow('Nomor telepon toko',st.phone?esc(st.phone):none)}
-      ${own&&st.code?accRow('Kode toko',`<code>${esc(st.code)}</code>`):''}
-      ${accRow('Tanggal bergabung',accDate(m.createdAt)?esc(accDate(m.createdAt)):'<span style="color:var(--mu)">Belum tersedia</span>')}
-      ${accRow('Login terakhir',accDate(m.lastLogin,1)?esc(accDate(m.lastLogin,1)):'<span style="color:var(--mu)">Belum tersedia</span>')}
-      ${accRow('Status akun',m.active===false?'<span class="pst bad">Dinonaktifkan</span>':'<span class="pst ok">Aktif</span>')}
-      ${accRow('Koneksi',(CL.on&&CL.tok)?(navigator.onLine===false?'Tidak ada internet':'Terhubung ke server'):'Mode offline')}
-    </div>
-    <div class="acc-setting-card">
-      <h3>Pengaturan Akun</h3>
-      <button class="acc-setting-row" type="button" onclick="go('editacc')">
-        <span class="acc-setting-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></span>
-        <span class="acc-setting-copy"><b>Edit profil</b><small>Perbarui nama, foto, nomor telepon, dan informasi pribadi.</small></span>
-        <span class="acc-setting-chevron" aria-hidden="true">›</span>
-      </button>
-      <button class="acc-setting-row" type="button" onclick="go('pw')">
-        <span class="acc-setting-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/><path d="M12 14v3"/></svg></span>
-        <span class="acc-setting-copy"><b>Keamanan & kata sandi</b><small>Ganti kata sandi untuk menjaga keamanan akun.</small></span>
-        <span class="acc-setting-chevron" aria-hidden="true">›</span>
-      </button>
-    </div>
+    <button class="pfbtn" type="button" onclick="go('editacc')">${pfi('pencil',18)}Edit Profil</button>
+    <button class="pfbtn out" type="button" onclick="go('accset')">${pfi('user',20)}Pengaturan Akun<span class="chev">${pfi('chev',18)}</span></button>
   </div>`;
   accAvDraw();
 }
+/* ----- Pengaturan Akun ----- */
+function renderAccSet(){
+  const m=CL.me,box=$('#accSetPage');if(!m||!box)return;
+  const vs=accVerState(m);
+  const sub=!m.hasAuth?(m.email?'Email belum terhubung ke akun':'Tambahkan email akun Anda'):m.pendingEmail?'Menunggu verifikasi email baru':m.emailVerified?'Email Anda sudah terverifikasi':'Email belum diverifikasi';
+  const it=(ic,t,d,to,extra)=>`<button type="button" onclick="${to}"><span class="ib2">${pfi(ic,20)}</span><span class="tx"><b>${t}</b><small>${d}</small></span>${extra||''}<span class="chev">${pfi('chev',18)}</span></button>`;
+  box.innerHTML=`${pfSub('Pengaturan Akun',"go('acc')")}<div class="pfw"><div class="pfmenu">
+    ${it('user','Informasi Profil','Kelola data diri Anda',"go('accinfo')")}
+    ${it('shield','Keamanan Akun','Ubah kata sandi akun Anda',"go('pw')")}
+    ${it('mail','Verifikasi Email',esc(sub),"go('accver')",vs.k==='ok'&&m.hasAuth&&!m.pendingEmail?`<span class="okc">${pfi('check',22)}</span>`:'')}
+    ${it('bell','Notifikasi','Kelola notifikasi aplikasi',"go('accnt')")}
+    ${it('info','Tentang Ordela','Versi aplikasi '+APP_VER,"go('accabout')")}
+  </div>
+  <button class="pfbtn out danger" type="button" onclick="logoutAsk()">${pfi('logout',20)}Keluar</button></div>`;
+}
+/* ----- Informasi Profil (semua data, hanya baca) ----- */
+function renderAccInfo(){
+  const m=CL.me,box=$('#accInfoPage');if(!m||!box)return;
+  const role=usrRoleLabel(m.role),st=accStore(m),own=m.role==='owner',vs=accVerState(m);
+  const mu=t=>`<span class="mu">${t}</span>`;
+  const row=(ic,l,v)=>`<div class="pfrow">${pfi(ic,20)}<div class="tx"><small>${l}</small><b>${v}</b></div></div>`;
+  box.innerHTML=`${pfSub('Informasi Profil',"go('accset')")}<div class="pfw">
+    <div class="pfcard">
+      ${row('user','Nama lengkap',esc(m.name||'—'))}${row('at','Username','@'+esc(m.username||'—'))}
+      ${row('mail','Alamat email',m.email?esc(m.email):NONE)}${row('phone','Nomor telepon',m.phone?esc(m.phone):NONE)}
+      ${row('cal','Tanggal lahir',accDate(m.birth)?esc(accDate(m.birth)):NONE)}${row('pin','Alamat',m.address?esc(m.address):NONE)}
+    </div>
+    <div class="pfcard" style="margin-top:14px">
+      ${row('shield','Peran / jabatan',esc(role))}
+      ${row('store','Nama toko',st.name?esc(st.name):mu('Belum diatur'))}
+      ${row('phone','Nomor telepon toko',st.phone?esc(st.phone):NONE)}
+      ${own&&st.code?row('id','Kode toko',`<code>${esc(st.code)}</code>`):''}
+      ${row('cal','Tanggal bergabung',accDate(m.createdAt)?esc(accDate(m.createdAt)):mu('Belum tersedia'))}
+      ${row('clock','Login terakhir',accDate(m.lastLogin,1)?esc(accDate(m.lastLogin,1)):mu('Belum tersedia'))}
+      ${row('check','Status akun',`<span class="${vs.k}">${esc(m.active===false?'Dinonaktifkan':'Aktif')}</span>`)}
+      ${row('cloud','Koneksi',(CL.on&&CL.tok)?(navigator.onLine===false?'Tidak ada internet':'Terhubung ke server'):'Mode offline')}
+    </div>
+    <button class="pfbtn" type="button" onclick="go('editacc')">${pfi('pencil',18)}Edit Profil</button></div>`;
+}
+/* ----- Edit Profil ----- */
 function renderEditAccPage(force){
   const m=CL.me,box=$('#editAccPage');if(!m||!box)return;
   /* render() jalan tiap sinkron data; jangan hapus isian/foto yang sedang diubah */
@@ -3427,42 +3475,99 @@ function renderEditAccPage(force){
   ACC.photo=m.photo||'';box.dataset.built='1';
   const own=m.role==='owner',st=accStore(m),today=new Date().toISOString().slice(0,10);
   const sp=phSplit(st.phone);
-  box.innerHTML=`<div class="accp">
-  <div class="acc-subhead"><button class="acc-back" type="button" onclick="accCancel()" aria-label="Kembali ke profil"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><div><h2>Edit Profil</h2><p>Perbarui informasi pribadi Anda.</p></div></div>
-  <div class="accph"><button class="accav" type="button" onclick="$('#accFile').click()" aria-label="Ganti foto profil"><span id="accAv"></span><i class="cam"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i></button>
-    <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
-    <div class="accwho"><b id="accNm">${esc(m.name)}</b><small>@${esc(m.username)} · ${esc(usrRoleLabel(m.role))}</small>
-    <button class="lnk" type="button" id="accRm" onclick="accPhotoDel()">Hapus foto</button></div></div>
-  <h3 class="acch">Profil Pribadi</h3>
-  <label class="fl" for="accName">Nama lengkap</label><input class="fi" id="accName" maxlength="60" value="${esc(m.name)}" autocomplete="name" oninput="accAvDraw()">
-  <label class="fl" for="accUser">Username</label><input class="fi" id="accUser" maxlength="24" value="${esc(m.username)}" autocomplete="username" autocapitalize="none" spellcheck="false" ${own?'':'readonly'}>
+  box.innerHTML=`${pfSub('Edit Profil','accCancel()')}<div class="accp pfwrap">
+  <div class="pfhero"><button class="pfav" type="button" onclick="accSheet('edit')" aria-label="Ubah foto profil"><span id="accAv"></span><i class="cam">${pfi('camera',16)}</i></button>
+    <button class="pfpill" type="button" onclick="accSheet('edit')">${pfi('camera',18)}Ubah Foto</button>
+    <button class="lnk" type="button" id="accRm" onclick="accPhotoDel()">Hapus foto</button></div>
+  <label class="fl" for="accName">Nama Lengkap</label><div class="pfin">${pfi('user',20)}<input class="fi" id="accName" maxlength="60" value="${esc(m.name)}" autocomplete="name" oninput="accAvDraw()"></div>
+  <label class="fl" for="accUser">Username</label><div class="pfin">${pfi('at',20)}<input class="fi" id="accUser" maxlength="24" value="${esc(m.username)}" autocomplete="username" autocapitalize="none" spellcheck="false" ${own?'':'readonly'}></div>
   <p class="hint">${own?'Dipakai untuk masuk. Huruf kecil, angka, titik, strip, garis bawah (3-24 karakter).':'Username karyawan hanya bisa diubah oleh owner (dipakai untuk login dan jadwal shift).'}</p>
-  <label class="fl" for="accEmail">Alamat email</label><input class="fi" id="accEmail" type="email" value="${esc(m.email||'')}" placeholder="Belum diisi" readonly>
+  <label class="fl" for="accEmail">Email</label><div class="pfin">${pfi('mail',20)}<input class="fi" id="accEmail" type="email" value="${esc(m.email||'')}" placeholder="Belum diisi" readonly></div>
   <div id="accVst" class="vst"></div>
-  <label class="fl">Nomor telepon</label><div class="phr"><select class="fi" id="accCc" aria-label="Kode negara">${phCcOpts(phSplit(m.phone).cc)}</select><input class="fi" id="accPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(phSplit(m.phone).num)}" autocomplete="tel-national"></div>
-  <label class="fl" for="accBirth">Tanggal lahir</label><input class="fi" id="accBirth" type="date" min="1900-01-01" max="${today}" value="${esc(m.birth||'')}">
+  <label class="fl">Nomor Telepon</label><div class="phr"><select class="fi" id="accCc" aria-label="Kode negara">${phCcOpts(phSplit(m.phone).cc)}</select><input class="fi" id="accPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(phSplit(m.phone).num)}" autocomplete="tel-national"></div>
+  <label class="fl" for="accBirth">Tanggal Lahir</label><input class="fi" id="accBirth" type="date" min="1900-01-01" max="${today}" value="${esc(m.birth||'')}">
   <label class="fl" for="accAddr">Alamat</label><textarea class="fi" id="accAddr" rows="2" maxlength="300" placeholder="Alamat tempat tinggal">${esc(m.address||'')}</textarea>
   ${own?`<h3 class="acch">Toko</h3>
-  <label class="fl" for="accStore">Nama toko</label><input class="fi" id="accStore" maxlength="60" value="${esc(st.name)}" placeholder="Nama toko Anda">
-  <label class="fl">Nomor telepon toko</label><div class="phr"><select class="fi" id="accSCc" aria-label="Kode negara toko">${phCcOpts(sp.cc)}</select><input class="fi" id="accSPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(sp.num)}"></div>`:''}
+  <label class="fl" for="accStore">Nama Toko</label><div class="pfin">${pfi('store',20)}<input class="fi" id="accStore" maxlength="60" value="${esc(st.name)}" placeholder="Nama toko Anda"></div>
+  <label class="fl">Nomor Telepon Toko</label><div class="phr"><select class="fi" id="accSCc" aria-label="Kode negara toko">${phCcOpts(sp.cc)}</select><input class="fi" id="accSPhone" type="tel" inputmode="tel" maxlength="14" placeholder="812 3456 7890" value="${esc(sp.num)}"></div>`:''}
   <p class="hint" id="accErr" style="color:var(--bad);min-height:16px;margin:10px 0 0" role="alert"></p>
-  <button class="btn" id="accSave" onclick="accSave()">Simpan Perubahan</button>
-  <button class="btn sec" type="button" style="margin-top:8px" onclick="accCancel()">Batal</button></div>`;
+  <button class="pfbtn" id="accSave" type="button" onclick="accSave()" style="margin-top:8px">${pfi('pencil',18)}Simpan Perubahan</button></div>`;
   accAvDraw();
   try{window.renderAccVerif&&window.renderAccVerif()}catch(e){}
 }
 function accCancel(){const b=$('#editAccPage');if(b)b.dataset.built='';go('acc')}
+/* ----- Ubah Kata Sandi ----- */
 function renderPwPage(){
   const box=$('#pwPage');if(!box)return;
-  box.innerHTML=`<div class="accp">
-    <div class="acc-subhead"><button class="acc-back" type="button" onclick="go('acc')" aria-label="Kembali ke profil"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><div><h2>Keamanan Akun</h2><p>Kelola kata sandi akun Ordela.</p></div></div>
-    <div class="acc-security-hero"><span class="acc-security-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/><path d="M12 14v3"/></svg></span><span><b>Ubah kata sandi</b><small>Gunakan kata sandi minimal 6 karakter dan jangan membagikannya kepada orang lain.</small></span></div>
-    <label class="fl">Password saat ini</label><input class="fi" id="pwOld" type="password" placeholder="Password saat ini" autocomplete="current-password">
-    <label class="fl" style="margin-top:10px">Password baru</label><input class="fi" id="pwNew" type="password" placeholder="Password baru (min. 6 karakter)" autocomplete="new-password">
-    <label class="fl" style="margin-top:10px">Ulangi password baru</label><input class="fi" id="pwNew2" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
+  if(box.dataset.built==='1'&&box.querySelector('#pwOld'))return;   /* jangan hapus yang sedang diketik */
+  box.dataset.built='1';
+  const f=(id,l,ph,ac)=>`<label class="fl" for="${id}">${l}</label><div class="pfin pe">${pfi('lock',20)}<input class="fi" id="${id}" type="password" placeholder="${ph}" autocomplete="${ac}" maxlength="72"><button class="eyeb" type="button" aria-label="Tampilkan atau sembunyikan kata sandi" onclick="accEye('${id}',this)">${pfi('eye',20)}</button></div>`;
+  box.innerHTML=`${pfSub('Ubah Kata Sandi',"go('accset')")}<div class="accp pfwrap">
+    ${f('pwOld','Kata Sandi Lama','Masukkan kata sandi lama','current-password')}
+    ${f('pwNew','Kata Sandi Baru','Masukkan kata sandi baru','new-password')}<p class="pfhint">Minimal 6 karakter.</p>
+    ${f('pwNew2','Konfirmasi Kata Sandi Baru','Ulangi kata sandi baru','new-password')}
     <p class="hint" id="pwErr" style="color:var(--bad);min-height:16px"></p>
-    <button class="btn" onclick="changePw()">Ubah Password</button>
-  </div>`;
+    <button class="pfbtn" type="button" onclick="changePw()" style="margin-top:8px">${pfi('check',18)}Simpan</button></div>`;
+}
+function accEye(id,b){const i=$('#'+id);if(!i)return;const sh=i.type==='password';i.type=sh?'text':'password';b.innerHTML=pfi(sh?'eyeoff':'eye',20)}
+/* ----- layar sukses ----- */
+function accDone(title,desc){
+  const b=$('#accOkPage');
+  if(b)b.innerHTML=`<div class="pfdone"><div class="big">${pfi('tick',46).replace('stroke-width="1.9"','stroke-width="2.4"')}</div><h2>${esc(title)}</h2><p>${esc(desc)}</p><button class="pfbtn" type="button" onclick="go('acc')">Kembali ke Profil</button></div>`;
+  go('accok');
+}
+/* ----- Verifikasi Email ----- */
+function accVerRender(){
+  const m=CL.me,box=$('#accVerPage');if(!m||!box)return;
+  const left=(window.authCdLeft&&authCdLeft())||0,em=esc(m.email||''),pe=esc(m.pendingEmail||'');
+  const ob=(fn,ic,lbl,dis)=>`<button class="pfbtn out" type="button" style="justify-content:center" ${dis?'disabled':''} onclick="${fn}()">${pfi(ic,18)}${lbl}</button>`;
+  let warn=true,title,txt,acts='';
+  if(!m.hasAuth){title=m.email?'Email Belum Terhubung':'Belum Ada Email';txt=m.email?'Hubungkan email ke akun Anda agar bisa diverifikasi dan dipakai untuk reset kata sandi.':'Tambahkan email agar akun bisa diverifikasi dan dipakai untuk reset kata sandi.';acts=ob('authAddEmail','mail',m.email?'Hubungkan &amp; Verifikasi Email':'Tambah Email')}
+  else if(m.pendingEmail){title='Menunggu Verifikasi Email Baru';txt=`Kami mengirim tautan ke <b>${pe}</b>. Buka tautan itu untuk menyelesaikan. Email lama (${em}) tetap dipakai sampai saat itu.`;acts=ob('authResendChange','refresh',left?`Kirim Ulang Tautan (${left} dtk)`:'Kirim Ulang Tautan',left)}
+  else if(!m.emailVerified){title='Email Belum Diverifikasi';txt=`Buka tautan verifikasi yang kami kirim ke <b>${em}</b>. Belum menerima? Cek folder spam atau kirim ulang.`;acts=ob('authResend','refresh',left?`Kirim Ulang Email Verifikasi (${left} dtk)`:'Kirim Ulang Email Verifikasi',left)}
+  else{warn=false;title='Email Terverifikasi';txt='Email Anda sudah terverifikasi.<br>Terima kasih telah mengamankan akun Anda.'}
+  if(m.hasAuth)acts+=ob('authChangeEmail','pencil','Ubah Email');
+  box.innerHTML=`${pfSub('Verifikasi Email',"go('accset')")}<div class="pfdone" style="padding-top:28px"><div class="pfenv">${pfi('mail',46)}<i class="bdg ${warn?'w':''}">${pfi(warn?'warn':'tick',16)}</i></div><h2>${title}</h2><p>${txt}</p>
+    <div style="max-width:520px;margin:6px auto 0">${acts}<button class="pfbtn" type="button" onclick="go('acc')">Kembali ke Profil</button></div></div>`;
+  clearTimeout(ACC.vt);if(left)ACC.vt=setTimeout(()=>{if(S.view==='accver')accVerRender()},1000);
+}
+/* ----- Notifikasi ----- */
+function renderAccNt(){
+  const box=$('#accNtPage');if(!box)return;
+  const sw=(k,t,d,fn)=>`<label class="pfsw"><span class="tx"><b>${t}</b><small>${d}</small></span><span class="tgl"><input type="checkbox" ${coPref(k,true)?'checked':''} onchange="${fn||`coSetPref('${k}',this.checked)`}"></span></label>`;
+  let ps='Tidak didukung di perangkat ini';
+  if(window.nativeNotify)ps='Aplikasi Android';
+  else if('Notification' in window)ps={granted:'Diizinkan',denied:'Diblokir di pengaturan browser',default:'Belum diminta'}[Notification.permission]||ps;
+  box.innerHTML=`${pfSub('Notifikasi',"go('accset')")}<div class="pfw">
+    <div class="pfcard">
+      ${sw('notif','Notifikasi sistem','Tampilkan notifikasi saat ada pesanan online baru',"coSetNotif(this.checked).then(renderAccNt)")}
+      ${sw('sound','Bunyi pesanan masuk','Putar bunyi saat pesanan online masuk')}
+      ${sw('vib','Getar pesanan masuk','Getarkan perangkat saat pesanan online masuk')}
+    </div>
+    <p class="pfhint">Izin notifikasi perangkat: <b>${esc(ps)}</b></p>
+    <button class="pfbtn out" type="button" style="justify-content:center" onclick="ntTest()">${pfi('bell',18)}Tes notifikasi</button>
+    <button class="pfbtn out" type="button" style="justify-content:center" onclick="coBeep()">${pfi('bell',18)}Tes bunyi</button></div>`;
+}
+/* ----- Tentang Ordela ----- */
+function renderAccAbout(){
+  const m=CL.me,box=$('#accAboutPage');if(!m||!box)return;
+  const st=accStore(m),own=m.role==='owner';
+  const row=(ic,l,v)=>`<div class="pfrow">${pfi(ic,20)}<div class="tx"><small>${l}</small><b>${v}</b></div></div>`;
+  box.innerHTML=`${pfSub('Tentang Ordela',"go('accset')")}<div class="pfw">
+    <div class="pfhero"><img src="icon-192.png" alt="" width="84" height="84" style="border-radius:22px;box-shadow:0 8px 20px rgba(0,0,0,.12)"><b class="pfn">Ordela</b><small class="pfr">Aplikasi kasir dan pesanan untuk toko Anda</small></div>
+    <div class="pfcard">
+      ${row('info','Versi aplikasi',esc(APP_VER))}${row('globe','Situs','ordela.my.id')}
+      ${st.name?row('store','Toko',esc(st.name)):''}${own&&st.code?row('id','Kode toko',`<code>${esc(st.code)}</code>`):''}
+      ${row('cloud','Koneksi',(CL.on&&CL.tok)?(navigator.onLine===false?'Tidak ada internet':'Terhubung ke server'):'Mode offline')}
+    </div>
+    <button class="pfbtn out" type="button" style="justify-content:center" onclick="accRefreshApp()">${pfi('refresh',18)}Muat ulang versi terbaru</button></div>`;
+}
+function accRefreshApp(){
+  ask('Muat ulang aplikasi?',CL.dirty?'Ada perubahan yang belum tersinkron. Tunggu sampai tersinkron dulu supaya tidak hilang.':'Aplikasi akan mengambil versi terbaru lalu dimuat ulang. Data Anda tidak dihapus.','Muat ulang',async()=>{
+    try{const rs=await (navigator.serviceWorker&&navigator.serviceWorker.getRegistrations?navigator.serviceWorker.getRegistrations():[]);await Promise.all(rs.map(r=>r.unregister()));
+      if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){}
+    location.reload();
+  });
 }
 function accAvDraw(){
   const m=CL.me||{};
@@ -3473,25 +3578,49 @@ function accAvDraw(){
   const r=$('#accRm');if(r)r.hidden=!ACC.photo;
 }
 let ACC_CROP=null;
+function accSheet(ctx){
+  ACC.ctx=ctx||'edit';
+  openModal(`<div class="shh"><h3>Pilih Foto</h3><button class="x" type="button" onclick="closeModal()" aria-label="Tutup">${pfi('x',18)}</button></div>
+  <button class="shr" type="button" onclick="accPick('cam')">${pfi('camera',22)}Ambil Foto</button>
+  <button class="shr" type="button" onclick="accPick('gal')">${pfi('image',22)}Pilih dari Galeri</button>
+  <button class="shr" type="button" onclick="closeModal()">${pfi('x',22)}Batal</button>`);
+  $('#mw').classList.add('sheetm');
+}
+function accPick(k){closeModal();const i=$(k==='cam'?'#accFileCam':'#accFile');if(i)i.click()}
 function accPhoto(inp){
   const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
-  const e=$('#accErr');if(!/^image\//.test(f.type)){if(e)e.textContent='Pilih file gambar';return}
-  if(f.size>12*1024*1024){if(e)e.textContent='Ukuran foto maksimal 12 MB';return}
+  if(!ACC.ctx)ACC.ctx=S.view==='editacc'?'edit':'view';
+  if(!/^image\//.test(f.type)){toast('Pilih file gambar');return}
+  if(f.size>12*1024*1024){toast('Ukuran foto maksimal 12 MB');return}
   const rd=new FileReader();
-  rd.onload=()=>{const im=new Image();im.onload=()=>openAccCrop(im);im.onerror=()=>{if(e)e.textContent='Foto tidak bisa dibaca'};im.src=rd.result};
-  rd.onerror=()=>{if(e)e.textContent='Foto tidak bisa dibaca'};rd.readAsDataURL(f);
+  rd.onload=()=>{const im=new Image();im.onload=()=>openAccCrop(im);im.onerror=()=>toast('Foto tidak bisa dibaca');im.src=rd.result};
+  rd.onerror=()=>toast('Foto tidak bisa dibaca');rd.readAsDataURL(f);
 }
 function openAccCrop(im){
   ACC_CROP={im,zoom:1,x:0,y:0,drag:null};
-  openModal(`<div class="cropbox">
-    <h3 style="margin:0 0 6px;font-size:18px">Atur Foto Profil</h3>
-    <p class="hint" style="font-size:12px;color:var(--mu);margin:0 0 18px">Geser foto untuk mengatur posisi, lalu sesuaikan zoom.</p>
-    <div class="cropstage" id="cropStage"><canvas id="cropCanvas" width="320" height="320"></canvas></div>
+  const opt=(ic,t,d,fn)=>`<button type="button" onclick="${fn}"><span class="ib2">${pfi(ic,20)}</span><span class="tx"><b>${t}</b><small>${d}</small></span></button>`;
+  $('#accPhotoPage').innerHTML=`${pfSub('Ubah Foto Profil','accPhotoBack()')}<div class="pfw pcrop">
+    <div class="cropstage" id="cropStage"><canvas id="cropCanvas" width="320" height="320"></canvas><i class="cframe"></i></div>
     <div class="cropcontrols"><label for="cropZoom"><span>Perbesar foto</span><b id="cropZoomVal">100%</b></label><input id="cropZoom" type="range" min="1" max="3" step=".01" value="1" oninput="accCropZoom(this.value)"></div>
-    <p class="cropnote">Foto akan dipotong menjadi lingkaran.</p>
-    <div class="cropactions"><button class="btn sec" onclick="cancelAccCrop()">Batal</button><button class="btn" onclick="saveAccCrop()">Gunakan Foto</button></div>
-  </div>`);
+    <div class="pfmenu">${opt('camera','Ambil Foto','Gunakan kamera',"accPick('cam')")}${opt('image','Pilih dari Galeri','Pilih foto yang sudah ada',"accPick('gal')")}${opt('trash','Hapus Foto','Hapus foto profil saat ini','accPhotoRemove()')}</div>
+    <button class="pfbtn" type="button" id="accPhSave" onclick="saveAccCrop()">Simpan Foto</button></div>`;
+  go('accphoto');
   const c=$('#cropCanvas');c.onpointerdown=accCropDown;c.onpointermove=accCropMove;c.onpointerup=accCropUp;c.onpointercancel=accCropUp;c.onpointerleave=accCropUp;accCropDraw();
+}
+function accPhotoBack(){ACC_CROP=null;go(ACC.ctx==='edit'?'editacc':'acc')}
+/* simpan foto langsung ke akun (dari halaman Profil, bukan dari form Edit Profil) */
+async function accPhotoApply(photo){
+  const m=CL.me;if(!m)return false;
+  try{
+    const r=await api('/api/me',{method:'PUT',body:JSON.stringify({name:m.name,phone:m.phone||'',photo,birth:m.birth||'',address:m.address||''})}),j=await r.json();
+    if(!r.ok){toast(j.error||'Gagal menyimpan foto');return false}
+    setMe(j);renderAcct();return true;
+  }catch(x){if(x.message!=='auth')toast('Tidak bisa terhubung ke server');return false}
+}
+async function accPhotoRemove(){
+  ACC_CROP=null;
+  if(ACC.ctx==='edit'){ACC.photo='';go('editacc');accAvDraw();return}
+  if(await accPhotoApply('')){go('acc');toast('Foto profil dihapus')}
 }
 function accCropDraw(){
   const q=ACC_CROP,c=$('#cropCanvas');if(!q||!c)return;const x=c.getContext('2d'),w=c.width,h=c.height,im=q.im;
@@ -3503,11 +3632,15 @@ function accCropZoom(v){if(!ACC_CROP)return;ACC_CROP.zoom=Number(v)||1;const e=$
 function accCropDown(e){if(!ACC_CROP)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);ACC_CROP.drag={x:e.clientX,y:e.clientY,ox:ACC_CROP.x,oy:ACC_CROP.y}}
 function accCropMove(e){const q=ACC_CROP;if(!q||!q.drag)return;e.preventDefault();const r=e.currentTarget.getBoundingClientRect(),scale=320/r.width;q.x=q.drag.ox+(e.clientX-q.drag.x)*scale;q.y=q.drag.oy+(e.clientY-q.drag.y)*scale;accCropDraw()}
 function accCropUp(){if(ACC_CROP)ACC_CROP.drag=null}
-function cancelAccCrop(){ACC_CROP=null;closeModal()}
-function saveAccCrop(){
+function cancelAccCrop(){accPhotoBack()}
+async function saveAccCrop(){
   const q=ACC_CROP;if(!q)return;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),im=q.im,w=320,h=320,base=Math.max(w/im.width,h/im.height),sc=base*q.zoom,iw=im.width*sc,ih=im.height*sc;
   x.fillStyle='#fff';x.fillRect(0,0,256,256);x.drawImage(im,((w-iw)/2+q.x)/w*256,((h-ih)/2+q.y)/h*256,iw/w*256,ih/h*256);
-  try{ACC.photo=c.toDataURL('image/jpeg',.84);ACC_CROP=null;closeModal();const e=$('#accErr');if(e)e.textContent='';accAvDraw()}catch(e){const er=$('#accErr');if(er)er.textContent='Foto tidak bisa diproses'}
+  let url;try{url=c.toDataURL('image/jpeg',.84)}catch(e){toast('Foto tidak bisa diproses');return}
+  ACC_CROP=null;
+  if(ACC.ctx==='edit'){ACC.photo=url;go('editacc');accAvDraw();return}
+  const b=$('#accPhSave');if(b)b.disabled=true;
+  if(await accPhotoApply(url)){go('acc');toast('Foto profil diperbarui')}else if(b)b.disabled=false;
 }
 /* nomor telepon: kode negara + nomor, disimpan seperti "+62 812 3456 7890" */
 const PH_CC=[['62','🇮🇩 Indonesia'],['60','🇲🇾 Malaysia'],['65','🇸🇬 Singapura'],['673','🇧🇳 Brunei'],['66','🇹🇭 Thailand'],['63','🇵🇭 Filipina'],['84','🇻🇳 Vietnam'],['855','🇰🇭 Kamboja'],['91','🇮🇳 India'],['86','🇨🇳 Tiongkok'],['852','🇭🇰 Hong Kong'],['81','🇯🇵 Jepang'],['82','🇰🇷 Korea Selatan'],['61','🇦🇺 Australia'],['966','🇸🇦 Arab Saudi'],['971','🇦🇪 UEA'],['44','🇬🇧 Inggris'],['1','🇺🇸 AS / Kanada']];
@@ -3547,7 +3680,7 @@ async function accSave(){
     setMe(j);
     if(own){db.set.store=sName;db.set.phone=sPhone;save();try{applyBrand()}catch(x){}}
     const b=$('#editAccPage');if(b)b.dataset.built='';
-    renderAcct();go('acc');renderAccPage();toast('Profil disimpan');
+    renderAcct();accDone('Profil Berhasil Diperbarui','Informasi profil Anda telah berhasil disimpan.');
   }catch(x){if(x.message!=='auth')e.textContent='Tidak bisa terhubung ke server'}
   finally{btn.disabled=false}
 }
@@ -3561,7 +3694,7 @@ async function changePw(){
     const j=await r.json();
     if(!r.ok){e.textContent=j.error||'Gagal';return}
     CL.tok=j.token;try{localStorage.setItem('pos_tok',CL.tok)}catch(x){}
-    ['pwOld','pwNew','pwNew2'].forEach(i=>{const e=$('#'+i);if(e)e.value=''});$('#pwErr').textContent='';toast('Password diganti');go('acc');
+    ['pwOld','pwNew','pwNew2'].forEach(i=>{const e=$('#'+i);if(e)e.value=''});$('#pwErr').textContent='';const pb=$('#pwPage');if(pb)pb.dataset.built='';accDone('Kata Sandi Berhasil Diubah','Gunakan kata sandi baru saat Anda masuk berikutnya.');
   }catch(x){if(x.message!=='auth')e.textContent='Tidak bisa terhubung ke server'}
 }
 /* dialog keluar: hanya dua pilihan, Keluar atau Batal */
@@ -4037,7 +4170,7 @@ function usrDel(id){
 }
 
 /* ---------- modal & boot ---------- */
-function openModal(h){$('#modal').innerHTML=h;$('#mw').classList.add('on')}
+function openModal(h){$('#modal').innerHTML=h;$('#mw').classList.remove('sheetm');$('#mw').classList.add('on')}
 function closeModal(){attStop();$('#mw').classList.remove('on')}
 function render(){
   renderCats();renderGrid();renderInvoice();
@@ -4051,8 +4184,13 @@ function render(){
   if(S.view==='co')renderCo(true);
   if(S.view==='usr')renderUsr();
   if(S.view==='acc')renderAccPage();
+  if(S.view==='accset')renderAccSet();
+  if(S.view==='accinfo')renderAccInfo();
   if(S.view==='editacc')renderEditAccPage();   /* tidak menimpa isian yang sedang diubah */
   if(S.view==='pw')renderPwPage();
+  if(S.view==='accver')accVerRender();
+  if(S.view==='accnt')renderAccNt();
+  if(S.view==='accabout')renderAccAbout();
   if(S.view==='att')renderAtt();else ATT.built=false;
 }
 const RAIL_USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
