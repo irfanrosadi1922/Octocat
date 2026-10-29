@@ -77,3 +77,9 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Menu **Payroll** (owner): tab **Gaji** (periode bulanan, slip per karyawan, bonus, potongan lain/kasbon, tandai dibayar, ekspor Excel), tab **Karyawan** (jenis gaji bulanan/harian/per jam, uang makan/transport per hari hadir, tunjangan tetap, potong bila tidak hadir; aturan umum potongan telat per menit dan hari kerja per bulan), dan tab **Rekap Absensi** (ringkasan per karyawan, catatan, ekspor Excel).
 - Perhitungan: pokok (tetap / harian × hari hadir / per jam × jam kerja) + makan/transport × hari hadir + tunjangan + bonus − telat (menit × tarif) − tidak hadir (gaji ÷ hari kerja × hari absen) − potongan lain. Slip yang ditandai dibayar disimpan sebagai snapshot sehingga tidak berubah bila tarif diubah.
 - Data payroll disimpan di server (`GET/PUT /api/payroll`, hanya owner, dengan kontrol revisi) dan **tidak** ikut data yang disinkron ke karyawan. Jalankan ulang `setup.sql` di Supabase SQL Editor.
+
+### Slip gaji ke email karyawan
+- Slip yang sudah **ditandai dibayar** bisa dikirim ke email karyawan (tombol *Kirim Slip ke Email* di slip, atau *Kirim Semua Slip ke Email* di tab Gaji). Opsi **Kirim slip otomatis** (tab Karyawan → Aturan umum) mengirim slip begitu ditandai dibayar.
+- Email dikirim server lewat Resend (`POST /api/payroll/slip`, hanya owner) dari isi slip yang tersimpan, jadi angkanya sama dengan yang dibayar. Karyawan tanpa email dilewati (mereka mengisi email sendiri di Akun → Edit Profil).
+- Aktifkan sekali di Supabase SQL Editor (domain pengirim harus terverifikasi di Resend, mis. `ordela.my.id`):
+  `select pos.admin_mail('re_KUNCI_API_RESEND', 'Ordela <slip@ordela.my.id>');`

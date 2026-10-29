@@ -4093,7 +4093,7 @@ function renderAtt(){
 }
 
 /* ---------- Payroll (khusus owner): gaji karyawan + rekap absensi. Data disimpan di server (/api/payroll), tidak ikut data yang disinkron ke karyawan ---------- */
-const PY={d:null,users:[],tab:'gaji',month:'',rows:[],rowsKey:'',built:false,busy:0,err:'',who:''};
+const PY={d:null,mail:false,users:[],tab:'gaji',month:'',rows:[],rowsKey:'',built:false,busy:0,err:'',who:''};
 const PY_TYPES=[['monthly','Bulanan (gaji tetap)'],['daily','Harian (× hari hadir)'],['hourly','Per jam (× jam kerja)']];
 const PY_TLBL={monthly:'Bulanan',daily:'Harian',hourly:'Per jam'};
 const pyNorm=j=>{j=j&&typeof j==='object'?j:{};const o=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};return{rev:+j.rev||0,cfg:{lateRate:0,workDays:26,...o(j.cfg)},emp:o(j.emp),runs:o(j.runs)}};
@@ -4106,7 +4106,7 @@ async function pyLoad(){
     const [r,u]=await Promise.all([api('/api/payroll'),api('/api/users')]);
     const j=await r.json(),uj=await u.json();
     if(!r.ok){PY.err=j.error||'Gagal memuat payroll';return}
-    PY.d=pyNorm(j);PY.users=(uj.users||[]).filter(x=>x.role!=='owner');
+    PY.d=pyNorm(j);PY.mail=!!j.mail;PY.users=(uj.users||[]).filter(x=>x.role!=='owner');
   }catch(e){if(e.message!=='auth')PY.err='Tidak bisa terhubung ke server'}
 }
 async function pySave(){
@@ -4183,8 +4183,9 @@ async function pyGaji(b){
     <div class="opn-sum" style="margin-top:12px"><span><small>Total gaji bersih</small><b>${money(tot)}</b></span><span><small>Sudah dibayar</small><b>${money(paid)}</b></span><span><small>Belum dibayar</small><b>${money(tot-paid)}</b></span></div>
     ${attOn?'':'<p class="pfhint">Absensi belum aktif, jadi hari hadir tercatat 0. Aktifkan di Pengaturan → Absensi &amp; Shift, atau isi penyesuaian manual.</p>'}
     ${PY.users.length?'':'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}
-    ${rows.map(({u,r})=>`<button type="button" class="pyc" onclick="pySlip('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}</b><small>${r.set?esc(PY_TLBL[r.type])+' · '+r.days+' hari hadir'+(r.lateMin?' · telat '+r.lateMin+' mnt':''):'Gaji belum diatur'}</small></span><span class="rt"><b>${money(r.net)}</b><span class="pst ${r.paid?'ok':'w'}">${r.paid?'Dibayar':'Belum'}</span></span></button>`).join('')}
+    ${rows.map(({u,r})=>`<button type="button" class="pyc" onclick="pySlip('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}</b><small>${r.set?esc(PY_TLBL[r.type])+' · '+r.days+' hari hadir'+(r.lateMin?' · telat '+r.lateMin+' mnt':''):'Gaji belum diatur'}</small></span><span class="rt"><b>${money(r.net)}</b><span class="pst ${r.paid?'ok':'w'}">${r.paid?'Dibayar':'Belum'}</span>${pyItem(PY.month,u.username).mailAt?'<small>✉ terkirim</small>':''}</span></button>`).join('')}
     ${PY.users.length?`<button class="btn" type="button" onclick="pyXlsx()"><i class="ic" data-ic="download"></i>Unduh Payroll (Excel)</button>`:''}
+    ${rows.some(x=>x.r.paid)?`<button class="btn sec" type="button" onclick="pyMailAll()">Kirim Semua Slip ke Email</button>`:''}
   </div>`;
 }
 function pySlip(un){
@@ -4197,7 +4198,7 @@ function pySlip(un){
   <div><label class="fl" for="pyOther">Potongan lain / kasbon</label><input class="fi" id="pyOther" type="number" inputmode="decimal" min="0" step="any" value="${+it.other||''}" placeholder="0" ${dis} oninput="pySlipUpd('${esc(un)}')"></div></div>
   <label class="fl" for="pyNote">Catatan</label><input class="fi" id="pyNote" maxlength="80" value="${esc(it.note||'')}" ${dis} placeholder="Opsional">
   ${paid?`<p class="pfhint">Dibayar ${esc(it.paidAt?new Date(it.paidAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'')}. Buka lagi untuk mengubah.</p>`:''}
-  ${paid?`<button class="btn sec" type="button" onclick="pyPaid('${esc(un)}',0)">Buka Lagi (batalkan status dibayar)</button>`
+  ${paid?`<p class="pfhint">${u.email?'Email: '+esc(u.email)+(it.mailAt?' · terkirim '+esc(new Date(it.mailAt).toLocaleDateString('id-ID',{day:'numeric',month:'short'})):''):'Karyawan ini belum punya email (diisi sendiri di Akun → Edit Profil), slip belum bisa dikirim.'}</p>${u.email?`<button class="btn" type="button" onclick="pyMail('${esc(un)}')"><i class="ic" data-ic="note"></i>${it.mailAt?'Kirim Ulang Slip ke Email':'Kirim Slip ke Email'}</button>`:''}<button class="btn sec" type="button" onclick="pyPaid('${esc(un)}',0)">Buka Lagi (batalkan status dibayar)</button>`
    :`<button class="btn sec" type="button" onclick="pySlipSave('${esc(un)}',0)">Simpan Penyesuaian</button><button class="btn" type="button" onclick="pySlipSave('${esc(un)}',1)">Simpan &amp; Tandai Dibayar</button>`}
   <button class="btn sec" type="button" onclick="closeModal()">Tutup</button>`);
   pySlipUpd(un);
@@ -4223,13 +4224,32 @@ async function pySlipSave(un,paid){
   const m=PY.month,run=pyRun(m),it=run.items[un]=run.items[un]||{};
   it.bonus=Math.max(0,+($('#pyBonus')||{}).value||0);it.other=Math.max(0,+($('#pyOther')||{}).value||0);it.note=(($('#pyNote')||{}).value||'').trim().slice(0,80);
   if(paid){const by=attSumm(attPair(PY.rows));it.snap=pyCalc(PY.d.emp[un],by[un],it);it.paid=1;it.paidAt=new Date().toISOString()}
-  if(await pySave()){closeModal();toast(paid?'Ditandai dibayar':'Penyesuaian disimpan');pyRender(true)}
+  if(await pySave()){closeModal();toast(paid?'Ditandai dibayar':'Penyesuaian disimpan');
+    if(paid&&PY.d.cfg.autoMail){const u=PY.users.find(x=>x.username===un);if(u&&u.email)await pyMail(un,1);else if(u)toast('Ditandai dibayar. Slip tidak dikirim: karyawan belum punya email.')}
+    pyRender(true)}
   else{await pyLoad();pyRender(true)}
 }
 async function pyPaid(un,v){
   const it=pyRun(PY.month).items[un];if(it){delete it.paid;delete it.snap;delete it.paidAt}
   if(await pySave()){closeModal();toast('Status dibayar dibatalkan')}
   pyRender(true);
+}
+async function pyMail(un,quiet){
+  if(!PY.mail){toast('Email slip belum diaktifkan di server. Lihat README (pos.admin_mail).');return false}
+  try{
+    const r=await api('/api/payroll/slip',{method:'POST',body:JSON.stringify({username:un,month:PY.month})}),j=await r.json();
+    if(!r.ok){toast(j.error||'Gagal mengirim slip');return false}
+    await pyLoad();if(!quiet)toast('Slip dikirim ke '+(j.to||'email karyawan'));else toast('Dibayar & slip dikirim ke email');
+    if(!quiet)pyRender(true);return true;
+  }catch(e){if(e.message!=='auth')toast('Tidak bisa terhubung ke server');return false}
+}
+async function pyMailAll(){
+  if(!PY.mail){toast('Email slip belum diaktifkan di server. Lihat README (pos.admin_mail).');return}
+  const todo=PY.users.filter(u=>pyItem(PY.month,u.username).paid&&u.email),skip=PY.users.filter(u=>pyItem(PY.month,u.username).paid&&!u.email).length;
+  if(!todo.length){toast('Tidak ada slip dibayar yang punya email tujuan');return}
+  ask('Kirim semua slip?',todo.length+' slip periode '+pyMonthLbl(PY.month)+' akan dikirim ke email karyawan'+(skip?' ('+skip+' karyawan tanpa email dilewati)':'')+'.','Kirim',async()=>{
+    let ok=0;for(const u of todo){const r=await api('/api/payroll/slip',{method:'POST',body:JSON.stringify({username:u.username,month:PY.month})}).catch(()=>null);if(r&&r.ok)ok++}
+    await pyLoad();toast(ok+' dari '+todo.length+' slip terkirim');pyRender(true)});
 }
 /* ----- tab Karyawan: pengaturan gaji ----- */
 function pyKar(b){
@@ -4238,12 +4258,14 @@ function pyKar(b){
    <div class="two"><div><label class="fl" for="pyLate">Potongan terlambat (per menit)</label><input class="fi" id="pyLate" type="number" inputmode="decimal" min="0" step="any" value="${+c.lateRate||''}" placeholder="0"></div>
    <div><label class="fl" for="pyWd">Hari kerja per bulan</label><input class="fi" id="pyWd" type="number" inputmode="numeric" min="1" max="31" value="${+c.workDays||26}"></div></div>
    <p class="pfhint">Hari kerja dipakai untuk menghitung potongan tidak hadir pada gaji bulanan (gaji ÷ hari kerja per hari).</p>
+   <label class="tgl"><input type="checkbox" id="pyAuto" ${c.autoMail?'checked':''}><span>Kirim slip ke email karyawan otomatis saat ditandai dibayar</span></label>
+   ${PY.mail?'':'<p class="pfhint" style="color:var(--bad)">Pengiriman email belum diaktifkan di server (jalankan pos.admin_mail di SQL Editor, lihat README).</p>'}
    <button class="btn sec" type="button" onclick="pyCfgSave()">Simpan Aturan</button></div>
   <div class="panel"><h3>Gaji karyawan</h3>${PY.users.length?PY.users.map(u=>{const e=PY.d.emp[u.username]||{};
-   return`<button type="button" class="pyc" onclick="pyEmp('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}${u.active?'':' (nonaktif)'}</b><small>${e.base?esc(PY_TLBL[e.type||'monthly'])+' · '+money(+e.base)+({monthly:'/bulan',daily:'/hari',hourly:'/jam'})[e.type||'monthly']:'Belum diatur'}</small></span><span class="rt">${pfi('chev',18)}</span></button>`}).join(''):'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}</div>`;
+   return`<button type="button" class="pyc" onclick="pyEmp('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}${u.active?'':' (nonaktif)'}</b><small>${e.base?esc(PY_TLBL[e.type||'monthly'])+' · '+money(+e.base)+({monthly:'/bulan',daily:'/hari',hourly:'/jam'})[e.type||'monthly']:'Belum diatur'}${u.email?'':' · tanpa email'}</small></span><span class="rt">${pfi('chev',18)}</span></button>`}).join(''):'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}</div>`;
 }
 async function pyCfgSave(){
-  PY.d.cfg.lateRate=Math.max(0,+$('#pyLate').value||0);PY.d.cfg.workDays=Math.max(1,Math.min(31,Math.round(+$('#pyWd').value||26)));
+  PY.d.cfg.lateRate=Math.max(0,+$('#pyLate').value||0);PY.d.cfg.workDays=Math.max(1,Math.min(31,Math.round(+$('#pyWd').value||26)));PY.d.cfg.autoMail=$('#pyAuto').checked;
   if(await pySave())toast('Aturan payroll disimpan');pyRender(true);
 }
 function pyEmp(un){

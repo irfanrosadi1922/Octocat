@@ -905,7 +905,8 @@ begin
   -- payroll (khusus owner): disimpan di meta toko, tidak ikut dokumen yang disinkron ke karyawan
   if u = '/api/payroll' and m = 'GET' then
     if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
-    return pos.r(200, coalesce((select v from pos.meta where k = 'payroll'), '{"rev":0}'::jsonb));
+    return pos.r(200, coalesce((select v from pos.meta where k = 'payroll'), '{"rev":0}'::jsonb)
+      || jsonb_build_object('mail', exists (select 1 from pos.t_meta where store_id = 0 and k = 'mail')));
   end if;
   if u = '/api/payroll' and m = 'PUT' then
     declare v_cur jsonb; v_rev bigint; v_new jsonb;
@@ -924,6 +925,36 @@ begin
       insert into pos.meta(k, v) values ('payroll', v_new) on conflict (store_id, k) do update set v = excluded.v;
       perform pos.audit(me.id, me.username, 'ubah-payroll', 'rev ' || (v_rev + 1));
       return pos.r(200, v_new);
+    end;
+  end if;
+
+  if u = '/api/payroll/slip' and m = 'POST' then   -- kirim slip gaji (yang sudah ditandai dibayar) ke email karyawan lewat Resend
+    declare v_mail jsonb; v_pay jsonb; v_it jsonb; v_sn jsonb; v_to text; v_name text; v_un text; v_mon text; v_set jsonb; v_st text; v_rid bigint;
+    begin
+      if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
+      v_un := lower(btrim(coalesce(b ->> 'username', ''))); v_mon := coalesce(b ->> 'month', '');
+      if v_mon !~ '^\d{4}-(0[1-9]|1[0-2])$' then return pos.r(400, '{"error":"Periode tidak valid"}'); end if;
+      select v into v_mail from pos.t_meta where store_id = 0 and k = 'mail';
+      if v_mail is null then return pos.r(412, '{"error":"Pengiriman email slip belum diaktifkan. Jalankan pos.admin_mail di Supabase SQL Editor."}'); end if;
+      select x.email, x.name into v_to, v_name from pos.users x where x.username = v_un;
+      if v_name is null then return pos.r(404, '{"error":"Karyawan tidak ditemukan"}'); end if;
+      if coalesce(v_to, '') = '' then return pos.r(400, '{"error":"Karyawan ini belum punya alamat email"}'); end if;
+      select v into v_pay from pos.meta where k = 'payroll';
+      v_it := v_pay -> 'runs' -> v_mon -> 'items' -> v_un; v_sn := v_it -> 'snap';
+      if v_it is null or v_sn is null or jsonb_typeof(v_sn) <> 'object' then return pos.r(409, '{"error":"Tandai slip dibayar dulu sebelum mengirim"}'); end if;
+      if not pos.rate('slip', 120, interval '1 hour') then return pos.r(429, '{"error":"Terlalu banyak email dikirim. Coba lagi nanti."}'); end if;
+      select json -> 'set' into v_set from pos.doc where id = 1;
+      select name into v_st from pos.stores where id = me.store_id;
+      v_rid := net.http_post(
+        url := 'https://api.resend.com/emails',
+        headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || (v_mail ->> 'key')),
+        body := jsonb_build_object('from', v_mail ->> 'from', 'to', jsonb_build_array(v_to),
+          'subject', 'Slip Gaji ' || pos.mon_lbl(v_mon) || ' - ' || coalesce(v_st, 'Ordela'),
+          'html', pos.slip_html(coalesce(v_st, 'Ordela'), v_name, pos.mon_lbl(v_mon), v_sn, coalesce(v_it ->> 'note', ''), v_set)));
+      update pos.meta set v = jsonb_set(jsonb_set(v, array['runs', v_mon, 'items', v_un, 'mailAt'], to_jsonb(to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'))),
+        '{rev}', to_jsonb(coalesce((v ->> 'rev')::bigint, 0) + 1)) where k = 'payroll';
+      perform pos.audit(me.id, me.username, 'kirim-slip', v_un || ' ' || v_mon);
+      return pos.r(200, jsonb_build_object('ok', true, 'to', v_to));
     end;
   end if;
 
@@ -1109,6 +1140,51 @@ begin
   if pu !~ '^https://' or length(coalesce(pk, '')) < 8 then raise exception 'url harus https dan kunci minimal 8 karakter'; end if;
   insert into pos.t_meta(store_id, k, v) values (0, 'push', jsonb_build_object('url', pu, 'key', pk)) on conflict (store_id, k) do update set v = excluded.v;
   return 'notifikasi APK aktif';
+end $$;
+
+-- ------------------------------------------------------------ slip gaji lewat email (Resend)
+create or replace function pos.hesc(t text) returns text language sql immutable as $$
+  select replace(replace(replace(replace(coalesce(t, ''), '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;') $$;
+create or replace function pos.mfmt(x numeric, dc int, loc text) returns text language sql immutable as $$
+  select case when left(coalesce(loc, 'id-ID'), 2) = 'id' then translate(t, ',.', '.,') else t end
+  from (select to_char(round(coalesce(x, 0), dc), 'FM999,999,999,999,990' || case when dc > 0 then '.' || repeat('0', dc) else '' end) as t) q $$;
+create or replace function pos.mon_lbl(m text) returns text language sql immutable as $$
+  select (array['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'])[substr(m, 6, 2)::int] || ' ' || left(m, 4) $$;
+create or replace function pos.slip_html(store text, emp text, mon text, sn jsonb, note text, st jsonb) returns text language plpgsql immutable as $$
+declare cur text := coalesce(nullif(st ->> 'cur', ''), 'Rp'); aft boolean := (st ->> 'curPos') = 'after';
+  dc int := greatest(0, least(4, coalesce((st ->> 'dec')::int, 0))); loc text := coalesce(nullif(st ->> 'loc', ''), 'id-ID');
+  h text := ''; f text;
+begin
+  -- baris pendapatan / potongan; baris bernilai 0 dilewati (kecuali gaji pokok)
+  h := h || format('<tr><td style="padding:6px 0">Gaji pokok</td><td align="right">%s</td></tr>', pos.hesc(case when aft then pos.mfmt((sn ->> 'basic')::numeric, dc, loc) || ' ' || cur else cur || ' ' || pos.mfmt((sn ->> 'basic')::numeric, dc, loc) end));
+  for f in select unnest(array['meal','allow','bonus']) loop
+    if coalesce((sn ->> f)::numeric, 0) > 0 then
+      h := h || format('<tr><td style="padding:6px 0">%s</td><td align="right">%s</td></tr>', case f when 'meal' then 'Uang makan / transport' when 'allow' then 'Tunjangan tetap' else 'Bonus / lembur' end,
+        pos.hesc(case when aft then pos.mfmt((sn ->> f)::numeric, dc, loc) || ' ' || cur else cur || ' ' || pos.mfmt((sn ->> f)::numeric, dc, loc) end));
+    end if;
+  end loop;
+  h := h || format('<tr><td style="padding:8px 0;border-top:1px solid #e5e5e5"><b>Total pendapatan</b></td><td align="right" style="border-top:1px solid #e5e5e5"><b>%s</b></td></tr>',
+    pos.hesc(case when aft then pos.mfmt((sn ->> 'gross')::numeric, dc, loc) || ' ' || cur else cur || ' ' || pos.mfmt((sn ->> 'gross')::numeric, dc, loc) end));
+  for f in select unnest(array['late','absAmt','other']) loop
+    if coalesce((sn ->> f)::numeric, 0) > 0 then
+      h := h || format('<tr><td style="padding:6px 0">%s</td><td align="right" style="color:#b91c1c">- %s</td></tr>', case f when 'late' then 'Potongan terlambat' when 'absAmt' then 'Potongan tidak hadir' else 'Potongan lain / kasbon' end,
+        pos.hesc(case when aft then pos.mfmt((sn ->> f)::numeric, dc, loc) || ' ' || cur else cur || ' ' || pos.mfmt((sn ->> f)::numeric, dc, loc) end));
+    end if;
+  end loop;
+  return format('<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#111"><h2 style="margin:0 0 4px">Slip Gaji</h2><p style="margin:0 0 16px;color:#555">%s &middot; %s</p><p>Halo %s, berikut rincian gaji Anda.</p>'
+    || '<table width="100%%" cellspacing="0" cellpadding="0" style="font-size:14px">%s<tr><td style="padding:12px 0;border-top:2px solid #111;font-size:16px"><b>Gaji bersih</b></td><td align="right" style="border-top:2px solid #111;font-size:16px"><b>%s</b></td></tr></table>'
+    || '<p style="color:#555;font-size:13px">Hadir %s hari%s.</p>%s<p style="color:#999;font-size:12px;margin-top:24px">Email otomatis dari Ordela. Hubungi pemilik toko bila ada pertanyaan.</p></div>',
+    pos.hesc(store), pos.hesc(mon), pos.hesc(emp), h,
+    pos.hesc(case when aft then pos.mfmt((sn ->> 'net')::numeric, dc, loc) || ' ' || cur else cur || ' ' || pos.mfmt((sn ->> 'net')::numeric, dc, loc) end),
+    coalesce(sn ->> 'days', '0'), case when coalesce((sn ->> 'lateN')::int, 0) > 0 then ', terlambat ' || (sn ->> 'lateN') || 'x' else '' end,
+    case when note <> '' then '<p style="font-size:13px"><b>Catatan:</b> ' || pos.hesc(note) || '</p>' else '' end);
+end $$;
+-- Aktifkan kirim slip (sekali, di SQL Editor):  select pos.admin_mail('re_KUNCI_API_RESEND', 'Ordela <slip@ordela.my.id>');
+create or replace function pos.admin_mail(rk text, fr text) returns text language plpgsql as $$
+begin
+  if length(coalesce(rk, '')) < 10 or position('@' in coalesce(fr, '')) = 0 then raise exception 'isi kunci API Resend dan alamat pengirim (mis. Ordela <slip@ordela.my.id>)'; end if;
+  insert into pos.t_meta(store_id, k, v) values (0, 'mail', jsonb_build_object('key', rk, 'from', fr)) on conflict (store_id, k) do update set v = excluded.v;
+  return 'kirim slip email aktif';
 end $$;
 
 -- ------------------------------------------------------------ hak akses
