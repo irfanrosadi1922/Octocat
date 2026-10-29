@@ -902,6 +902,31 @@ begin
       from (select * from pos.audit order by id desc limit 100) a), '[]')));
   end if;
 
+  -- payroll (khusus owner): disimpan di meta toko, tidak ikut dokumen yang disinkron ke karyawan
+  if u = '/api/payroll' and m = 'GET' then
+    if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
+    return pos.r(200, coalesce((select v from pos.meta where k = 'payroll'), '{"rev":0}'::jsonb));
+  end if;
+  if u = '/api/payroll' and m = 'PUT' then
+    declare v_cur jsonb; v_rev bigint; v_new jsonb;
+    begin
+      if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
+      if jsonb_typeof(b) <> 'object' or length(b::text) > 600000 then return pos.r(400, '{"error":"Data payroll tidak valid atau terlalu besar"}'); end if;
+      select v into v_cur from pos.meta where k = 'payroll';
+      v_rev := coalesce((v_cur ->> 'rev')::bigint, 0);
+      if coalesce(pos.num(b -> 'rev'), 0)::bigint <> v_rev then
+        return pos.r(409, jsonb_build_object('error', 'Data payroll berubah di perangkat lain', 'current', coalesce(v_cur, '{"rev":0}'::jsonb)));
+      end if;
+      v_new := jsonb_build_object('rev', v_rev + 1,
+        'cfg',  case when jsonb_typeof(b -> 'cfg')  = 'object' then b -> 'cfg'  else '{}'::jsonb end,
+        'emp',  case when jsonb_typeof(b -> 'emp')  = 'object' then b -> 'emp'  else '{}'::jsonb end,
+        'runs', case when jsonb_typeof(b -> 'runs') = 'object' then b -> 'runs' else '{}'::jsonb end);
+      insert into pos.meta(k, v) values ('payroll', v_new) on conflict (store_id, k) do update set v = excluded.v;
+      perform pos.audit(me.id, me.username, 'ubah-payroll', 'rev ' || (v_rev + 1));
+      return pos.r(200, v_new);
+    end;
+  end if;
+
   -- absensi
   if u = '/api/att' and m = 'POST' then if not pos.can(me, 'att') then return pos.r(403, '{"error":"Anda tidak punya akses absensi"}'); end if; return pos.att_do(me, b); end if;
   if u = '/api/att' and m = 'GET' then if not pos.can(me, 'att') then return pos.r(403, '{"error":"Anda tidak punya akses absensi"}'); end if; return pos.att_list(me, q, own); end if;

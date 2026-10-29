@@ -71,3 +71,9 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Item dicocokkan lewat Kode (atau Nama bila kolom Kode dihapus). Baris Stok Fisik kosong dilewati; paket (bundle) tidak ikut dihitung.
 - Layar tinjau menampilkan selisih terhadap stok sistem saat ini (angka fisik masih bisa diedit, tiap baris bisa dicentang/lepas), ringkasan item, selisih total, dan nilai selisih modal.
 - **Terapkan** mengubah stok dan mencatat tiap perubahan di Riwayat Perubahan Stok (`Stok opname …`). Setelah itu laporan hasil (sistem, fisik, selisih, nilai) bisa diunduh sebagai Excel.
+
+## Payroll (khusus owner) & Absensi
+- **Pengaturan → Absensi & Shift** (owner): aktifkan absensi, zona waktu, lokasi/radius toko, shift, dan shift tiap karyawan. Halaman **Absensi** kini hanya untuk absen masuk/pulang dan riwayat pribadi.
+- Menu **Payroll** (owner): tab **Gaji** (periode bulanan, slip per karyawan, bonus, potongan lain/kasbon, tandai dibayar, ekspor Excel), tab **Karyawan** (jenis gaji bulanan/harian/per jam, uang makan/transport per hari hadir, tunjangan tetap, potong bila tidak hadir; aturan umum potongan telat per menit dan hari kerja per bulan), dan tab **Rekap Absensi** (ringkasan per karyawan, catatan, ekspor Excel).
+- Perhitungan: pokok (tetap / harian × hari hadir / per jam × jam kerja) + makan/transport × hari hadir + tunjangan + bonus − telat (menit × tarif) − tidak hadir (gaji ÷ hari kerja × hari absen) − potongan lain. Slip yang ditandai dibayar disimpan sebagai snapshot sehingga tidak berubah bila tarif diubah.
+- Data payroll disimpan di server (`GET/PUT /api/payroll`, hanya owner, dengan kontrol revisi) dan **tidak** ikut data yang disinkron ke karyawan. Jalankan ulang `setup.sql` di Supabase SQL Editor.
