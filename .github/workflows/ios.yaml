@@ -49,7 +49,7 @@ jobs:
 
       - name: Kompilasi iOS tanpa tanda tangan
         run: |
-          xcodebuild -project ios/App/App.xcodeproj \
+          xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
