@@ -1,0 +1,68 @@
+name: Build iOS (Ordela)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'ios-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  ios-build:
+    runs-on: macos-14
+    steps:
+      - name: Ambil kode repository
+        uses: actions/checkout@v4
+
+      - name: Siapkan Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Siapkan aset web Ordela
+        run: |
+          mkdir -p www
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.ordela.app",
+            "appName": "Ordela",
+            "webDir": "www",
+            "backgroundColor": "#ffffff",
+            "ios": {
+              "contentInset": "automatic"
+            }
+          }
+          EOF
+          cp index.html order.html sw.js sbapi.js auth.js native.js config.js qr.js qris.js manifest.webmanifest icon-192.png icon-512.png icon-maskable-512.png icon-light-192.png icon-light-512.png www/
+
+      - name: Pasang dependensi Capacitor
+        run: |
+          npm install --no-audit --no-fund
+          npm install @capacitor/ios@^6.1.2 --no-save --no-audit --no-fund
+
+      - name: Buat proyek iOS
+        run: |
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Kompilasi iOS tanpa tanda tangan
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Ordela.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+
+      - name: Simpan hasil build untuk diperiksa
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ordela-iOS-unsigned-archive
+          path: ${{ runner.temp }}/Ordela.xcarchive
+          if-no-files-found: ignore
+          retention-days: 7
