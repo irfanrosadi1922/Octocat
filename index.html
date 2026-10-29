@@ -625,6 +625,25 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .accp .fi[readonly]{background:var(--bg2);color:var(--tx2)}
 .accp .vst{margin:8px 0 0}
 .accp .hint{margin:6px 0 0}
+/* Profile overview layout closer to the approved Ordela mockup. */
+.accp-overview .accp-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 18px 20px;gap:10px;background:var(--card);border:1px solid var(--ln);border-radius:22px;box-shadow:0 8px 24px rgba(17,17,17,.05)}
+.accp-overview .accav{width:92px;height:92px;box-shadow:0 0 0 3px var(--ac);border-color:var(--card)}
+.accp-overview .accwho{align-items:center;gap:5px}
+.accp-overview .accwho b{font-size:20px;letter-spacing:-.35px}
+.accp-overview .acc-role-pill{display:inline-flex;margin-top:3px;padding:5px 10px;border-radius:999px;background:var(--peach2);color:var(--tx);font-size:11px;font-weight:650}
+.accp-overview .acc-contact{width:100%;display:grid;gap:8px;margin-top:8px;text-align:left}
+.accp-overview .acc-contact>div{display:flex;align-items:center;gap:11px;min-width:0;padding:11px 12px;border:1px solid var(--ln);border-radius:13px;background:var(--bg2)}
+.accp-overview .acc-contact-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;background:var(--card);color:var(--tx);font-size:16px}
+.accp-overview .acc-contact>div>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.accp-overview .acc-contact small{font-size:10px;color:var(--mu)}
+.accp-overview .acc-contact b{font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.accp-overview .accp-hero-edit{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+.accp-overview .accsec{border:1px solid var(--ln);border-radius:18px;padding:16px;margin:14px 0;background:var(--card);box-shadow:0 5px 18px rgba(17,17,17,.035)}
+.accp-overview .accsec h3{margin:0 0 14px;font-size:15px}
+.accp-overview .accsec .fl{display:block;margin:12px 0 4px;font-size:11px;color:var(--mu)}
+.accp-overview .accsec .accv{font-size:14px;font-weight:500;padding-bottom:10px;border-bottom:1px solid var(--ln)}
+.accp-overview .accsec .pst{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:11px}
+@media(max-width:480px){.accp-overview .accp-hero{padding:22px 14px 16px}.accp-overview .acc-contact b{font-size:12px}}
 /* Ordela profile refresh: follow the existing charcoal, warm-gold, and neutral palette. */
 .accp:has(#accAvV) .accph{flex-direction:column;text-align:center;gap:8px;padding:24px 18px;background:var(--card);box-shadow:0 8px 24px rgba(17,17,17,.05)}
 .accp:has(#accAvV) .accav{width:92px;height:92px;border-color:var(--card);box-shadow:0 0 0 3px var(--ac)}
@@ -3331,9 +3350,20 @@ function renderAccPage(){
   const m=CL.me,box=$('#accPage');if(!m||!box)return;ACC.photo=m.photo||'';
   const role=usrRoleLabel(m.role),st=accStore(m),own=m.role==='owner';
   const none='<span style="color:var(--mu)">Belum diisi</span>';
-  box.innerHTML=`<div class="accp">
-    <div class="accph"><span class="accav"><span id="accAvV"></span></span>
-      <div class="accwho"><b>${esc(m.name||'Pengguna')}</b><small>@${esc(m.username||'—')} · ${esc(role)}</small></div></div>
+  box.innerHTML=`<div class="accp accp-overview">
+    <div class="accph accp-hero">
+      <span class="accav"><span id="accAvV"></span></span>
+      <div class="accwho">
+        <b>${esc(m.name||'Pengguna')}</b>
+        <small>@${esc(m.username||'—')}</small>
+        <span class="acc-role-pill">${esc(role)}</span>
+      </div>
+      <div class="acc-contact">
+        <div><span class="acc-contact-icon">✉</span><span><small>Email</small><b>${m.email?esc(m.email):'Belum diisi'}</b></span></div>
+        <div><span class="acc-contact-icon">☎</span><span><small>Nomor telepon</small><b>${m.phone?esc(m.phone):'Belum diisi'}</b></span></div>
+      </div>
+      <button class="btn accp-hero-edit" type="button" onclick="go('editacc')">Edit Profil <span aria-hidden="true">↗</span></button>
+    </div>
     <div class="accsec">
       <h3>Profil Pribadi</h3>
       ${accRow('Nama lengkap',esc(m.name||'—'))}
