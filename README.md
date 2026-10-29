@@ -65,3 +65,9 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - **Ganti email** wajib verifikasi: tombol *Ubah email* meminta email baru dan sandi saat ini, lalu Supabase Auth mengirim tautan ke email baru. Email lama tetap berlaku sampai tautan dibuka; setelah itu email di aplikasi ikut berganti otomatis (trigger `pos_on_auth_email`). Server menolak perubahan email lewat `PUT /api/me`.
 - **Foto profil**: ketuk avatar atau *Ubah Foto*, pilih *Ambil Foto* / *Pilih dari Galeri* / *Hapus Foto*, geser dan zoom, lalu *Simpan Foto*. Isian dan foto yang sedang diubah tidak lagi hilang saat aplikasi menyinkronkan data di latar belakang.
 - Setelah mengubah `setup.sql`, jalankan ulang di Supabase SQL Editor.
+
+## Stok opname (terhubung Excel)
+- Inventori → **Stok Opname**: unduh template `.xlsx` (Kode, Nama, Kategori, Stok Sistem, Stok Fisik, Catatan), isi **Stok Fisik** di Excel/Google Sheets, lalu unggah `.xlsx` atau `.csv`.
+- Item dicocokkan lewat Kode (atau Nama bila kolom Kode dihapus). Baris Stok Fisik kosong dilewati; paket (bundle) tidak ikut dihitung.
+- Layar tinjau menampilkan selisih terhadap stok sistem saat ini (angka fisik masih bisa diedit, tiap baris bisa dicentang/lepas), ringkasan item, selisih total, dan nilai selisih modal.
+- **Terapkan** mengubah stok dan mencatat tiap perubahan di Riwayat Perubahan Stok (`Stok opname …`). Setelah itu laporan hasil (sistem, fisik, selisih, nilai) bisa diunduh sebagai Excel.
