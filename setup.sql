@@ -731,6 +731,33 @@ begin
   end if;
 
   if u = '/api/me' and m = 'GET' then return pos.r(200, pos.me_self(me)); end if;
+  if u = '/api/me' and m = 'DELETE' then   -- hapus akun sendiri (wajib sandi). Owner tunggal = hapus seluruh toko beserta datanya
+    declare v_auths uuid[]; v_wipe boolean; v_sid bigint := me.store_id;
+    begin
+      if not pos.rate('delacc', 5, interval '10 minutes') then return pos.r(429, '{"error":"Terlalu banyak percobaan. Coba lagi nanti."}'); end if;
+      if not pos.pw_ok(me, coalesce(b ->> 'password', '')) then return pos.r(403, '{"error":"Sandi salah"}'); end if;
+      v_wipe := me.role = 'owner' and not exists (select 1 from pos.t_users x where x.store_id = v_sid and x.role = 'owner' and x.active and x.id <> me.id);
+      if v_wipe then
+        select coalesce(array_agg(auth_id) filter (where auth_id is not null), '{}') into v_auths from pos.t_users where store_id = v_sid;
+        delete from pos.t_push_tokens where store_id = v_sid;
+        delete from pos.t_att where store_id = v_sid;
+        delete from pos.t_co where store_id = v_sid;
+        delete from pos.t_snapshots where store_id = v_sid;
+        delete from pos.t_doc where store_id = v_sid;
+        delete from pos.t_meta where store_id = v_sid;
+        delete from pos.t_audit where store_id = v_sid;
+        delete from pos.t_users where store_id = v_sid;
+        delete from pos.stores where id = v_sid;
+      else
+        v_auths := case when me.auth_id is null then '{}' else array[me.auth_id] end;
+        perform pos.audit(me.id, me.username, 'hapus-akun-sendiri', '');
+        delete from pos.t_push_tokens where uid = me.id;
+        delete from pos.t_users where id = me.id;
+      end if;
+      begin delete from auth.users where id = any(v_auths); exception when others then null; end;
+      return pos.r(200, jsonb_build_object('ok', true, 'store', v_wipe));
+    end;
+  end if;
   if u = '/api/me' and m = 'PUT' then
     declare pn text; pp text; pf text; pa text; pu text; pb date; psn text;
     begin

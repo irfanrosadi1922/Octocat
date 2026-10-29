@@ -660,6 +660,21 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .pfin .fi{padding-left:46px!important}
 .pfin .eyeb{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;color:var(--mu);border-radius:50%}
 .pfin.pe .fi{padding-right:48px!important}
+.pfgl{font-size:12px;font-weight:600;color:var(--mu);margin:20px 4px 8px;letter-spacing:.2px}
+.pfgrp{background:var(--bg2);border-radius:20px;padding:6px;display:flex;flex-direction:column;gap:6px}
+.pfgrp>button{display:flex;align-items:center;gap:13px;width:100%;background:var(--card);border-radius:15px;padding:12px 13px;text-align:left}
+.pfgrp .ib2{width:38px;height:38px;border-radius:12px;background:var(--bg);display:grid;place-items:center;flex:none;color:var(--tx2)}
+.pfgrp .key{padding:16px 13px}.pfgrp .key .ib2{width:46px;height:46px;border-radius:14px;background:var(--ac);color:var(--acx)}
+.pfgrp .tx{flex:1;min-width:0}.pfgrp .tx b{display:block;font-size:14.5px}.pfgrp .tx small{display:block;color:var(--mu);font-size:12px;margin-top:2px;line-height:1.4}
+.pfgrp .chev{color:var(--mu);flex:none}.pfgrp .okc{color:#16a34a;flex:none}
+.pfgrp .bad .ib2{background:var(--redbg);color:var(--bad)}.pfgrp .bad .tx b{color:var(--bad)}
+.pfsrch .fi{border-radius:14px;background:var(--bg2);border-color:transparent}.pfsrch>.pfi{left:14px}
+.deli{width:92px;height:92px;border-radius:50%;background:var(--redbg);color:var(--bad);display:grid;place-items:center;margin:18px auto 16px}
+.delh{text-align:center;margin:0 0 8px;font-size:20px}.delp{text-align:center;margin:0 auto 14px;max-width:320px;color:var(--mu);font-size:14px;line-height:1.55}
+.dell{margin:0 0 18px;padding:14px 16px 14px 32px;background:var(--bg2);border-radius:16px;font-size:13px;line-height:1.6;color:var(--tx2)}
+.delck{display:flex;gap:10px;align-items:flex-start;margin:14px 2px 0;font-size:13px;line-height:1.45;cursor:pointer}.delck input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--bad)}
+.pfbtn.delbtn{background:transparent;color:var(--bad);border:1.5px solid var(--bad)}.pfbtn.delbtn:not(:disabled){background:var(--bad);color:#fff}
+.dlg2{display:flex;flex-direction:column;gap:8px}
 .pfhint{font-size:12px;color:var(--mu);margin:6px 2px 0;line-height:1.5}
 .pfdone{text-align:center;padding:48px 8px 8px}
 .pfdone .big{width:96px;height:96px;border-radius:50%;background:var(--b2);color:#fff;display:grid;place-items:center;margin:0 auto 22px;box-shadow:0 0 0 10px rgba(47,47,47,.08),0 14px 30px rgba(0,0,0,.18)}
@@ -831,6 +846,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     <section id="v-accver" hidden><div id="accVerPage"></div></section>
     <section id="v-accnt" hidden><div id="accNtPage"></div></section>
     <section id="v-accabout" hidden><div id="accAboutPage"></div></section>
+    <section id="v-accdel" hidden><div id="accDelPage"></div></section>
     <section id="v-accok" hidden><div id="accOkPage"></div></section>
     <input type="file" id="accFile" accept="image/*" hidden onchange="accPhoto(this)">
     <input type="file" id="accFileCam" accept="image/*" capture="user" hidden onchange="accPhoto(this)">
@@ -973,12 +989,14 @@ setInterval(tick,15000);
 /* ---------- navigation ---------- */
 function toggleDrawer(){$('#drawer').classList.toggle('open');$('#scrim').classList.toggle('on',$('#drawer').classList.contains('open'))}
 function closeAll(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('on')}
-const ACCV=['acc','accset','accinfo','editacc','accphoto','pw','accver','accnt','accabout','accok'];
+const ACCV=['acc','accset','accinfo','editacc','accphoto','pw','accver','accnt','accabout','accdel','accok'];
 function go(v){
   if(v==='hist'||v==='rep')v='home';   // Riwayat & Laporan sudah menyatu di Beranda
   if(ACCV.includes(v)&&!(CL.on&&CL.me))v='set';
   if(!canView(v)){if(v!=='pos')toast('Anda tidak punya akses ke halaman itu');v=landing()}
   if(v==='editacc'&&S.view!=='editacc'&&S.view!=='accphoto'){const eb=$('#editAccPage');if(eb)eb.dataset.built=''}
+  if(v==='accdel'&&S.view!=='accdel'){const db_=$('#accDelPage');if(db_)db_.dataset.built='';ACC.delSole=undefined}
+  if(v==='accset'&&S.view!=='accset'){const qb=$('#accSetPage');if(qb)qb.dataset.built=''}
   if(v==='pw'&&S.view!=='pw'){const pb=$('#pwPage');if(pb)pb.dataset.built=''}
   S.view=v;closeAll();toggleInv(false);
   ['pos','home','table','alert','inv','rc','prn','set','co','usr','att'].concat(ACCV).forEach(x=>$('#v-'+x).hidden=x!==v);
@@ -3401,6 +3419,8 @@ const PFI={
  id:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.8-2.3 3-2.3s2.4.7 3 2.3M15 10h3M15 13h3"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.5 3.8 3.8 0 0 1 17.5 18z"/>',
+ warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5"/><path d="M12 18h.01"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'
 };
 const pfi=(n,z)=>`<svg class="pfi" width="${z||22}" height="${z||22}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PFI[n]||''}</svg>`;
@@ -3429,19 +3449,40 @@ function renderAccPage(){
   accAvDraw();
 }
 /* ----- Pengaturan Akun ----- */
+function accSetItems(){
+  const m=CL.me,vs=accVerState(m);
+  const sub=!m.hasAuth?(m.email?'Email belum terhubung ke akun':'Tambahkan email akun Anda'):m.pendingEmail?'Menunggu verifikasi email baru':m.emailVerified?'Email Anda sudah terverifikasi':'Email belum diverifikasi';
+  const ok=vs.k==='ok'&&m.hasAuth&&!m.pendingEmail;
+  return[
+   {g:'Akun',ic:'user',t:'Informasi Profil',d:'Lihat data diri, kontak, dan informasi toko.',to:"go('accinfo')",kw:'nama username telepon alamat tanggal lahir toko'},
+   {g:'Akun',ic:'shield',t:'Keamanan Akun',d:'Ubah kata sandi untuk menjaga akun tetap aman.',to:"go('pw')",kw:'password sandi kunci',key:1},
+   {g:'Akun',ic:'mail',t:'Verifikasi Email',d:sub,to:"go('accver')",kw:'email surel verifikasi',key:1,ok},
+   {g:'Aplikasi',ic:'bell',t:'Notifikasi',d:'Atur notifikasi, bunyi, dan getar pesanan masuk.',to:"go('accnt')",kw:'suara bunyi getar pesanan'},
+   {g:'Aplikasi',ic:'info',t:'Tentang Ordela',d:'Versi aplikasi '+APP_VER+' dan muat ulang versi terbaru.',to:"go('accabout')",kw:'versi update perbarui'},
+   {g:'Sesi & Privasi',ic:'logout',t:'Keluar',d:'Akhiri sesi di perangkat ini.',to:'logoutAsk()',kw:'logout sign out',bad:1},
+   {g:'Sesi & Privasi',ic:'trash',t:'Hapus Akun',d:'Hapus akun Anda secara permanen.',to:"go('accdel')",kw:'delete hapus akun privasi',bad:1}
+  ];
+}
+function accSetList(){
+  const box=$('#accSetList');if(!box||!CL.me)return;
+  const q=(($('#accSetQ')||{}).value||'').trim().toLowerCase();
+  const its=accSetItems().filter(i=>!q||(i.t+' '+i.d+' '+i.kw+' '+i.g).toLowerCase().includes(q));
+  if(!its.length){box.innerHTML=`<p class="pfhint" style="text-align:center;padding:28px 0">Tidak ada pengaturan yang cocok dengan “${esc(q)}”.</p>`;return}
+  let h='',g='';
+  its.forEach(i=>{
+    if(i.g!==g){if(g)h+='</div>';g=i.g;h+=`<div class="pfgl">${esc(g)}</div><div class="pfgrp">`}
+    h+=`<button type="button" class="${i.key?'key':''}${i.bad?' bad':''}" onclick="${i.to}"><span class="ib2">${pfi(i.ic,i.key?24:20)}</span><span class="tx"><b>${i.t}</b><small>${esc(i.d)}</small></span>${i.ok?`<span class="okc">${pfi('check',22)}</span>`:''}${i.bad&&i.ic==='logout'?'':`<span class="chev">${pfi('chev',18)}</span>`}</button>`;
+  });
+  box.innerHTML=h+'</div>';
+}
 function renderAccSet(){
   const m=CL.me,box=$('#accSetPage');if(!m||!box)return;
-  const vs=accVerState(m);
-  const sub=!m.hasAuth?(m.email?'Email belum terhubung ke akun':'Tambahkan email akun Anda'):m.pendingEmail?'Menunggu verifikasi email baru':m.emailVerified?'Email Anda sudah terverifikasi':'Email belum diverifikasi';
-  const it=(ic,t,d,to,extra)=>`<button type="button" onclick="${to}"><span class="ib2">${pfi(ic,20)}</span><span class="tx"><b>${t}</b><small>${d}</small></span>${extra||''}<span class="chev">${pfi('chev',18)}</span></button>`;
-  box.innerHTML=`${pfSub('Pengaturan Akun',"go('acc')")}<div class="pfw"><div class="pfmenu">
-    ${it('user','Informasi Profil','Kelola data diri Anda',"go('accinfo')")}
-    ${it('shield','Keamanan Akun','Ubah kata sandi akun Anda',"go('pw')")}
-    ${it('mail','Verifikasi Email',esc(sub),"go('accver')",vs.k==='ok'&&m.hasAuth&&!m.pendingEmail?`<span class="okc">${pfi('check',22)}</span>`:'')}
-    ${it('bell','Notifikasi','Kelola notifikasi aplikasi',"go('accnt')")}
-    ${it('info','Tentang Ordela','Versi aplikasi '+APP_VER,"go('accabout')")}
-  </div>
-  <button class="pfbtn out danger" type="button" onclick="logoutAsk()">${pfi('logout',20)}Keluar</button></div>`;
+  if(box.dataset.built==='1'&&box.querySelector('#accSetQ')){accSetList();return}   /* jangan hapus kata pencarian yang sedang diketik */
+  box.dataset.built='1';
+  box.innerHTML=`${pfSub('Pengaturan Akun',"go('acc')")}<div class="pfw">
+    <div class="pfin pfsrch">${pfi('search',18)}<input class="fi" id="accSetQ" type="search" placeholder="Cari pengaturan" autocomplete="off" oninput="accSetList()" aria-label="Cari pengaturan"></div>
+    <div id="accSetList"></div></div>`;
+  accSetList();
 }
 /* ----- Informasi Profil (semua data, hanya baca) ----- */
 function renderAccInfo(){
@@ -3561,6 +3602,49 @@ function renderAccAbout(){
       ${row('cloud','Koneksi',(CL.on&&CL.tok)?(navigator.onLine===false?'Tidak ada internet':'Terhubung ke server'):'Mode offline')}
     </div>
     <button class="pfbtn out" type="button" style="justify-content:center" onclick="accRefreshApp()">${pfi('refresh',18)}Muat ulang versi terbaru</button></div>`;
+}
+/* ----- Hapus Akun ----- */
+async function accDelLoad(){
+  if(!CL.me||CL.me.role!=='owner'){ACC.delSole=false;return}
+  try{const r=await api('/api/users');if(r.ok){const j=await r.json();ACC.delSole=!(j.users||[]).some(u=>u.role==='owner'&&u.active&&u.id!==CL.me.id)}else ACC.delSole=true}catch(e){ACC.delSole=true}
+  if(S.view==='accdel'){const b=$('#accDelPage');if(b)b.dataset.built='';renderAccDel()}
+}
+function renderAccDel(){
+  const m=CL.me,box=$('#accDelPage');if(!m||!box)return;
+  if(box.dataset.built==='1'&&box.querySelector('#delPw'))return;
+  if(ACC.delSole===undefined){ACC.delSole=null;accDelLoad()}
+  const wipe=ACC.delSole===true,own=m.role==='owner';
+  box.dataset.built='1';
+  const li=t=>`<li>${t}</li>`;
+  box.innerHTML=`${pfSub('Hapus Akun',"go('accset')")}<div class="pfw">
+    <div class="deli">${pfi('warn',46).replace('stroke-width="1.9"','stroke-width="2.2"')}</div>
+    <h2 class="delh">Yakin ingin menghapus akun?</h2>
+    <p class="delp">${wipe?'Anda adalah satu-satunya owner. Menghapus akun ini akan <b>menghapus seluruh toko beserta semua datanya</b> secara permanen.':'Akun Anda akan dihapus dari toko ini dan tidak bisa dipakai masuk lagi. Tindakan ini tidak bisa dibatalkan.'}</p>
+    <ul class="dell">${wipe?li('Semua menu, transaksi, dan pesanan online toko dihapus')+li('Semua akun karyawan toko ikut dihapus')+li('Kode toko dan tautan pemesanan tidak berlaku lagi'):li('Anda langsung keluar dari semua perangkat')+(own?li('Owner lain tetap bisa mengelola toko'):li('Riwayat transaksi toko tetap tersimpan'))}${li('Data tidak bisa dipulihkan')}</ul>
+    <label class="fl" for="delPw">Masukkan kata sandi untuk melanjutkan</label>
+    <div class="pfin pe">${pfi('lock',20)}<input class="fi" id="delPw" type="password" placeholder="Kata sandi Anda" autocomplete="current-password" maxlength="72" oninput="accDelChk()"><button class="eyeb" type="button" aria-label="Tampilkan atau sembunyikan kata sandi" onclick="accEye('delPw',this)">${pfi('eye',20)}</button></div>
+    <label class="delck"><input type="checkbox" id="delOk" onchange="accDelChk()"><span>Saya mengerti bahwa akun${wipe?' dan seluruh data toko':''} akan dihapus permanen.</span></label>
+    <p class="hint" id="delErr" style="color:var(--bad);min-height:16px"></p>
+    <button class="pfbtn delbtn" id="delGo" type="button" disabled onclick="accDelAsk()">Ya, hapus akun saya</button>
+    <button class="pfbtn out" type="button" style="justify-content:center" onclick="go('accset')">Batal</button>
+    <p class="pfhint" style="text-align:center;margin-top:14px">${wipe?'Ingin mengganti kepemilikan dulu? Jadikan karyawan sebagai owner di menu Pengguna sebelum menghapus akun.':''}</p></div>`;
+}
+function accDelChk(){const g=$('#delGo');if(!g)return;g.disabled=!(($('#delPw')||{}).value&&($('#delOk')||{}).checked);const e=$('#delErr');if(e)e.textContent=''}
+function accDelAsk(){
+  const wipe=ACC.delSole===true;
+  openModal(`<div class="lgo"><div class="lgi">${pfi('warn',30)}</div><h3>Hapus akun Anda?</h3>
+  <p>${wipe?'Seluruh toko dan datanya akan dihapus permanen.':'Tindakan ini tidak bisa dibatalkan dan Anda tidak akan bisa memulihkan akun.'}</p>
+  <div class="dlg2"><button class="btn del" type="button" onclick="accDelDo()">Hapus</button><button class="btn sec" type="button" onclick="closeModal()">Batal</button></div></div>`);
+}
+async function accDelDo(){
+  const pw=($('#delPw')||{}).value||'';closeModal();
+  const e=$('#delErr'),g=$('#delGo');if(g)g.disabled=true;
+  try{
+    const r=await api('/api/me',{method:'DELETE',body:JSON.stringify({password:pw})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){if(e)e.textContent=j.error||'Gagal menghapus akun';if(g)g.disabled=false;return}
+    cloudLogout('Akun Anda telah dihapus.');
+  }catch(x){if(e)e.textContent='Tidak ada koneksi. Coba lagi.';if(g)g.disabled=false}
 }
 function accRefreshApp(){
   ask('Muat ulang aplikasi?',CL.dirty?'Ada perubahan yang belum tersinkron. Tunggu sampai tersinkron dulu supaya tidak hilang.':'Aplikasi akan mengambil versi terbaru lalu dimuat ulang. Data Anda tidak dihapus.','Muat ulang',async()=>{
@@ -4191,6 +4275,7 @@ function render(){
   if(S.view==='accver')accVerRender();
   if(S.view==='accnt')renderAccNt();
   if(S.view==='accabout')renderAccAbout();
+  if(S.view==='accdel')renderAccDel();
   if(S.view==='att')renderAtt();else ATT.built=false;
 }
 const RAIL_USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
