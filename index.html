@@ -660,6 +660,8 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .pfin .fi{padding-left:46px!important}
 .pfin .eyeb{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;color:var(--mu);border-radius:50%}
 .pfin.pe .fi{padding-right:48px!important}
+.prm{align-items:center;padding:10px 2px;border-bottom:1px solid var(--ln)}.prm b{display:block;font-size:14px;font-weight:600}.prm small{display:block;color:var(--mu);font-size:11.5px;margin-top:2px;line-height:1.35}.prms{margin-bottom:6px}.prms .prm:last-child{border-bottom:0}
+.jbl{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}.jbr{display:flex;align-items:center;gap:10px;width:100%;background:var(--bg2);border-radius:14px;padding:12px 14px;text-align:left}.jbr .tx{flex:1;min-width:0}.jbr b{display:block;font-size:14.5px}.jbr small{display:block;color:var(--mu);font-size:12px;margin-top:2px}.jbr .pfi{color:var(--mu)}
 .pyc{display:flex;align-items:center;gap:12px;width:100%;background:var(--bg2);border-radius:16px;padding:12px;margin:8px 0;text-align:left}.pyc .tx{flex:1;min-width:0}.pyc .tx b{display:block;font-size:14.5px}.pyc .tx small{display:block;color:var(--mu);font-size:12px;margin-top:2px}.pyc .rt{display:flex;flex-direction:column;align-items:flex-end;gap:4px;color:var(--mu)}.pyc .rt b{color:var(--tx);font-size:14px}
 .pyslip{background:var(--bg2);border-radius:16px;padding:12px 14px;margin-bottom:6px}.pyl{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13.5px;border-bottom:1px solid var(--ln)}.pyl small{display:block;color:var(--mu);font-size:11px}.pyl.tot{font-weight:700}.pyl.net{font-size:16px;font-weight:800;border-bottom:0;padding-top:10px}.pyl .neg,.pyl.tot .neg{color:var(--bad)}
 .opn-step{display:flex;gap:12px;align-items:flex-start;margin:14px 0 8px}.opn-step>b{width:26px;height:26px;border-radius:50%;background:var(--b2);color:#fff;display:grid;place-items:center;font-size:13px;flex:none}.opn-step strong{display:block;font-size:14px}.opn-step small{display:block;color:var(--mu);font-size:12px;margin-top:2px;line-height:1.4}
@@ -3415,8 +3417,9 @@ function coStart(){
 }
 
 /* ---------- akun, peran, izin ---------- */
-const PERM_LBL={co:'Pesanan Online',inv:'Inventori (lihat & ubah stok)',hist:'Rekap & Riwayat Penjualan',prn:'Printer',set:'Pengaturan & Desain Struk',att:'Absensi'};
-const PERM_SHORT={co:'Pesanan Online',inv:'Inventori',hist:'Riwayat',prn:'Printer',set:'Pengaturan',att:'Absensi'};
+const PERM_LBL={co:'Pesanan Online',inv:'Inventori & Stok Opname',hist:'Rekap & Riwayat Penjualan',prn:'Printer',set:'Pengaturan',att:'Absensi'};
+const PERM_DESC={co:'Terima dan proses pesanan dari pelanggan.',inv:'Lihat dan ubah stok, termasuk stok opname.',hist:'Lihat rekap, riwayat, dan ekspor penjualan di Beranda.',prn:'Sambungkan printer dan cetak struk.',set:'Toko, desain struk, pembayaran, tampilan, data & cadangan.',att:'Absen masuk dan pulang sendiri.'};
+const PERM_SHORT={co:'Pesanan Online',inv:'Inventori',hist:'Rekap',prn:'Printer',set:'Pengaturan',att:'Absensi'};
 const VIEW_PERM={pyr:'#owner',pos:null,inv:'inv',rc:'set',prn:'prn',set:'set',co:'co',att:'att',usr:'#owner'};
 CL.me=null;try{CL.me=JSON.parse(localStorage.getItem('pos_me')||'null')}catch(e){}
 function setMe(m){CL.me=m||null;try{if(m)localStorage.setItem('pos_me',JSON.stringify(m));else localStorage.removeItem('pos_me')}catch(e){}}
@@ -4528,12 +4531,13 @@ async function renderUsr(){
     const a=await (await api('/api/audit')).json();USR.log=a.log||[];
   }catch(e){if(e.message!=='auth')el.innerHTML='<div class="empty">Gagal memuat pengguna</div>';return}
   const me=CL.me?CL.me.id:0;
-  el.innerHTML=USR.list.map(u=>`<div class="coc usr ${u.active?'':'cancelled'}" style="border-left-color:${u.role==='owner'?'var(--b)':'#d4d4d4'}">
+  el.innerHTML=USR.list.map(u=>{const own=u.role==='owner',pr=own?[]:Object.keys(PERM_SHORT).filter(p=>u.perms.includes(p));
+    return `<div class="coc usr ${u.active?'':'cancelled'}" style="border-left-color:${own?'var(--b)':'#d4d4d4'}">
     <div class="coh"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="cn">${esc(u.name)}</span><span class="ct">@${esc(u.username)}${u.id===me?' · Anda':''}</span><time>${esc(fmtLast(u.lastLogin))}</time></div>
-    <div class="cof" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="pst ${u.role==='owner'?'w':'ok'}">${esc(usrRoleLabel(u.role))}</span>${u.active?'':'<span class="pst">nonaktif</span>'}${u.single?'<span class="pst">1 perangkat</span>':''}
-      ${u.role==='owner'?'<span class="pchip on">Semua fitur</span>':'<span class="pchip on">'+esc(usrRoleLabel(u.role))+'</span>'+Object.keys(PERM_SHORT).map(p=>`<span class="pchip ${u.perms.includes(p)?'on':''}">${PERM_SHORT[p]}</span>`).join('')}</div>
+    <div class="cof" style="justify-content:flex-start;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="pst ${own?'w':'ok'}">${esc(usrRoleLabel(u.role))}</span>${u.active?'':'<span class="pst">nonaktif</span>'}${u.single?'<span class="pst">1 perangkat</span>':''}
+      ${own?'<span class="pchip on">Semua fitur</span>':pr.map(p=>`<span class="pchip on">${PERM_SHORT[p]}</span>`).join('')||'<span class="pchip">Tanpa izin</span>'}</div>
     <div class="cob"><button class="btn sec" onclick="usrForm(${u.id})"><i class="ic" data-ic="edit"></i>Ubah</button><button class="btn sec" onclick="usrPw(${u.id})"><i class="ic" data-ic="key"></i>Reset sandi</button>
-      ${u.id!==me?`<button class="btn sec" onclick="usrToggle(${u.id})">${u.active?'<i class="ic" data-ic="pause"></i>Nonaktifkan':'<i class="ic" data-ic="play"></i>Aktifkan'}</button><button class="btn sec" onclick="usrDel(${u.id})"><i class="ic" data-ic="trash"></i>Hapus</button>`:''}</div></div>`).join('')||'<div class="empty">Belum ada pengguna</div>';
+      ${u.id!==me?`<button class="btn sec" onclick="usrToggle(${u.id})">${u.active?'<i class="ic" data-ic="pause"></i>Nonaktifkan':'<i class="ic" data-ic="play"></i>Aktifkan'}</button><button class="btn sec" onclick="usrDel(${u.id})"><i class="ic" data-ic="trash"></i>Hapus</button>`:''}</div></div>`}).join('')||'<div class="empty">Belum ada pengguna</div>';
   usrLogDraw();
 }
 const ULOG={sort:'new',act:'',user:'',page:0,size:5};
@@ -4551,7 +4555,8 @@ function usrLogDraw(){
   el.innerHTML=l.length?l.slice(start,start+ULOG.size).map(x=>`<div class="dbs"><span><b>${esc(ACT_LBL[x.action]||x.action)}</b>${x.uname?' · @'+esc(x.uname):''}${x.detail?' · <span style="color:var(--mu)">'+esc(x.detail)+'</span>':''}</span><span style="color:var(--mu);white-space:nowrap">${esc(fmtLast(x.t))}</span></div>`).join(''):'<div class="empty">Tidak ada aktivitas</div>';
   if(l.length)el.innerHTML+=`<div class="cob" style="align-items:center;justify-content:space-between;gap:8px;margin-top:10px"><span style="color:var(--mu);font-size:12px">${start+1}–${Math.min(start+ULOG.size,l.length)} dari ${l.length} aktivitas</span><span style="display:flex;gap:6px"><button class="btn sec sm" onclick="usrLogPage(${ULOG.page-1})" ${ULOG.page===0?'disabled':''}>Sebelumnya</button><button class="btn sec sm" onclick="usrLogPage(${ULOG.page+1})" ${ULOG.page>=pages-1?'disabled':''}>Berikutnya</button></span></div>`;
 }
-function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>`<label class="tgl"><input type="checkbox" class="upm" value="${p}" ${sel.includes(p)?'checked':''}><span>${PERM_LBL[p]}</span></label>`).join('')}
+const permRow=(p,on,extra,cls)=>`<label class="tgl prm"><input type="checkbox" ${cls?'class="'+cls+'"':''} value="${p}" ${on?'checked':''} ${extra||''}><span><b>${PERM_LBL[p]}</b><small>${PERM_DESC[p]}</small></span></label>`;
+function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>permRow(p,sel.includes(p),'','upm')).join('')}
 /* jabatan bawaan yang disembunyikan owner (per toko, db.set.hiddenRoles = array kunci). Owner dan Staf tidak bisa disembunyikan. */
 function jbHidden(){return Array.isArray(db.set.hiddenRoles)?db.set.hiddenRoles:[]}
 function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[],hid=jbHidden();return [...new Set(['Owner',...JB_BASE.filter(r=>jbKey(r)==='staff'||!hid.includes(jbKey(r))),...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
@@ -4564,19 +4569,25 @@ function jbKey(n){const k=usrRoleKey(n);return k==='staf'?'staff':k}
 function jbCount(k){return (USR.list||[]).filter(u=>usrRoleKey(u.role)===k).length}
 function jbOpen(msg,bad){
   if(!isOwner())return;
-  const cus=usrRoleCustom(),rows=usrRoleList().filter(r=>usrRoleKey(r)!=='owner').map(r=>{
-    const k=jbKey(r),isC=cus.some(x=>usrRoleKey(x)===usrRoleKey(r)),n=jbCount(k),pm=rolePermsOf(k)||['co'];
-    return `<div class="coc" style="margin:8px 0"><div class="coh" style="flex-wrap:wrap;gap:6px">${isC?`<input class="fi" style="flex:1 1 150px;min-width:0;margin:0" maxlength="32" value="${esc(usrRoleLabel(r))}" aria-label="Nama jabatan" onchange="jbRename('${esc(k)}',this.value)">`:`<span class="cn">${esc(usrRoleLabel(r))}</span>`}<span class="ct">${isC?'buatan sendiri':'bawaan'} · ${n} karyawan</span></div>
-    <div style="margin-top:6px">${Object.keys(PERM_LBL).map(pk=>`<label class="tgl"><input type="checkbox" ${pm.includes(pk)?'checked':''} onchange="jbPerm('${esc(k)}','${pk}',this.checked)"><span>${PERM_LBL[pk]}</span></label>`).join('')}</div>
-    ${isC?`<div class="cob"><button class="btn sec" onclick="jbDel('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:(k!=='staff'?`<div class="cob"><button class="btn sec" onclick="jbHide('${esc(k)}')"><i class="ic" data-ic="trash"></i>Hapus jabatan</button></div>`:'')}</div>`}).join('');
-  const hidL=JB_BASE.filter(r=>jbHidden().includes(jbKey(r))),
-  hid=hidL.length?`<div class="coc" style="margin:12px 0"><div class="coh"><span class="cn">Jabatan yang disembunyikan</span><span class="ct">${hidL.length}</span></div>
-    ${hidL.map(r=>`<div class="dbs"><span>${esc(usrRoleLabel(r))}</span><button class="btn sec sm" style="width:auto;margin:0" onclick="jbRestore('${esc(jbKey(r))}')">Pulihkan</button></div>`).join('')}
-    <div class="cob"><button class="btn sec" onclick="jbRestoreAll()">Pulihkan semua</button></div></div>`:'';
-  openModal(`<h3>Kelola Jabatan</h3><p class="hint">Izin di bawah dipakai sebagai izin awal saat jabatan dipilih untuk karyawan baru. Izin tiap karyawan tetap bisa diubah sendiri.</p>
-  <div style="display:flex;gap:8px"><input class="fi" id="jbNew" maxlength="32" placeholder="Jabatan baru, mis. Kepala Dapur" style="min-width:0;flex:1;margin:0"><button class="btn sm" style="width:auto;margin:0" onclick="jbAdd()">Tambah</button></div>
-  <p class="hint" id="jbMsg" style="min-height:16px;${bad?'color:var(--bad)':''}">${esc(msg||'')}</p>${rows}${hid}<button class="btn sec" onclick="closeModal()">Tutup</button>`);
-  if(!msg&&$('#jbNew'))$('#jbNew').focus();
+  const list=usrRoleList().filter(r=>usrRoleKey(r)!=='owner');
+  openModal(`<h3>Jabatan</h3><p class="hint" style="margin:0 0 10px">Izin di jabatan dipakai sebagai izin awal saat jabatan dipilih untuk karyawan. Izin tiap karyawan tetap bisa diubah sendiri.</p>
+  ${msg?`<p class="hint" style="${bad?'color:var(--bad)':'color:var(--ok)'}">${esc(msg)}</p>`:''}
+  <div class="jbl">${list.map(r=>{const k=jbKey(r),pm=rolePermsOf(k)||['co'];return `<button type="button" class="jbr" onclick="jbEdit('${esc(k)}')"><span class="tx"><b>${esc(usrRoleLabel(r))}</b><small>${jbCount(k)} karyawan · ${pm.length} izin</small></span>${pfi('chev',18)}</button>`}).join('')}</div>
+  <button class="btn" type="button" onclick="jbNew()">+ Jabatan Baru</button><button class="btn sec" type="button" onclick="closeModal()">Tutup</button>`);
+}
+function jbNew(msg){
+  openModal(`<h3>Jabatan Baru</h3><label class="fl" for="jbNew">Nama jabatan</label><input class="fi" id="jbNew" maxlength="32" placeholder="Mis. Kepala Dapur" autocomplete="off">
+  <p class="hint" id="jbMsg" style="min-height:16px;color:var(--bad)">${esc(msg||'')}</p><button class="btn" type="button" onclick="jbAdd()">Tambah</button><button class="btn sec" type="button" onclick="jbOpen()">Batal</button>`);
+  const i=$('#jbNew');if(i)i.focus();
+}
+function jbEdit(k,msg){
+  const r=usrRoleList().find(x=>jbKey(x)===k);if(!r)return jbOpen();
+  const cus=usrRoleCustom().some(x=>usrRoleKey(x)===usrRoleKey(r)),pm=rolePermsOf(k)||['co'],n=jbCount(k),canDel=cus||(k!=='staff'&&JB_BASE.some(x=>jbKey(x)===k));
+  openModal(`<h3>${esc(usrRoleLabel(r))}</h3><p class="hint" style="margin:0 0 6px">${n} karyawan memakai jabatan ini.${msg?' <b style="color:var(--ok)">'+esc(msg)+'</b>':''}</p>
+  ${cus?`<label class="fl" for="jbRn">Nama jabatan</label><input class="fi" id="jbRn" maxlength="32" value="${esc(usrRoleLabel(r))}" onchange="jbRename('${esc(k)}',this.value)">`:''}
+  <label class="fl">Izin awal</label><div class="prms">${Object.keys(PERM_LBL).map(pk=>permRow(pk,pm.includes(pk),`onchange="jbPerm('${esc(k)}','${pk}',this.checked)"`)).join('')}</div>
+  ${canDel?`<button class="btn sec" type="button" style="color:var(--bad)" onclick="${cus?`jbDel('${esc(k)}')`:`jbHide('${esc(k)}')`}"><i class="ic" data-ic="trash"></i>Hapus jabatan</button>`:''}
+  <button class="btn" type="button" onclick="jbOpen()">Selesai</button>`);
 }
 function jbCheck(v,except){
   v=(v||'').trim().replace(/\s+/g,' ');if(!v)return['Isi nama jabatan dulu'];if(v.length>32)return['Maksimal 32 karakter'];
@@ -4584,22 +4595,23 @@ function jbCheck(v,except){
   if(usrRoleList().some(x=>usrRoleKey(x)===usrRoleKey(v)&&usrRoleKey(x)!==except))return['Jabatan sudah ada'];
   return[null,v]}
 function jbAdd(){
-  const [er,v]=jbCheck($('#jbNew').value);if(er)return jbOpen(er,true);
-  if(jbHidden().includes(jbKey(v))&&JB_BASE.some(r=>jbKey(r)===jbKey(v)))return jbRestore(jbKey(v));
-  if(usrRoleList().length>=30)return jbOpen('Maksimal 30 jabatan',true);
-  db.set.staffRoles=[...usrRoleCustom(),v];db.set.rolePerms=Object.assign({},db.set.rolePerms,{[jbKey(v)]:['co']});save();jbOpen('Jabatan "'+v+'" ditambahkan. Atur izin awalnya di bawah.');
+  const raw=$('#jbNew').value,hidBase=JB_BASE.find(r=>jbKey(r)===jbKey(raw)&&jbHidden().includes(jbKey(r)));
+  if(hidBase){db.set.hiddenRoles=jbHidden().filter(x=>x!==jbKey(hidBase));save();return jbEdit(jbKey(hidBase),'Jabatan ditambahkan kembali')}   // nama jabatan bawaan yang pernah dihapus = dipulihkan
+  const [er,v]=jbCheck(raw);if(er)return jbNew(er);
+  if(usrRoleList().length>=30)return jbNew('Maksimal 30 jabatan');
+  db.set.staffRoles=[...usrRoleCustom(),v];db.set.rolePerms=Object.assign({},db.set.rolePerms,{[jbKey(v)]:['co']});save();jbEdit(jbKey(v),'Jabatan ditambahkan. Atur izinnya.');
 }
 function jbPerm(k,pk,on){
   const cur=(rolePermsOf(k)||['co']).filter(x=>x!==pk);if(on)cur.push(pk);
   db.set.rolePerms=Object.assign({},db.set.rolePerms,{[k]:Object.keys(PERM_LBL).filter(x=>cur.includes(x))});save();
 }
 async function jbRename(k,nv){
-  const [er,v]=jbCheck(nv,k);if(er)return jbOpen(er,true);
+  const [er,v]=jbCheck(nv,k);if(er)return jbEdit(k,er);
   const nk=jbKey(v),users=(USR.list||[]).filter(u=>usrRoleKey(u.role)===k);
   try{for(const u of users){const r=await api('/api/users/'+u.id,{method:'PUT',body:JSON.stringify({role:nk})});if(!r.ok){const j=await r.json().catch(()=>({}));return jbOpen(j.error||'Gagal mengubah nama',true)}}}catch(e){return}
   db.set.staffRoles=usrRoleCustom().map(x=>usrRoleKey(x)===k?v:x);
   const rp=Object.assign({},db.set.rolePerms);if(rp[k]){rp[nk]=rp[k];if(nk!==k)delete rp[k]}db.set.rolePerms=rp;save();
-  await renderUsr();jbOpen('Nama jabatan diubah'+(users.length?' ('+users.length+' karyawan ikut diperbarui)':''));
+  await renderUsr();jbEdit(nk,'Nama diubah'+(users.length?' ('+users.length+' karyawan ikut diperbarui)':''));
 }
 function jbHide(k){
   if(k==='staff'||k==='owner'||!JB_BASE.some(r=>jbKey(r)===k))return;
@@ -4637,13 +4649,12 @@ function usrForm(id){
   <label class="fl">Nama</label><input class="fi" id="uName" maxlength="40" value="${esc(u?u.name:'')}" placeholder="mis. Siti">
   <label class="fl">Username (untuk login)</label><input class="fi" id="uUser" maxlength="24" value="${esc(u?u.username:'')}" ${u?'disabled':''} autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="huruf kecil/angka, mis. siti">
   ${u?'':`<label class="fl">Kata sandi awal</label><input class="fi" id="uPw" type="text" autocomplete="off" placeholder="minimal 6 karakter">`}
-  <label class="fl">Status / Jabatan</label>
+  <label class="fl" for="uRole">Jabatan</label>
   <select class="fi" id="uRole" onchange="usrRolePick()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
-  <button type="button" class="btn sec" id="uRoleDel" style="display:none;margin-top:6px" onclick="usrRoleDel()"><i class="ic" data-ic="trash"></i>Hapus jabatan ini dari daftar</button>
-  <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;padding:8px 0">Kelola Jabatan</summary><div style="display:flex;gap:8px"><input class="fi" id="uNewRole" maxlength="32" placeholder="Mis. Supervisor" style="min-width:0;flex:1"><button class="btn sec" onclick="usrAddRole()">Tambah</button></div><p class="hint" id="uRoleErr" style="min-height:16px"></p></details>
-  <p class="hint">Owner memiliki akses penuh. Jabatan lain hanya mendapat izin yang dicentang.</p>
-  <div id="uPerms"><label class="fl">Hak akses pengguna ini</label>${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
-  <label class="tgl" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span>Hanya boleh login di satu perangkat</span></label>
+  <p class="hint" style="margin:6px 2px 0">Memilih jabatan mengisi izin di bawah secara otomatis. Atur jabatan lewat tombol Jabatan di halaman Pengguna.</p>
+  <div id="uPerms"><label class="fl">Hak akses</label><div class="prms">${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
+    <p class="hint" style="margin:6px 2px 0">Menu Pengguna, Payroll, dan Absensi &amp; Shift hanya untuk owner.</p></div>
+  <label class="tgl prm" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span><b>Satu perangkat saja</b><small>Karyawan hanya bisa masuk di satu perangkat sekaligus.</small></span></label>
   <p class="hint" id="uErr" style="color:var(--bad);min-height:16px"></p>
   <button class="btn" onclick="usrSave(${id||0})">Simpan</button><button class="btn sec" onclick="closeModal()">Batal</button>`);
   usrRoleSw();usrRoleDelShow();
