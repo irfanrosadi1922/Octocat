@@ -713,7 +713,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .pfwrap .pfi{display:block}
 @media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
 </style>
-<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-ordela-dark.svg"><link rel="icon" href="icon-ordela-dark.svg">
 <script>
 /* iOS: setelah rotasi landscape->portrait, ukuran layar & area sentuh kadang tidak ikut ter-reset (tombol tidak bisa ditekan / salah tekan). Paksa ukur ulang. */
 (function(){
@@ -961,7 +961,7 @@ function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.items)
 const RC_DEF={logo:'',showLogo:true,logoW:160,align:'center',font:'normal',divider:'dashed',itemLayout:'two',showAddr:true,line1:'',showNo:true,showDate:true,showType:true,showCust:true,showCashier:false,cashierAuto:true,cashier:'',showDisc:true,showTax:true,showPay:true,showFooter:true,line2:'',showQr:false,qrText:'Scan untuk memesan',bigTotal:true,showTable:true,tableSize:'xl',feed:3};
 const LOG_MAX=1000;
 const PRN_DEF={mode:'browser',auto:false,autoNew:true,cut:true,drawer:false,baud:9600,chunk:100,delay:15,uuid:'',autoConn:true};
-const DEF_LOGO='https://raw.githubusercontent.com/irfanrosadi1922/Ordela/main/icon-512.png';
+const DEF_LOGO='https://raw.githubusercontent.com/irfanrosadi1922/Ordela/main/icon-ordela-dark.svg';
 const GV_DEF={mode:'grid',colsD:0,colsM:2,stock:true,cats:true,tap:'add'};
 function fixDb(d){d.set=d.set||{};if(d.set.fsAuto==null)d.set.fsAuto=true;if(d.set.logoApp==null)d.set.logoApp=true;if(d.set.rc&&d.set.rc.logo&&!d.set.logo){d.set.logo=d.set.rc.logo;d.set.rc.logo=''}d.set.logo=d.set.logo||'';d.set.gv={...GV_DEF,...(d.set.gv||{})};delete d.set.gv.size;d.set.lang=d.set.lang||'id';if(d.set.dec==null)d.set.dec=0;d.set.loc=d.set.loc||'id-ID';d.set.curPos=d.set.curPos||'before';d.set.cur=d.set.cur||'Rp';d.set.curCode=d.set.curCode||(d.set.cur==='Rp'?'IDR':'CUSTOM');d.set.rc={...RC_DEF,...(d.set.rc||{})};d.set.pay={on:false,qris:'',name:'',note:'',...(d.set.pay&&typeof d.set.pay==='object'?d.set.pay:{})};delete d.set.pay.qr;d.set.prn={...PRN_DEF,...(d.set.prn||{})};d.set.att={on:false,tz:'',lat:'',lng:'',radius:100,strict:false,shifts:[],assign:{},...(d.set.att&&typeof d.set.att==='object'?d.set.att:{})};d.set.paper=d.set.paper||'80';d.log=d.log||[];d.orders=d.orders||[];d.cats=d.cats||[];
   if(d.set.store==='Sushi POS'||d.set.store==='Octocat')d.set.store='Ordela';
@@ -1002,7 +1002,7 @@ function applyBrand(){
   setTimeout(()=>{
     const w=$('#splash');if(!w)return;
     const n=String(db.set.store||'Ordela').split(' '),last=n.pop();
-    const dark=document.documentElement.getAttribute('data-theme')==='dark';$('#splashLogo').src=dark?'icon-512.png':'icon-light-512.png';$('#splashName').textContent='ORDELA';
+    const dark=document.documentElement.getAttribute('data-theme')==='dark';$('#splashLogo').src=dark?'icon-ordela-dark.svg':'icon-ordela-red.svg';$('#splashName').textContent='ORDELA';
     w.hidden=false;setTimeout(()=>w.classList.add('out'),1000);setTimeout(()=>{w.hidden=true},1500);
   },0);
 })();
@@ -2720,7 +2720,7 @@ function applyTheme(){
   const t=themePref(),d=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
   const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0E0F12':'#F6F6F6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
-  const ic=d?'icon-192.png':'icon-light-192.png';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon][href^=icon]').forEach(l=>{if(l.getAttribute('href')!==ic)l.setAttribute('href',ic)});
+  const ic=d?'icon-ordela-dark.svg':'icon-ordela-red.svg';document.querySelectorAll('link[rel=icon]').forEach(l=>{if(l.getAttribute('href')!==ic)l.setAttribute('href',ic)});const touch=document.querySelector('link[rel=apple-touch-icon]');if(touch){const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=180;c.getContext('2d').drawImage(im,0,0,180,180);touch.href=c.toDataURL('image/png')}catch(e){touch.href=ic}};im.onerror=()=>{touch.href=ic};im.src=ic+'?v=32'}
 }
 function setTheme(v){try{localStorage.setItem('pos_theme',v)}catch(e){}applyTheme();renderTheme()}
 function renderTheme(){
@@ -3002,7 +3002,7 @@ async function coNotify(title,body,tag){
   if(window.nativeNotify){try{await nativeNotify.show(title,body)}catch(e){}return}
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   try{
-    const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(),o={body,tag:tag||'co',renotify:true,icon:'icon-192.png',badge:'icon-192.png',vibrate:[200,100,200]};
+    const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(),o={body,tag:tag||'co',renotify:true,icon:'icon-ordela-dark.svg',badge:'icon-ordela-dark.svg',vibrate:[200,100,200]};
     if(reg&&reg.showNotification)await reg.showNotification(title,o);else new Notification(title,o);
   }catch(e){}
 }
@@ -3817,7 +3817,7 @@ function renderAccAbout(){
   const st=accStore(m),own=m.role==='owner';
   const row=(ic,l,v)=>`<div class="pfrow">${pfi(ic,20)}<div class="tx"><small>${l}</small><b>${v}</b></div></div>`;
   box.innerHTML=`${pfSub('Tentang Ordela',"go('accset')")}<div class="pfw">
-    <div class="pfhero"><img src="icon-192.png" alt="" width="84" height="84" style="border-radius:22px;box-shadow:0 8px 20px rgba(0,0,0,.12)"><b class="pfn">Ordela</b><small class="pfr">Aplikasi kasir dan pesanan untuk toko Anda</small></div>
+    <div class="pfhero"><img src="icon-ordela-dark.svg" alt="" width="84" height="84" style="border-radius:22px;box-shadow:0 8px 20px rgba(0,0,0,.12)"><b class="pfn">Ordela</b><small class="pfr">Aplikasi kasir dan pesanan untuk toko Anda</small></div>
     <div class="pfcard">
       ${row('info','Versi aplikasi',esc(APP_VER))}${row('globe','Situs','ordela.my.id')}
       ${st.name?row('store','Toko',esc(st.name)):''}${own&&st.code?row('id','Kode toko',`<code>${esc(st.code)}</code>`):''}
