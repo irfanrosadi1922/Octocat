@@ -4904,7 +4904,7 @@ function railBrand(){
 }
 setInterval(()=>{if(document.hidden)return;if(S.view==='home'){const ae=document.activeElement;if(!(ae&&ae.tagName==='INPUT'&&ae.closest&&ae.closest('#homeBox')))renderHome()}else if(S.view==='table')renderTable();else if(S.view==='alert')renderAlert()},15000);
 applyBrand();
-tick();go(matchMedia('(min-width:701px)').matches?'home':'pos');initI18n();dbBoot();setupPwa();cloudStart();coStart();applyAccess();bleAutoSoon(1200);
+tick();go(matchMedia('(min-width:701px)').matches?'home':'pos');initI18n();dbBoot();cloudStart();coStart();applyAccess();bleAutoSoon(1200);
 </script>
 <script src="auth.js"></script>
 </body>
