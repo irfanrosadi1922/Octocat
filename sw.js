@@ -1,6 +1,6 @@
 /* Service worker: aplikasi tetap terbuka saat internet putus. Data tidak di-cache di sini (disimpan lokal oleh aplikasi). */
-const V = 'ordela-v31';
-const SHELL = ['./', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'icon-light-192.png', 'icon-light-512.png'];
+const V = 'ordela-v32';
+const SHELL = ['./', 'manifest.webmanifest', 'icon-ordela-dark.svg', 'icon-512.png', 'icon-maskable-512.png', 'icon-light-192.png', 'icon-light-512.png', 'icon-ordela-dark.svg', 'icon-ordela-red.svg', 'icon-ordela-maskable.svg'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
@@ -32,7 +32,7 @@ self.addEventListener('push', (e) => {
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
     if (cs.some((c) => c.visibilityState === 'visible')) return;   // aplikasi sedang terbuka: bunyi & notifikasi diurus aplikasi
     return self.registration.showNotification('Pesanan online baru', {
-      body: 'Ketuk untuk membuka kasir', tag: 'co', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [250, 100, 250, 100, 400], requireInteraction: true
+      body: 'Ketuk untuk membuka kasir', tag: 'co', renotify: true, icon: 'icon-ordela-dark.svg', badge: 'icon-ordela-dark.svg', vibrate: [250, 100, 250, 100, 400], requireInteraction: true
     });
   }));
 });
