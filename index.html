@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F6F6F6">
 <meta name="color-scheme" content="only light">
-<script>(function(){try{if(localStorage.getItem('pos_theme_v')!=='2'){localStorage.setItem('pos_theme','light');localStorage.setItem('pos_theme_v','2')}var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#F6F6F6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light')}catch(e){}})()</script>
+<script>(function(){try{if(localStorage.getItem('pos_theme_v')!=='2'){localStorage.setItem('pos_theme','light');localStorage.setItem('pos_theme_v','2')}var t=localStorage.getItem('pos_theme')||'light',d=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0E0F12':'#F6F6F6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light')}catch(e){}})()</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
@@ -479,7 +479,7 @@ select.fi{appearance:auto}
 
 /* tema gelap (pilihan per perangkat: Terang / Gelap / Otomatis ikut sistem) */
 html:not([data-theme=dark]){color-scheme:only light}
-html[data-theme=dark]{color-scheme:dark;--ac:#FFCB74;--acx:#111111;--bg:#101012;--card:#1b1b1f;--tx:#f1f1f3;--tx2:#c9c9d0;--mu:#9a9aa3;--ln:#2e2e34;--bg2:#252529;--b:#52525b;--b2:#71717a;--bt:#e4e4e7;--peach:#232327;--peach2:#2c2c31;--peach3:#202024;--cat1:#2c2c31;--cat2:#26262b;--redbg:#3b1c1f;--greenbg:#17301f;--yelbg:#3a3015;--chip:#2a2a2f;--srch:#252529;--hover:#222226;--dis:#3a3a40;--bad:#f87171;--ok:#4ade80}
+html[data-theme=dark]{color-scheme:dark;--ac:#EF4444;--acx:#ffffff;--bg:#0E0F12;--card:#16171B;--tx:#F5F1EF;--tx2:#C9CBD2;--mu:#9A9CA6;--ln:#26272D;--bg2:#1E1F24;--b:#EF4444;--b2:#DC2626;--bt:#F5F1EF;--peach:#1B1C21;--peach2:#24252B;--peach3:#17181C;--cat1:#24252B;--cat2:#1E1F24;--redbg:#3A1618;--greenbg:#14301F;--yelbg:#3a3015;--chip:#24252B;--srch:#1E1F24;--hover:#1C1D22;--dis:#35363D;--bad:#F87171;--ok:#4ade80}
 html[data-theme=dark] .pill{box-shadow:none}
 html[data-theme=dark] .sold{background:rgba(16,16,18,.72)}
 html[data-theme=dark] .tag.low{color:#fbbf24}
@@ -493,6 +493,14 @@ html[data-theme=dark] .li .ch{color:#5a5a63}
 html[data-theme=dark] .btn.sec,html[data-theme=dark] .ib,html[data-theme=dark] .drawer button.on{color:#e4e4e7}
 html[data-theme=dark] img{color-scheme:light}
 @media print{html[data-theme=dark]{--bg:#fff;--card:#fff;--tx:#000;--tx2:#000;--mu:#555;--ln:#ddd;--bg2:#fff}}
+.thg{display:grid;grid-template-columns:1fr 1fr;gap:14px}.thc{display:flex;flex-direction:column;align-items:center;gap:8px}
+.thp{width:100%;aspect-ratio:3/4.1;border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:7px;border:1.5px solid var(--ln);text-align:left;overflow:hidden}
+.thc.light .thp{background:#F6F6F6}.thc.dark .thp{background:#0E0F12;border-color:#26272D}
+.thp .tpb{display:flex;gap:4px;margin-bottom:2px}.thp .tpb i{width:14px;height:5px;border-radius:3px;background:#d4d4d4}.thc.dark .tpb i{background:#35363D}
+.thp .tpc{display:flex;flex-direction:column;gap:5px;border-radius:10px;padding:8px}.thc.light .tpc{background:#fff}.thc.dark .tpc{background:#16171B}
+.thp .tpc b{height:6px;width:60%;border-radius:3px;background:#111}.thc.dark .tpc b{background:#F5F1EF}.thp .tpc em{height:5px;width:85%;border-radius:3px;background:#d9d9d9}.thc.dark .tpc em{background:#35363D}
+.thp .tpg{margin-top:auto;height:20px;border-radius:8px;background:#FFCB74}.thc.dark .tpg{background:#EF4444}
+.thn{font-size:14px}.thk{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--ln);color:transparent;background:transparent}.thk.on{background:var(--ac);border-color:var(--ac);color:var(--acx)}
 .thm{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 /* ===== Ordela: sidebar + Beranda / Meja / Laporan / Notifikasi ===== */
 .rail{display:none}
@@ -2711,15 +2719,19 @@ const themePref=()=>{try{return localStorage.getItem('pos_theme')||'light'}catch
 function applyTheme(){
   const t=themePref(),d=t==='dark'||(t==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.setAttribute('data-theme',d?'dark':'light');
-  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#101012':'#F6F6F6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0E0F12':'#F6F6F6');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'only light');
   const ic=d?'icon-192.png':'icon-light-192.png';document.querySelectorAll('link[rel=icon],link[rel=apple-touch-icon][href^=icon]').forEach(l=>{if(l.getAttribute('href')!==ic)l.setAttribute('href',ic)});
 }
 function setTheme(v){try{localStorage.setItem('pos_theme',v)}catch(e){}applyTheme();renderTheme()}
 function renderTheme(){
-  const el=$('#themeForm');if(!el)return;const t=themePref();
-  const o=(v,l,i)=>`<button class="chip ${t===v?'on':''}" onclick="setTheme('${v}')">${i} ${l}</button>`;
-  el.innerHTML=`<h3>Tema</h3><div class="thm">${o('light','Terang','☀️')}${o('dark','Gelap','🌙')}${o('auto','Otomatis','🌓')}</div>
-`;
+  const el=$('#themeForm');if(!el)return;const t=themePref(),auto=t==='auto';
+  const eff=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+  const card=(v,l)=>{const on=!auto&&t===v||auto&&eff===v;
+    return `<div class="thc ${v}"><button type="button" class="thp" onclick="setTheme('${v}')" aria-label="Tema ${l}"><span class="tpb"><i></i><i></i><i></i></span><span class="tpc"><b></b><em></em></span><span class="tpc"><b></b><em></em></span><span class="tpg"></span></button>
+    <b class="thn">${l}</b><button type="button" class="thk ${on?'on':''}" onclick="setTheme('${v}')" aria-label="Pakai tema ${l}" aria-pressed="${on}">${pfi('tick',18)}</button></div>`};
+  el.innerHTML=`<h3>Tema</h3><p class="pfhint" style="margin:0 0 12px">Pilih tampilan yang nyaman untuk mata Anda.</p>
+  <div class="thg">${card('light','Terang')}${card('dark','Gelap')}</div>
+  <label class="tgl prm" style="margin-top:10px"><input type="checkbox" ${auto?'checked':''} onchange="setTheme(this.checked?'auto':'${eff}')"><span><b>Ikuti pengaturan perangkat</b><small>Otomatis terang atau gelap sesuai perangkat Anda.</small></span></label>`;
 }
 try{if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(themePref()==='auto')applyTheme()})}catch(e){}
 applyTheme();  /* sekali saat awal: menyamakan favicon/apple-touch dengan tema (skrip di <head> berjalan sebelum tag ikon ada) */
