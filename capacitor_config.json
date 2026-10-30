@@ -2,6 +2,6 @@
   "appId": "com.ordela.app",
   "appName": "Ordela",
   "webDir": "www",
-  "backgroundColor": "#ffffff",
+  "backgroundColor": "#0E0F12",
   "android": { "allowMixedContent": false }
 }
