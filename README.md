@@ -83,3 +83,9 @@ Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Mej
 - Email dikirim server lewat Resend (`POST /api/payroll/slip`, hanya owner) dari isi slip yang tersimpan, jadi angkanya sama dengan yang dibayar. Karyawan tanpa email dilewati (mereka mengisi email sendiri di Akun → Edit Profil).
 - Aktifkan sekali di Supabase SQL Editor (domain pengirim harus terverifikasi di Resend, mis. `ordela.my.id`):
   `select pos.admin_mail('re_KUNCI_API_RESEND', 'Ordela <slip@ordela.my.id>');`
+
+## Logo & ikon
+
+Logo resmi Ordela (piring saji bernyala) ada di folder `brand/`: `ordela-mark.svg` (simbol merah), `ordela-mark-white.svg`, `ordela-logo.svg` (untuk latar gelap),
+`ordela-logo-light.svg` (untuk latar terang), serta PNG siap pakai. Ikon aplikasi (`icon-ordela-dark.svg`, `icon-ordela-red.svg`, `icon-ordela-maskable.svg`,
+dan PNG `icon-192/512`, `icon-light-*`, `icon-maskable-512`) dibuat dari simbol vektor yang sama sehingga tajam di semua ukuran.
