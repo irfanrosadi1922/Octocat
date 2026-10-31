@@ -712,6 +712,53 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 .shr:last-child{border-bottom:0}.shr .pfi{color:var(--tx2)}
 .pfwrap .pfi{display:block}
 @media(max-width:480px){.accp{padding:2px}.accph{padding:14px;gap:12px;border-radius:18px}.accav{width:68px;height:68px}.accwho b{font-size:15px}.accp .phr{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:7px}.modal:has(.cropbox){padding:18px;border-radius:24px}}
+
+/* ===== Layar lebar (iPad/desktop): Pesanan Online, Absensi, Payroll berbentuk dashboard kartu seperti Beranda ===== */
+.wkp{display:none}
+@media (min-width:701px){
+  .wkp{display:grid}
+  #v-co .bar,#v-att .bar,#v-pyr .bar{margin-bottom:14px}
+  /* Pesanan Online */
+  #coStat{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}#coStat .chg{margin:0!important}
+  .cow{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:14px;align-items:start}
+  .cow:not(:has(.cow-f)){grid-template-columns:minmax(0,1fr)}
+  .cog{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;align-items:start}.cog .coc{margin:0}
+  .cow-f{position:sticky;top:12px}.sech2{margin-top:4px!important}
+  #coDev{margin-top:14px!important}
+  .coc .cob{grid-template-columns:repeat(auto-fit,minmax(128px,1fr))}.coc .cob .btn{white-space:normal;line-height:1.2;min-height:42px}
+  .coc .cof>span:first-child{white-space:nowrap}
+  /* Absensi */
+  #attBox{display:grid;grid-template-columns:minmax(290px,.8fr) minmax(0,1.5fr);gap:14px;align-items:start}
+  #attBox .attp{max-width:none;margin-bottom:0}
+  #attStat{position:sticky;top:12px}
+  .attclk{font-size:clamp(40px,5vw,58px)}
+  #attHist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;align-content:start}
+  #attHist>*{min-width:0}#attHist>:not(.atr){grid-column:1/-1}
+  #attHist>.atr{margin:0;background:var(--bg2);border-radius:18px;padding:10px 12px}
+  #attHist>.atsum{display:none}
+  #attHist>.atkp{grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
+  /* Payroll */
+  #pyrBox>.chips{margin-bottom:14px}
+  .pyw{background:none;padding:0;box-shadow:none}
+  .pyhd{display:grid;grid-template-columns:minmax(220px,1.1fr) minmax(0,3fr);gap:12px;margin-bottom:14px;align-items:stretch}
+  .pyhd .pyper,.pyhd .opn-sum span{background:var(--card);border-radius:22px;padding:14px 16px;box-shadow:0 4px 16px rgba(0,0,0,.03)}
+  .pyhd .opn-sum{margin:0!important;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .pyhd .opn-sum span{display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .pyhd .opn-sum small{font-size:13px;font-weight:600;color:var(--tx2)}
+  .pyhd .opn-sum b{font-size:clamp(17px,2.1vw,24px);font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+  .pyg{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+  .pyg .pyc{margin:0;background:var(--card);border-radius:22px;padding:14px 16px;box-shadow:0 4px 16px rgba(0,0,0,.03)}
+  .pyk .pyg .pyc,.pya .panel .pyc{background:var(--bg2);box-shadow:none}
+  .pyac{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.pyac .btn{width:auto;margin:0;padding-left:26px;padding-right:26px}
+  .pyk{display:grid;grid-template-columns:minmax(280px,1fr) minmax(0,1.6fr);gap:14px;align-items:start}.pyk .panel{margin-bottom:0}
+  .pya{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}.pya .panel{margin-bottom:0}
+}
+@media (min-width:701px) and (max-width:1000px){
+  .cow{grid-template-columns:minmax(0,1fr)}.cow-f{position:static}
+  #attBox{grid-template-columns:minmax(0,1fr)}#attStat{position:static}
+  .pyhd{grid-template-columns:minmax(0,1fr)}
+  .pyk,.pya{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-ordela-dark.svg"><link rel="icon" href="icon-ordela-dark.svg">
 <script>
@@ -844,6 +891,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     <section id="v-co" hidden>
       <div class="bar"><h2><i class="ic" data-ic="cart"></i>Pesanan Online</h2><button class="btn sm" id="coGear" style="width:auto;margin:0" hidden onclick="S.setSub='coForm';go('set')"><i class="ic" data-ic="sliders"></i>Pengaturan QR</button></div>
       <div id="coStat"></div>
+      <div class="kp wkp" id="coKp"></div>
       <div id="coList"></div>
       <details class="panel" id="coDev" style="margin-top:18px"><summary>Pengaturan perangkat ini</summary><div id="coTop"></div></details>
     </section>
@@ -3338,8 +3386,11 @@ function renderCo(full){
     ${act?`<div class="cob">${pbtn}${act}</div>`:''}</div>`;
   };
   const finRow=o=>`<button class="li" onclick="coDet(${o.id})"><span class="l"><b>${esc(o.num)} · ${esc(o.name)}</b><small>${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${o.type==='Dine In'?'Dine In':'Takeaway'} · ${ago(o.u||o.t)}</small></span><span class="r"><b>${money(o.total)}</b><small>${o.status==='cancelled'?'dibatalkan':'selesai'}${isOnl(o)?' · QRIS'+(o.pst===2?' <i class="ic solo" data-ic="check"></i>':''):''}</small></span><span class="ch">›</span></button>`;
-  $('#coList').innerHTML=(act.length?`<div class="sech"><h3>Aktif (${act.length})</h3></div>${act.map(card).join('')}`:'<div class="empty" style="padding:30px 10px">Belum ada pesanan aktif.<br><small>Pesanan dari QR akan muncul di sini.</small></div>')
-    +(fin.length?`<div class="sech" style="margin-top:14px"><h3>Selesai / batal (${fin.length})</h3></div><div class="panel"><div class="lst">${fin.map(finRow).join('')}</div></div>`:'');
+  {const td=new Date().toDateString(),nNew=act.filter(o=>o.status==='new').length,nAcc=act.filter(o=>o.status==='accepted').length,nDone=L.filter(o=>o.status==='done'&&new Date(o.u||o.t).toDateString()===td).length,vAct=act.reduce((a,o)=>a+(+o.total||0),0);
+   const kc=(t,v,ic,bg)=>`<div class="kc"><div class="kt"><span>${t}</span></div><div class="kv"><span class="ki" style="background:${bg}"><i class="ic" data-ic="${ic}"></i></span>${v}</div></div>`;
+   $('#coKp').innerHTML=kc('Pesanan baru',nNew,'bell','#f7c244')+kc('Diproses',nAcc,'clock','#3b9d6e')+kc('Selesai hari ini',nDone,'check','#6b7280')+kc('Nilai pesanan aktif',money(vAct),'card','#EF4444');}
+  $('#coList').innerHTML=`<div class="cow"><div class="cow-a">`+(act.length?`<div class="sech"><h3>Aktif (${act.length})</h3></div><div class="cog">${act.map(card).join('')}</div>`:'<div class="empty" style="padding:30px 10px">Belum ada pesanan aktif.<br><small>Pesanan dari QR akan muncul di sini.</small></div>')+`</div>`
+    +(fin.length?`<div class="cow-f"><div class="sech sech2"><h3>Selesai / batal (${fin.length})</h3></div><div class="panel"><div class="lst">${fin.map(finRow).join('')}</div></div></div>`:'')+`</div>`;
 }
 function coDet(id){
   const o=CO.list.find(x=>x.id===id);if(!o)return;
@@ -4076,9 +4127,11 @@ function attDraw(){
   }
   st.innerHTML=h;attClock();
   const rows=attFiltered(),ins=rows.filter(r=>r.type==='in'),late=ins.filter(r=>r.status==='late').length,ont=ins.filter(r=>r.status==='ontime').length;
+  const akc=(t,v,bg)=>`<div class="kc"><div class="kt"><span>${t}</span></div><div class="kv"><span class="ki" style="background:${bg}"><i class="ic" data-ic="check"></i></span>${v}</div></div>`;
   hs.innerHTML=`<h3>Riwayat Absensi Saya</h3>
   <div class="chips">${[['today','Hari ini'],['7','7 hari'],['30','30 hari']].map(x=>`<button type="button" class="chip ${ATT.range===x[0]?'on':''}" onclick="ATT.range='${x[0]}';attDraw()">${x[1]}</button>`).join('')}</div>
-  <div class="chips"><span class="pst ok">Tepat waktu: ${ont}</span><span class="pst bad">Terlambat: ${late}</span><span class="pst">Masuk: ${ins.length}</span></div>
+  <div class="chips atsum"><span class="pst ok">Tepat waktu: ${ont}</span><span class="pst bad">Terlambat: ${late}</span><span class="pst">Masuk: ${ins.length}</span></div>
+  <div class="kp wkp atkp">${akc('Tepat waktu',ont,'#3b9d6e')}${akc('Terlambat',late,'#EF4444')}${akc('Total masuk',ins.length,'#6b7280')}</div>
   ${rows.length?rows.map(attRowHtml).join(''):'<div class="empty">Belum ada data absensi</div>'}`;
 }
 function attClock(){
@@ -4193,14 +4246,14 @@ async function pyGaji(b){
   const rows=PY.users.map(u=>({u,r:pyRowFor(PY.month,u.username)}));
   const tot=rows.reduce((a,x)=>a+x.r.net,0),paid=rows.filter(x=>x.r.paid).reduce((a,x)=>a+x.r.net,0);
   const attOn=!!attC().on;
-  b.innerHTML=`<div class="panel">
-    <label class="fl" for="pyMonth">Periode gaji</label><input class="fi" type="month" id="pyMonth" value="${esc(PY.month)}" onchange="if(this.value){PY.month=this.value;pyRender(true)}">
-    <div class="opn-sum" style="margin-top:12px"><span><small>Total gaji bersih</small><b>${money(tot)}</b></span><span><small>Sudah dibayar</small><b>${money(paid)}</b></span><span><small>Belum dibayar</small><b>${money(tot-paid)}</b></span></div>
+  b.innerHTML=`<div class="panel pyw"><div class="pyhd"><div class="pyper">
+    <label class="fl" for="pyMonth">Periode gaji</label><input class="fi" type="month" id="pyMonth" value="${esc(PY.month)}" onchange="if(this.value){PY.month=this.value;pyRender(true)}"></div>
+    <div class="opn-sum" style="margin-top:12px"><span><small>Total gaji bersih</small><b>${money(tot)}</b></span><span><small>Sudah dibayar</small><b>${money(paid)}</b></span><span><small>Belum dibayar</small><b>${money(tot-paid)}</b></span></div></div>
     ${attOn?'':'<p class="pfhint">Absensi belum aktif, jadi hari hadir tercatat 0. Aktifkan di Pengaturan → Absensi &amp; Shift, atau isi penyesuaian manual.</p>'}
     ${PY.users.length?'':'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}
-    ${rows.map(({u,r})=>`<button type="button" class="pyc" onclick="pySlip('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}</b><small>${r.set?esc(PY_TLBL[r.type])+' · '+r.days+' hari hadir'+(r.lateMin?' · telat '+r.lateMin+' mnt':''):'Gaji belum diatur'}</small></span><span class="rt"><b>${money(r.net)}</b><span class="pst ${r.paid?'ok':'w'}">${r.paid?'Dibayar':'Belum'}</span>${pyItem(PY.month,u.username).mailAt?'<small>✉ terkirim</small>':''}</span></button>`).join('')}
-    ${PY.users.length?`<button class="btn" type="button" onclick="pyXlsx()"><i class="ic" data-ic="download"></i>Unduh Payroll (Excel)</button>`:''}
-    ${rows.some(x=>x.r.paid)?`<button class="btn sec" type="button" onclick="pyMailAll()">Kirim Semua Slip ke Email</button>`:''}
+    <div class="pyg">${rows.map(({u,r})=>`<button type="button" class="pyc" onclick="pySlip('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}</b><small>${r.set?esc(PY_TLBL[r.type])+' · '+r.days+' hari hadir'+(r.lateMin?' · telat '+r.lateMin+' mnt':''):'Gaji belum diatur'}</small></span><span class="rt"><b>${money(r.net)}</b><span class="pst ${r.paid?'ok':'w'}">${r.paid?'Dibayar':'Belum'}</span>${pyItem(PY.month,u.username).mailAt?'<small>✉ terkirim</small>':''}</span></button>`).join('')}</div>
+    <div class="pyac">${PY.users.length?`<button class="btn" type="button" onclick="pyXlsx()"><i class="ic" data-ic="download"></i>Unduh Payroll (Excel)</button>`:''}
+    ${rows.some(x=>x.r.paid)?`<button class="btn sec" type="button" onclick="pyMailAll()">Kirim Semua Slip ke Email</button>`:''}</div>
   </div>`;
 }
 function pySlip(un){
@@ -4269,15 +4322,15 @@ async function pyMailAll(){
 /* ----- tab Karyawan: pengaturan gaji ----- */
 function pyKar(b){
   const c=PY.d.cfg;
-  b.innerHTML=`<div class="panel"><h3>Aturan umum</h3>
+  b.innerHTML=`<div class="pyk"><div class="panel"><h3>Aturan umum</h3>
    <div class="two"><div><label class="fl" for="pyLate">Potongan terlambat (per menit)</label><input class="fi" id="pyLate" type="number" inputmode="decimal" min="0" step="any" value="${+c.lateRate||''}" placeholder="0"></div>
    <div><label class="fl" for="pyWd">Hari kerja per bulan</label><input class="fi" id="pyWd" type="number" inputmode="numeric" min="1" max="31" value="${+c.workDays||26}"></div></div>
    <p class="pfhint">Hari kerja dipakai untuk menghitung potongan tidak hadir pada gaji bulanan (gaji ÷ hari kerja per hari).</p>
    <label class="tgl"><input type="checkbox" id="pyAuto" ${c.autoMail?'checked':''}><span>Kirim slip ke email karyawan otomatis saat ditandai dibayar</span></label>
    ${PY.mail?'':'<p class="pfhint" style="color:var(--bad)">Pengiriman email belum diaktifkan di server (jalankan pos.admin_mail di SQL Editor, lihat README).</p>'}
    <button class="btn sec" type="button" onclick="pyCfgSave()">Simpan Aturan</button></div>
-  <div class="panel"><h3>Gaji karyawan</h3>${PY.users.length?PY.users.map(u=>{const e=PY.d.emp[u.username]||{};
-   return`<button type="button" class="pyc" onclick="pyEmp('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}${u.active?'':' (nonaktif)'}</b><small>${e.base?esc(PY_TLBL[e.type||'monthly'])+' · '+money(+e.base)+({monthly:'/bulan',daily:'/hari',hourly:'/jam'})[e.type||'monthly']:'Belum diatur'}${u.email?'':' · tanpa email'}</small></span><span class="rt">${pfi('chev',18)}</span></button>`}).join(''):'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}</div>`;
+  <div class="panel"><h3>Gaji karyawan</h3><div class="pyg">${PY.users.length?PY.users.map(u=>{const e=PY.d.emp[u.username]||{};
+   return`<button type="button" class="pyc" onclick="pyEmp('${esc(u.username)}')"><span class="av">${esc((u.name||'?').trim().charAt(0).toUpperCase())}</span><span class="tx"><b>${esc(u.name)}${u.active?'':' (nonaktif)'}</b><small>${e.base?esc(PY_TLBL[e.type||'monthly'])+' · '+money(+e.base)+({monthly:'/bulan',daily:'/hari',hourly:'/jam'})[e.type||'monthly']:'Belum diatur'}${u.email?'':' · tanpa email'}</small></span><span class="rt">${pfi('chev',18)}</span></button>`}).join(''):'<div class="empty">Belum ada karyawan. Tambahkan di menu Pengguna.</div>'}</div></div></div>`;
 }
 async function pyCfgSave(){
   PY.d.cfg.lateRate=Math.max(0,+$('#pyLate').value||0);PY.d.cfg.workDays=Math.max(1,Math.min(31,Math.round(+$('#pyWd').value||26)));PY.d.cfg.autoMail=$('#pyAuto').checked;
@@ -4308,7 +4361,7 @@ async function pyAbsen(b){
     await pyAttLoad(ATT.xf,ATT.xt);days=attPair(PY.rows);by=attSumm(days)}
   else msg='Rentang tanggal tidak valid';
   const ks=Object.keys(by).sort((a,c)=>by[a].name<by[c].name?-1:1);
-  b.innerHTML=`<div class="panel"><h3>Rekap Absensi Karyawan</h3>
+  b.innerHTML=`<div class="pya"><div class="panel"><h3>Rekap Absensi Karyawan</h3>
    <div class="atx">
    <div class="acll"><div><label for="axF">Dari tanggal</label><input class="fi" type="date" id="axF" value="${esc(ATT.xf)}" onchange="ATT.xf=this.value;ATT.xman=1;pyRender(true)"></div><div><label for="axT">Sampai tanggal</label><input class="fi" type="date" id="axT" value="${esc(ATT.xt)}" onchange="ATT.xt=this.value;ATT.xman=1;pyRender(true)"></div></div>
    <div class="chips"><button type="button" class="chip" onclick="attXr('month');pyRender(true)">Bulan ini</button><button type="button" class="chip" onclick="attXr('last');pyRender(true)">Bulan lalu</button><button type="button" class="chip" onclick="attXr('7');pyRender(true)">7 hari</button></div></div>
@@ -4317,7 +4370,7 @@ async function pyAbsen(b){
    ${ks.length?`<button class="btn" type="button" onclick="attXlsx()"><i class="ic" data-ic="download"></i>Unduh Rekap Absensi (Excel)</button>`:''}
   </div>
   ${ks.length?`<div class="panel"><h3>Catatan absensi</h3><select class="fi" onchange="PY.who=this.value;pyRender(true)" aria-label="Filter karyawan"><option value="">Semua karyawan</option>${ks.map(k=>`<option value="${esc(k)}" ${PY.who===k?'selected':''}>${esc(by[k].name)}</option>`).join('')}</select>
-   ${(()=>{const rs=PY.rows.filter(r=>!PY.who||r.uname===PY.who).slice().sort((a,c)=>a.t<c.t?1:-1);return rs.slice(0,60).map(attRowHtml).join('')+(rs.length>60?`<p class="pfhint">Menampilkan 60 dari ${rs.length} catatan. Unduh Excel untuk semuanya.</p>`:'')})()}</div>`:''}`;
+   ${(()=>{const rs=PY.rows.filter(r=>!PY.who||r.uname===PY.who).slice().sort((a,c)=>a.t<c.t?1:-1);return rs.slice(0,60).map(attRowHtml).join('')+(rs.length>60?`<p class="pfhint">Menampilkan 60 dari ${rs.length} catatan. Unduh Excel untuk semuanya.</p>`:'')})()}</div>`:''}</div>`;
 }
 function pyWho(k){PY.who=PY.who===k?'':k;pyRender(true)}
 /* ----- ekspor payroll ----- */
