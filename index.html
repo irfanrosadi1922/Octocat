@@ -973,6 +973,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <div class="sesw" id="sesw" role="alert" hidden><span>Sesi berakhir dalam <b id="seswT"></b> detik karena tidak ada aktivitas.</span><button type="button" onclick="ssStamp();ssWarnHide()">Tetap masuk</button></div>
 <style id="pageStyle">.itabs{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto}.itabs button{border:0;background:var(--card);color:inherit;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}.itabs button b{opacity:.6;margin-left:4px}.itabs button.on{background:var(--ac);color:var(--acx,#fff)}
 .nol{max-height:34vh;overflow:auto;margin:6px 0 10px;border:1px solid var(--ln);border-radius:14px}.nor{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}.nor:last-child{border:0}.nor .nn{display:flex;flex-direction:column;min-width:0}.nor small{color:var(--mu)}.nq{display:flex;align-items:center;gap:10px}.nq button{width:32px;height:32px;border-radius:50%;border:0;background:var(--b,#111);color:#fff;font-size:18px;font-weight:700}.nq b{min-width:20px;text-align:center}.nof{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
+.tbc{font:inherit;color:inherit;cursor:pointer;width:100%}.tbo{border:1px solid var(--ln);border-radius:16px;padding:12px;margin:8px 0}.tbh{display:flex;justify-content:space-between;align-items:center;gap:8px}.tbl>div,.tbt{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:14px}.tbt{border-top:1px dashed var(--ln);margin-top:4px;padding-top:6px}
 </style>
 
 <script>
@@ -3252,12 +3253,12 @@ async function coAutoPrint(){
 /* ---------- Ambil Pesanan (server/pelayan): pesanan dibuat dari akun masing-masing, masuk ke antrean Pesanan Online yang sama,
    lalu dicetak otomatis oleh perangkat printer (layar Pesanan Online yang terbuka + printer terhubung) ---------- */
 const NO={q:{},s:'',busy:false,key:''};
-function noOpen(){
+function noOpen(tbl){
   if(!can('co')){toast('Tidak punya izin Pesanan Online');return}
   NO.q={};NO.s='';NO.busy=false;NO.key='n'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
   openModal(`<h3>Ambil Pesanan</h3>
   <div class="two"><div><label class="fl">Nama pelanggan *</label><input class="fi" id="noN" maxlength="40" autocomplete="off"></div>
-  <div><label class="fl">Meja</label><input class="fi" id="noT" maxlength="12" autocomplete="off"></div></div>
+  <div><label class="fl">Meja</label><input class="fi" id="noT" maxlength="12" autocomplete="off" value="${esc(tbl||'')}"></div></div>
   <div class="two"><div><label class="fl">Tipe</label><select class="fi" id="noTy"><option>Dine In</option><option>Takeaway</option></select></div>
   <div><label class="fl">Cari menu</label><input class="fi" id="noS" placeholder="Cari…" oninput="NO.s=this.value;noList()"></div></div>
   <div id="noL" class="nol"></div>
@@ -3453,6 +3454,7 @@ function coDet(id){
   const tm=t=>new Date(t).toLocaleString(dloc(),{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
   openModal(`<h3>${esc(o.num)} · ${esc(o.name)}</h3>
   <table class="dl"><tr><td>Status</td><td>${o.status==='cancelled'?'Dibatalkan':o.status==='done'?'Selesai':o.status==='accepted'?'Diterima':'Baru'}</td></tr>
+  <tr><td>Dilayani oleh</td><td>${o.by?esc(o.by):'Pelanggan (pesan sendiri)'}</td></tr>
   <tr><td>Masuk</td><td>${tm(o.t)}</td></tr>${o.u&&o.u!==o.t?`<tr><td>Terakhir diubah</td><td>${tm(o.u)}</td></tr>`:''}
   <tr><td>Tipe</td><td>${o.tbl?'Meja '+esc(o.tbl)+' · ':''}${o.type==='Dine In'?'Dine In':'Takeaway'}</td></tr>
   ${o.saleNo?`<tr><td>Invoice</td><td>${esc(o.saleNo)}</td></tr>`:''}
@@ -3549,6 +3551,7 @@ function can(p){return !CL.on||(!!CL.me&&(CL.me.role==='owner'||(CL.me.perms||[]
 function attOnly(){const m=CL.on&&CL.me;if(!m||m.role==='owner')return false;const p=m.perms||[];return p.length>0&&p.every(x=>x==='att')}
 function landing(){return ['pos','home','co','inv','att','set','prn'].find(v=>canView(v))||'acc'}
 function canView(v){
+  if(v==='table'&&can('co'))return true;   // server/pelayan melihat status meja dari antrean pesanan
   if(v==='home'&&can('hist'))return true;   // Rekap & Riwayat tampil di Beranda
   if(v==='acc')return true;
   if(v==='att')return CL.on&&can('att');
@@ -4987,15 +4990,27 @@ function renderTable(){
   const by=k=>act.filter(o=>tkey(o.tbl)===k);
   const st=k=>{const a=by(k);return a.some(o=>o.status==='accepted')?'p':a.length?'n':'f'};
   const c={f:0,n:0,p:0};names.forEach(k=>c[st(k)]++);
-  const lbl={f:'Kosong',n:'Pesanan baru',p:'Diproses'};
+  const lbl={f:'Kosong',n:'Baru · belum bayar',p:'Diproses'};
+  const paid=o=>o.pst===2,pl=k=>{const a=by(k);return !a.length?'':a.every(paid)?'Sudah bayar':'Belum bayar'};
   el.innerHTML=`
   <div class="hm-h"><div><h2>Meja</h2></div>
-    <span class="stp">Jumlah meja <button onclick="tblStep(-1)" aria-label="Kurangi">−</button>${n}<button onclick="tblStep(1)" aria-label="Tambah">+</button></span></div>
+    ${isOwner()||can('set')?`<span class="stp">Jumlah meja <button onclick="tblStep(-1)" aria-label="Kurangi">−</button>${n}<button onclick="tblStep(1)" aria-label="Tambah">+</button></span>`:''}</div>
   <div class="tbg">
-    <div class="panel"><div class="tbs">${names.map(k=>{const s=st(k),a=by(k);return`<div class="tbc ${s==='f'?'':s}"><b>${esc(k)}</b><small>${lbl[s]}${a.length?' · '+a.length+' pesanan':''}</small></div>`}).join('')}</div>
+    <div class="panel"><div class="tbs">${names.map(k=>{const s=st(k),a=by(k);return`<button type="button" class="tbc ${s==='f'?'':s}" onclick="tblOpen('${esc(k).replace(/'/g,"\\'")}')"><b>${esc(k)}</b><small>${s==='p'?'Diproses · '+pl(k):lbl[s]}</small>${a.length?`<small>${a.length} pesanan${[...new Set(a.map(o=>o.by).filter(Boolean))].length?' · '+esc([...new Set(a.map(o=>o.by).filter(Boolean))].join(', ')):''}</small>`:''}</button>`}).join('')}</div>
       <div class="tlg"><span><i style="background:#6fd6a0"></i>Kosong: ${c.f}</span><span><i style="background:#f7c244"></i>Pesanan baru: ${c.n}</span><span><i style="background:var(--b)"></i>Diproses: ${c.p}</span></div></div>
-    <div class="panel"><h3>Pesanan Aktif</h3>${act.length?act.map(o=>`<button class="li" onclick="coDet(${o.id})"><span class="l"><b>Meja ${esc(o.tbl)} · ${esc(o.name)}</b><small>${o.lines.reduce((a,l)=>a+l.qty,0)} item · ${esc(ago(o.t))}</small></span><span class="r"><b>${money(o.total)}</b><small>${o.status==='new'?'baru':'diproses'}</small></span><span class="ch">›</span></button>`).join(''):'<div class="mt">Belum ada pesanan online aktif dengan nomor meja.</div>'}</div>
+    <div class="panel"><h3>Pesanan Aktif</h3>${act.length?act.map(o=>`<button class="li" onclick="coDet(${o.id})"><span class="l"><b>Meja ${esc(o.tbl)} · ${esc(o.name)}</b><small>${o.lines.reduce((a,l)=>a+l.qty,0)} item · ${esc(ago(o.t))}${o.by?' · '+esc(o.by):''}</small></span><span class="r"><b>${money(o.total)}</b><small>${o.status==='new'?'baru':'diproses'}</small></span><span class="ch">›</span></button>`).join(''):'<div class="mt">Belum ada pesanan online aktif dengan nomor meja.</div>'}</div>
   </div>`;
+}
+
+function tblOpen(k){
+  const a=(CO.list||[]).filter(o=>tkey(o.tbl)===tkey(k)&&(o.status==='new'||o.status==='accepted')),tm=t=>new Date(t).toLocaleTimeString(dloc(),{hour:'2-digit',minute:'2-digit'});
+  const sl=o=>o.status==='new'?'Menunggu diterima':'Sedang diproses',pay=o=>o.pst===2?'Sudah bayar':'Belum bayar';
+  openModal(`<h3>Meja ${esc(k)}</h3>`+(a.length?a.map(o=>`<div class="tbo"><div class="tbh"><b>${esc(o.num)} · ${esc(o.name)}</b><span class="pst ${o.pst===2?'ok':'w'}">${pay(o)}</span></div>
+    <small>${sl(o)} · ${tm(o.t)} · Dilayani: <b>${o.by?esc(o.by):'Pelanggan (pesan sendiri)'}</b></small>
+    <div class="tbl">${o.lines.map(l=>`<div><span>${l.qty}× ${esc(l.name)}</span><span>${money(l.price*l.qty)}</span></div>`).join('')}</div>
+    ${o.note?`<small>Catatan: ${esc(o.note)}</small>`:''}<div class="tbt"><span>Total</span><b>${money(o.total)}</b></div>
+    <button class="btn sec" onclick="closeModal();coDet(${o.id})">Detail pesanan</button></div>`).join(''):'<p class="hint">Meja ini kosong, belum ada pesanan aktif.</p>')
+  +(can('co')?`<button class="btn" onclick="closeModal();noOpen('${esc(k).replace(/'/g,"\\'")}')">+ Ambil Pesanan di Meja ${esc(k)}</button>`:'')+`<button class="btn sec" onclick="closeModal()">Tutup</button>`);
 }
 /* ---------- Notifikasi ---------- */
 function renderAlert(){
