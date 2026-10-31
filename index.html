@@ -863,12 +863,13 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     <section id="v-inv" hidden>
       <div class="bar"><h2><i class="ic" data-ic="box"></i>Inventori</h2>
         <button class="btn sm" id="opnBtn" onclick="opnOpen()"><i class="ic" data-ic="check"></i>Stok Opname</button>
-        <button class="btn sm own-only" onclick="itemForm()">+ Tambah Item</button>
+        <button class="btn sm own-only" id="addItemBtn" onclick="itemForm(null,S.itab==='ns')">+ Tambah Item</button>
         <button class="btn sm red" id="bulkDel" onclick="bulkDel()" hidden><i class="ic" data-ic="trash"></i>Hapus terpilih (0)</button>
         <button class="btn sm sec own-only" onclick="orderForm()"><i class="ic" data-ic="reorder"></i>Atur Urutan Menu</button>
         <button class="btn sm sec own-only" onclick="exportCSV()">Ekspor CSV</button>
       </div>
       <div class="stats" id="invStats"></div>
+      <div class="itabs" id="invTabs"></div>
       <div class="panel"><div class="tw"><table class="invt"><thead><tr id="invHead"></tr></thead><tbody id="invBody"></tbody></table></div></div>
       <div class="panel"><h3>Riwayat Perubahan Stok</h3>
         <div class="logbar"><select class="logsel" id="logUser" aria-label="Filter pengguna" onchange="S.logU=this.value;S.ln=0;renderLog()" hidden></select><label class="logrows">Baris<select class="logsel" id="logRows" onchange="setLogRows(this.value)"></select></label></div>
@@ -970,7 +971,8 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <div class="mw" id="mw" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
 <div class="sesw" id="sesw" role="alert" hidden><span>Sesi berakhir dalam <b id="seswT"></b> detik karena tidak ada aktivitas.</span><button type="button" onclick="ssStamp();ssWarnHide()">Tetap masuk</button></div>
-<style id="pageStyle"></style>
+<style id="pageStyle">.itabs{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto}.itabs button{border:0;background:var(--card);color:inherit;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}.itabs button b{opacity:.6;margin-left:4px}.itabs button.on{background:var(--ac);color:var(--acx,#fff)}
+</style>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -1023,7 +1025,7 @@ function fixDb(d){d.set=d.set||{};if(d.set.fsAuto==null)d.set.fsAuto=true;if(d.s
 let db=fixDb(load());
 function save(){syncBundles(db);db._ts=Date.now();LSFAIL=false;try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){LSFAIL=true}schedMirror();if(CL.on){CL.dirty=true;persistMeta();schedSync()}}
 
-const S={view:'pos',cat:'all',q:'',sel:new Set(),cart:{},type:'Takeaway',dType:'%',dVal:0};
+const S={itab:'sale',view:'pos',cat:'all',q:'',sel:new Set(),cart:{},type:'Takeaway',dType:'%',dVal:0};
 const dec=()=>Math.max(0,Math.min(4,+db.set.dec||0));
 const rnd=v=>{const f=Math.pow(10,dec());return Math.round((+v+Number.EPSILON)*f)/f};
 const fmtNum=n=>Number(n).toLocaleString(db.set.loc||'id-ID',{minimumFractionDigits:dec(),maximumFractionDigits:dec()});
@@ -1808,9 +1810,9 @@ function stockAdd(id){
   if(n<1){$('#sAddE').textContent='Isi jumlah stok yang ditambah';return}
   const v=i.stock+n;i.stock=v;logAdd(i.name,n,'Tambah stok',v);db.log=db.log.slice(0,LOG_MAX);save();closeModal();renderInv();toast('Stok +'+n);
 }
-function itemForm(id){
+function itemForm(id,ns){
   if(!isOwner()){toast('Hanya owner yang boleh mengubah data menu');return}
-  const i=id?find(id):{name:'',cat:db.cats[0]||'',price:'',cost:'',stock:0,min:db.set.low,img:'',emoji:'🍽️'};
+  const i=id?find(id):{name:'',cat:db.cats[0]||'',price:'',cost:'',stock:0,min:db.set.low,img:'',emoji:'🍽️',ns:ns?1:0};
   S.edit={id:id||null,img:i.img,bd:isB(i)?i.bundle.map(c=>({id:c.id,q:c.q})):[]};
   openModal(`<h3>${id?'Edit':'Tambah'} Item</h3>
   <div class="up"><div class="pv" id="pv">${i.img?`<img src="${imgSrc(i.img)}" alt="">`:emo(i)}</div>
@@ -2206,10 +2208,15 @@ function delItem(id){
 }
 function invList(){
   const q=S.q.trim().toLowerCase();
-  return db.items.filter(i=>!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q));
+  return db.items.filter(i=>(S.itab==='all'||(S.itab==='ns')===!!i.ns)&&(!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)));
+}
+function invTabs(){
+  const n=db.items.filter(i=>i.ns).length,t=[['sale','Menu Dijual',db.items.length-n],['ns','Bahan / Tidak Dijual',n],['all','Semua',db.items.length]];
+  $('#invTabs').innerHTML=t.map(x=>`<button class="${S.itab===x[0]?'on':''}" onclick="S.itab='${x[0]}';S.sel.clear();renderInvTable()">${x[1]} <b>${x[2]}</b></button>`).join('');
 }
 function renderInvTable(){
   if(S.view!=='inv')return;
+  invTabs();
   const emp=isStaffMode(),ids=new Set(db.items.map(i=>i.id));
   [...S.sel].forEach(id=>{if(!ids.has(id))S.sel.delete(id)});
   $('#invHead').innerHTML=emp?'<th></th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th></th>':'<th><input type="checkbox" id="selAllCk" onchange="selAll(this.checked)"></th><th></th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Modal</th><th>Stok</th><th>Status</th><th></th>';
