@@ -234,10 +234,10 @@ end $$;
 create or replace function pos.clean_perms(j jsonb) returns jsonb language sql immutable as $$
   select coalesce(jsonb_agg(x order by o), '[]'::jsonb) from (
     select x, min(o) o from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end) with ordinality t(x, o)
-    where x in ('co','inv','hist','prn','set','att') group by x) s $$;
+    where x in ('pos','co','inv','hist','prn','set','att') group by x) s $$;
 
 create or replace function pos.perms_of(u pos.users) returns jsonb language sql immutable as
-$$ select case when u.role = 'owner' then '["co","inv","hist","prn","set","att"]'::jsonb else pos.clean_perms(u.perms) end $$;
+$$ select case when u.role = 'owner' then '["pos","co","inv","hist","prn","set","att"]'::jsonb else pos.clean_perms(u.perms) end $$;
 
 create or replace function pos.can(u pos.users, k text) returns boolean language sql immutable as
 $$ select u.role = 'owner' or pos.perms_of(u) ? k $$;
@@ -394,6 +394,10 @@ begin
   if jsonb_array_length(pm) > 0 and pm <@ '["att"]'::jsonb
      and ((cur -> 'orders') is distinct from (nxt -> 'orders') or (cur -> 'items') is distinct from (nxt -> 'items')) then
     return 'Akun ini hanya punya izin Absensi dan tidak bisa membuat transaksi';
+  end if;
+  -- transaksi kasir hanya untuk yang berizin Kasir & Transaksi (mis. pelayan yang hanya menerima pesanan tidak boleh)
+  if not (pm ? 'pos') and (cur -> 'orders') is distinct from (nxt -> 'orders') then
+    return 'Akun ini tidak punya izin Kasir & Transaksi';
   end if;
   if exists (select o ->> 'no', o from jsonb_array_elements(coalesce(cur -> 'orders', '[]')) o
              except select x ->> 'no', x from jsonb_array_elements(coalesce(nxt -> 'orders', '[]')) x) then
@@ -847,7 +851,7 @@ begin
 
   if u = '/api/users' and m = 'GET' then
     if not own then return pos.r(403, '{"error":"Anda tidak punya akses untuk ini"}'); end if;
-    return pos.r(200, jsonb_build_object('perms', '["co","inv","hist","prn","set","att"]'::jsonb,
+    return pos.r(200, jsonb_build_object('perms', '["pos","co","inv","hist","prn","set","att"]'::jsonb,
       'users', coalesce((select jsonb_agg(pos.me_view(uu) order by (uu.role = 'owner') desc, uu.username) from pos.users uu), '[]')));
   end if;
   if u = '/api/users' and m = 'POST' then
@@ -858,7 +862,7 @@ begin
     if exists (select 1 from pos.t_users where username = un) then return pos.r(409, '{"error":"Username sudah dipakai"}'); end if;
     nrole := case when lower(btrim(coalesce(b ->> 'role', ''))) = 'owner' then 'owner' else left(btrim(coalesce(b ->> 'role', 'staff')), 32) end;
     nperms := case when nrole = 'owner' then '[]'::jsonb
-      else pos.clean_perms(case when b -> 'perms' is null or jsonb_typeof(b -> 'perms') = 'null' then '["co","prn"]'::jsonb else b -> 'perms' end) end;
+      else pos.clean_perms(case when b -> 'perms' is null or jsonb_typeof(b -> 'perms') = 'null' then '["pos","co","prn"]'::jsonb else b -> 'perms' end) end;
     insert into pos.users(username, name, role, perms, pw, single) values (un, nm, nrole, nperms, extensions.crypt(b ->> 'password', extensions.gen_salt('bf', 10)),
       case when jsonb_typeof(b -> 'single') = 'boolean' then (b ->> 'single')::boolean end) returning * into tu;
     perform pos.audit(me.id, me.username, 'tambah-user', un || ' (' || nrole || ')');
@@ -1245,3 +1249,15 @@ begin
   end loop;
 end
 $secure_search_path$;
+
+-- izin baru "Kasir & Transaksi" (pos): sekali jalan, akun lama yang sebelumnya otomatis bisa memakai Kasir tetap bisa,
+-- kecuali jabatan pelayan/koki/server/kitchen/admin gudang dan akun khusus Absensi
+do $$ begin
+  if not exists (select 1 from pos.t_meta where k = 'perm_pos_v1') then
+    update pos.t_users set perms = coalesce(perms, '[]'::jsonb) || '"pos"'::jsonb
+      where role <> 'owner' and not (coalesce(perms, '[]'::jsonb) ? 'pos')
+        and lower(role) not in ('pelayan', 'koki', 'server', 'kitchen', 'admin gudang')
+        and not (jsonb_array_length(coalesce(perms, '[]'::jsonb)) > 0 and perms <@ '["att"]'::jsonb);
+    insert into pos.t_meta(store_id, k, v) values (0, 'perm_pos_v1', 'true'::jsonb) on conflict do nothing;
+  end if;
+end $$;

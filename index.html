@@ -3386,7 +3386,7 @@ function renderCo(full){
     fin=L.filter(o=>o.status==='done'||o.status==='cancelled').sort((a,b)=>b.id-a.id).slice(0,40);
   const card=o=>{
     const ps=o.printed===2?'<span class="pst ok"><i class="ic" data-ic="check"></i>tercetak</span>':o.printed===1?'<span class="pst w">mencetak…</span>':(o.status==='new'||o.status==='accepted')?'<span class="pst w">belum tercetak</span>':'';
-    const btn=o.status==='new'?`<button class="btn" onclick="coAct(${o.id},'accept')"><i class="ic" data-ic="check"></i>Terima</button><button class="btn sec" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:o.status==='accepted'?`<button class="btn" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:'';
+    const btn=o.status==='new'?`<button class="btn" onclick="coAct(${o.id},'accept')"><i class="ic" data-ic="check"></i>Terima</button>${can('pos')?`<button class="btn sec" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:''}`:o.status==='accepted'&&can('pos')?`<button class="btn" onclick="coPay(${o.id})"><i class="ic" data-ic="card"></i>Bayar</button>`:'';
     const act=(o.status==='new'||o.status==='accepted')?`${btn}<button class="btn sec" onclick="coPrint(${o.id})"><i class="ic" data-ic="print"></i>Cetak</button><button class="btn sec" onclick="coCancel(${o.id})"><i class="ic" data-ic="x"></i>Batal</button>`:'';
     const pb=isOnl(o)?(o.pst===2?'<span class="pst ok"><i class="ic" data-ic="card"></i>QRIS · diterima</span>':o.pst===1?'<span class="pst w"><i class="ic" data-ic="card"></i>QRIS · '+(o.hp?'bukti masuk, perlu dicek':'pelanggan klaim sudah bayar')+'</span>':o.pst===3?'<span class="pst"><i class="ic" data-ic="card"></i>QRIS · bukti ditolak</span>':'<span class="pst w"><i class="ic" data-ic="card"></i>QRIS · belum dibayar</span>'):'';
     const pbtn=(isOnl(o)&&(o.status==='new'||o.status==='accepted'))?(o.pst===1&&o.hp?`<button class="btn" onclick="coProof(${o.id})"><i class="ic" data-ic="image"></i>Lihat bukti bayar</button>`:o.pst===2?`<button class="btn sec" onclick="coAct(${o.id},'unpaid')"><i class="ic" data-ic="undo"></i>Batalkan konfirmasi bayar</button>`:`<button class="btn" onclick="coConfirmPay(${o.id})"><i class="ic" data-ic="check"></i>Pembayaran diterima</button>`):'';
@@ -3492,10 +3492,10 @@ function coStart(){
 }
 
 /* ---------- akun, peran, izin ---------- */
-const PERM_LBL={co:'Pesanan Online',inv:'Inventori & Stok Opname',hist:'Rekap & Riwayat Penjualan',prn:'Printer',set:'Pengaturan',att:'Absensi'};
-const PERM_DESC={co:'Terima dan proses pesanan dari pelanggan.',inv:'Lihat dan ubah stok, termasuk stok opname.',hist:'Lihat rekap, riwayat, dan ekspor penjualan di Beranda.',prn:'Sambungkan printer dan cetak struk.',set:'Toko, desain struk, pembayaran, tampilan, data & cadangan.',att:'Absen masuk dan pulang sendiri.'};
-const PERM_SHORT={co:'Pesanan Online',inv:'Inventori',hist:'Rekap',prn:'Printer',set:'Pengaturan',att:'Absensi'};
-const VIEW_PERM={pyr:'#owner',pos:null,inv:'inv',rc:'set',prn:'prn',set:'set',co:'co',att:'att',usr:'#owner'};
+const PERM_LBL={pos:'Kasir & Transaksi',co:'Pesanan Online',inv:'Inventori & Stok Opname',hist:'Rekap & Riwayat Penjualan',prn:'Printer',set:'Pengaturan',att:'Absensi'};
+const PERM_DESC={pos:'Operasional kasir: Kasir, Meja, Beranda, Notifikasi, dan membuat transaksi.',co:'Terima dan proses pesanan dari pelanggan.',inv:'Lihat dan ubah stok, termasuk stok opname.',hist:'Lihat rekap, riwayat, dan ekspor penjualan di Beranda.',prn:'Sambungkan printer dan cetak struk.',set:'Toko, desain struk, pembayaran, tampilan, data & cadangan.',att:'Absen masuk dan pulang sendiri.'};
+const PERM_SHORT={pos:'Kasir',co:'Pesanan Online',inv:'Inventori',hist:'Rekap',prn:'Printer',set:'Pengaturan',att:'Absensi'};
+const VIEW_PERM={pyr:'#owner',pos:'pos',home:'pos',table:'pos',alert:'pos',inv:'inv',rc:'set',prn:'prn',set:'set',co:'co',att:'att',usr:'#owner'};
 CL.me=null;try{CL.me=JSON.parse(localStorage.getItem('pos_me')||'null')}catch(e){}
 function setMe(m){CL.me=m||null;try{if(m)localStorage.setItem('pos_me',JSON.stringify(m));else localStorage.removeItem('pos_me')}catch(e){}}
 /* tanpa server (mode offline/standalone) tidak ada akun: semua terbuka */
@@ -3503,10 +3503,10 @@ function isOwner(){return !CL.on||(!!CL.me&&CL.me.role==='owner')}
 function can(p){return !CL.on||(!!CL.me&&(CL.me.role==='owner'||(CL.me.perms||[]).includes(p)))}
 /* karyawan yang HANYA punya izin Absensi: tidak boleh memakai Kasir, Meja, Beranda, atau Notifikasi (tidak ada transaksi) */
 function attOnly(){const m=CL.on&&CL.me;if(!m||m.role==='owner')return false;const p=m.perms||[];return p.length>0&&p.every(x=>x==='att')}
-const ATT_BLOCKED=['pos','home','table','alert'];
-function landing(){return attOnly()?'att':'pos'}
+function landing(){return ['pos','home','co','inv','att','set','prn'].find(v=>canView(v))||'acc'}
 function canView(v){
-  if(attOnly()&&ATT_BLOCKED.includes(v))return false;
+  if(v==='home'&&can('hist'))return true;   // Rekap & Riwayat tampil di Beranda
+  if(v==='acc')return true;
   if(v==='att')return CL.on&&can('att');
   if(v==='pyr')return CL.on&&isOwner();
   if(v==='set'&&can('prn'))return true;   // pemakai berizin Printer saja tetap bisa membuka Pengaturan > Printer
@@ -3525,8 +3525,10 @@ function openDash(){closeAll();location.href='dashboard.html'}
 function applyAccess(){
   document.querySelectorAll('.drawer button[data-v],.bnav button[data-v],.rail button[data-v]').forEach(b=>{
     const ok=b.dataset.v==='acc'||canView(b.dataset.v);
-    if(b.closest('.bnav'))b.style.visibility=ok?'':'hidden';else b.hidden=!ok;
+    if(b.closest('.bnav'))b.style.display=ok?'':'none';else b.hidden=!ok;
   });
+  {const bn=$('#bnav');if(bn){const n=[...bn.querySelectorAll('button[data-v]')].filter(b=>b.style.display!=='none').length;bn.style.gridTemplateColumns='repeat('+Math.max(1,n)+',1fr)';
+    if(typeof navDot==='function')setTimeout(()=>{const o=bn.querySelector('button.on');navDot(o?o.dataset.v:null,true)},0)}}
   const dn=$('#dashNav');if(dn)dn.hidden=!isOwner();   // Dashboard ada di halaman sendiri (dashboard.html), hanya untuk owner
   if(typeof coBadge==='function')coBadge();
   navGroups();
@@ -3582,7 +3584,7 @@ async function doLogin(){
     CL.tok=j.token;setMe(j.me);await localOwnerGuard(j.me);
     try{localStorage.setItem('pos_tok',CL.tok);localStorage.setItem('pos_user',un)}catch(e){}
     $('#loginPw').value='';$('#login').hidden=true;ssStamp();ssWarnHide();
-    applyAccess();if(!canView(S.view))go('pos');else render();
+    applyAccess();if(!canView(S.view)||S.view==='acc')go(landing());else render();
     syncNow();
   }catch(e){err.textContent='Tidak bisa terhubung ke server'}
   finally{btn.disabled=false;btn.textContent='Masuk'}
@@ -4638,7 +4640,7 @@ function permBoxes(sel){return Object.keys(PERM_LBL).map(p=>permRow(p,sel.includ
 function jbHidden(){return Array.isArray(db.set.hiddenRoles)?db.set.hiddenRoles:[]}
 function usrRoleList(){const d=Array.isArray(db.set.staffRoles)?db.set.staffRoles:[],hid=jbHidden();return [...new Set(['Owner',...JB_BASE.filter(r=>jbKey(r)==='staff'||!hid.includes(jbKey(r))),...d].map(x=>String(x||'').trim()).filter(Boolean))].slice(0,30)}
 /* izin awal tiap jabatan bawaan; terisi otomatis saat jabatan dipilih, tetap bisa diubah per karyawan */
-const ROLE_PERMS={kasir:['co','prn'],pelayan:['co'],koki:['co'],barista:['co','prn'],manajer:['co','inv','hist','prn','set','att'],'admin gudang':['inv'],server:['co'],kitchen:['co'],staff:['co','prn'],staf:['co','prn']};
+const ROLE_PERMS={kasir:['pos','co','prn'],pelayan:['co'],koki:['co'],barista:['pos','co','prn'],manajer:['pos','co','inv','hist','prn','set','att'],'admin gudang':['inv'],server:['co'],kitchen:['co'],staff:['pos','co','prn'],staf:['pos','co','prn']};
 function rolePermsOf(k){const o=db.set.rolePerms&&db.set.rolePerms[k];return Array.isArray(o)?o:ROLE_PERMS[k]}
 /* panel Kelola Jabatan: tambah, ubah nama, hapus jabatan buatan sendiri, dan atur izin awal tiap jabatan (per toko) */
 const JB_BASE=['Kasir','Pelayan','Koki','Barista','Manajer','Admin Gudang','Server','Kitchen','Staf'];
@@ -4729,7 +4731,7 @@ function usrForm(id){
   <label class="fl" for="uRole">Jabatan</label>
   <select class="fi" id="uRole" onchange="usrRolePick()" ${u&&u.id===(CL.me||{}).id?'disabled':''}>${usrRoleOptions(u?usrRoleKey(u.role):'staff')}</select>
   <p class="hint" style="margin:6px 2px 0">Memilih jabatan mengisi izin di bawah secara otomatis. Atur jabatan lewat tombol Jabatan di halaman Pengguna.</p>
-  <div id="uPerms"><label class="fl">Hak akses</label><div class="prms">${permBoxes(u?(u.perms||[]):['co','prn'])}</div>
+  <div id="uPerms"><label class="fl">Hak akses</label><div class="prms">${permBoxes(u?(u.perms||[]):['pos','co','prn'])}</div>
     <p class="hint" style="margin:6px 2px 0">Menu Pengguna, Payroll, dan Absensi &amp; Shift hanya untuk owner.</p></div>
   <label class="tgl prm" style="margin-top:10px"><input type="checkbox" id="uSingle" data-t="${u?'1':''}" ${u?(u.single?'checked':''):'checked'} onchange="this.dataset.t='1'"><span><b>Satu perangkat saja</b><small>Karyawan hanya bisa masuk di satu perangkat sekaligus.</small></span></label>
   <p class="hint" id="uErr" style="color:var(--bad);min-height:16px"></p>
