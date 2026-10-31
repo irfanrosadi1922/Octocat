@@ -5,7 +5,7 @@ Aplikasi POS Ordela
 
 1. Unduh cadangan JSON lebih dulu (Pengaturan → Cadangan), lalu jalankan ulang `setup.sql` di Supabase → SQL Editor.
    Data lama otomatis menjadi toko nomor 1 dengan owner yang sama. Skrip aman diulang.
-2. Supabase → Authentication → URL Configuration: isi **Site URL** dan **Redirect URLs** dengan alamat aplikasi (`https://ordela.my.id/`; alamat lama `https://USERNAME.github.io/ordela/` boleh tetap ditambahkan di Redirect URLs selama masa peralihan).
+2. Supabase → Authentication → URL Configuration: isi **Site URL** dan **Redirect URLs** dengan alamat aplikasi (`https://app.ordela.my.id/`; alamat lama `https://USERNAME.github.io/ordela/` boleh tetap ditambahkan di Redirect URLs selama masa peralihan).
 3. Authentication → Sign In / Providers → Email: biarkan **Confirm email** menyala (verifikasi boleh nanti, login tidak diblokir), set panjang sandi minimal 8.
 4. Authentication → Emails: sesuaikan template *Confirm signup* dan *Reset password*; pasang SMTP sendiri untuk pengiriman nyata (SMTP bawaan sangat terbatas).
 5. Opsional: aktifkan CAPTCHA di Authentication → Attack Protection (pengaturan dashboard, tanpa kode).
@@ -36,11 +36,14 @@ Data lokal aplikasi (menu, pesanan, pengaturan, cadangan) dicatat milik satu tok
 Karyawan yang izinnya **hanya Absensi** tidak bisa bertransaksi: menu Kasir, Meja, Beranda, dan Notifikasi disembunyikan, bottom nav tidak tampil, aplikasi langsung membuka halaman Absensi, dan server menolak (403) setiap perubahan pesanan atau stok dari akun itu. Karyawan dengan izin lain (atau tanpa izin tambahan) tetap memakai Kasir seperti biasa. Setelah memperbarui kode, jalankan ulang `setup.sql` di Supabase SQL Editor agar penolakan di server aktif.
 
 
-## Domain sendiri: ordela.my.id
-- File `CNAME` berisi `ordela.my.id`, jadi GitHub Pages melayani aplikasi di `https://ordela.my.id/`. Alamat QR pelanggan menjadi `https://ordela.my.id/order.html?s=KODETOKO`.
-- DNS (di penyedia domain): buat `CNAME` untuk `www` ke `irfanrosadi1922.github.io`, dan untuk domain utama (apex) buat empat record `A` ke `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
-- GitHub → Settings → Pages → *Custom domain*: isi `ordela.my.id`, tunggu pemeriksaan DNS selesai, lalu centang **Enforce HTTPS**.
-- Supabase → Authentication → URL Configuration: ubah **Site URL** menjadi `https://ordela.my.id/` dan tambahkan `https://ordela.my.id/**` ke Redirect URLs (tautan reset sandi dan verifikasi email memakai alamat ini).
+## Domain sendiri: app.ordela.my.id
+- File `CNAME` berisi `app.ordela.my.id`, jadi GitHub Pages melayani aplikasi di `https://app.ordela.my.id/`. Alamat QR pelanggan menjadi `https://app.ordela.my.id/order.html?s=KODETOKO`. Domain utama `ordela.my.id` dipakai untuk situs/landing page dan pengirim email.
+- DNS (di penyedia domain): buat satu record `CNAME` dengan nama `app` yang menunjuk ke `irfanrosadi1922.github.io`. Domain utama `ordela.my.id` tidak perlu diarahkan ke GitHub Pages.
+- GitHub → Settings → Pages → *Custom domain*: isi `app.ordela.my.id`, tunggu pemeriksaan DNS selesai, lalu centang **Enforce HTTPS**.
+- Supabase → Authentication → URL Configuration: ubah **Site URL** menjadi `https://app.ordela.my.id/` dan tambahkan `https://app.ordela.my.id/**` ke Redirect URLs (tautan reset sandi dan verifikasi email memakai alamat ini). Alamat lama `https://ordela.my.id/**` boleh tetap ada sementara agar tautan email lama masih bisa dibuka. Kode aplikasi (`auth.js`) otomatis mengarahkan tautan email ke `app.ordela.my.id` walau pengguna membuka dari `ordela.my.id`.
+- Template email Supabase (Authentication → Emails) harus memakai `{{ .ConfirmationURL }}` untuk tombol/tautan, jangan menulis alamat situs secara manual.
+- Resend: domain pengirim tetap `ordela.my.id` (sudah terverifikasi); subdomain `app` tidak perlu ditambahkan ke Resend. Biarkan *click tracking* mati supaya tautan di email tidak dibungkus alamat lain.
+- Bila memakai build APK, ubah variabel `APP_URL` di GitHub (Settings → Secrets and variables → Actions → Variables) menjadi `https://app.ordela.my.id/` atau kosongkan agar memakai isi `CNAME`.
 - Build APK otomatis memakai isi `CNAME` sebagai alamat QR, kecuali variabel `APP_URL` diisi.
 
 ## Pembayaran online: QRIS dinamis

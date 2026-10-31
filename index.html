@@ -3022,7 +3022,7 @@ function pubBase(){
     if(!/^https?:\/\//i.test(b))b='https://'+b;
     b=b.split('#')[0].split('?')[0].replace(/order(\.html)?$/i,'');
     if(!b.endsWith('/'))b+='/';
-    try{return new URL('order.html',b).href}catch(e){}
+    try{const u=new URL('order.html',b);if(u.hostname==='ordela.my.id'||u.hostname==='www.ordela.my.id')u.hostname='app.ordela.my.id';return u.href}catch(e){}
   }
   return new URL('order.html',location.href).href.split('#')[0];
 }

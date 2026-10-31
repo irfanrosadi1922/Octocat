@@ -11,7 +11,15 @@ document.documentElement.classList.add('hasauth');
 const E=s=>esc(s);
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const USER_RE=/^[a-z0-9][a-z0-9._-]{2,23}$/;
-const REDIR=location.origin+location.pathname;
+/* Alamat aplikasi untuk tautan di email (verifikasi & reset sandi). Domain utama / www selalu diarahkan ke app.ordela.my.id;
+   aplikasi native (host localhost) memakai alamat publik hasil build. Alamat lain (GitHub Pages, lokal) memakai alamat halaman ini. */
+const APP_HOST='app.ordela.my.id';
+function redir(){
+  const h=location.hostname;
+  if(h==='ordela.my.id'||h==='www.ordela.my.id'||h===APP_HOST)return 'https://'+APP_HOST+'/';
+  if((h==='localhost'||h==='127.0.0.1')&&/^https:\/\//i.test(String(window.POS_PUBLIC_URL||'')))return String(window.POS_PUBLIC_URL).split('#')[0].split('?')[0].replace(/order(\.html)?$/i,'').replace(/\/?$/,'/');
+  return location.origin+location.pathname;
+}
 const RESEND_KEY='pos_resend_t',FORGOT_KEY='pos_forgot_t',COOL=60;
 async function gt(path,o){
   o=o||{};
@@ -137,7 +145,7 @@ window.authRegister=function(){
     try{
       if(!(await chkU())||!(await chkE()))return msg('Perbaiki isian yang ditandai.');
       const phone=ph?'+'+val('rCc')+' '+phFmt(ph.replace(/^0+/,'')):'';
-      const r=await gt('/signup?redirect_to='+encodeURIComponent(REDIR),{body:{email:em,password:pw,data:{username:un,name,phone,birth,address:addr}}});
+      const r=await gt('/signup?redirect_to='+encodeURIComponent(redir()),{body:{email:em,password:pw,data:{username:un,name,phone,birth,address:addr}}});
       if(!r.ok)return msg(gtErr(r));
       const u=r.j&&(r.j.user||r.j);
       if(u&&Array.isArray(u.identities)&&u.identities.length===0)return msg('Email ini sudah terdaftar.');
@@ -166,7 +174,7 @@ window.authForgot=function(){
     if(!EMAIL_RE.test(em))return msg('Alamat email tidak valid.');
     const left=cdLeft(FORGOT_KEY);if(left>0)return msg('Tunggu '+left+' detik sebelum meminta tautan lagi.');
     setBusy(b,true,'Mengirim…');cdSet(FORGOT_KEY);
-    try{await gt('/recover?redirect_to='+encodeURIComponent(REDIR),{body:{email:em}})}catch(e){}
+    try{await gt('/recover?redirect_to='+encodeURIComponent(redir()),{body:{email:em}})}catch(e){}
     setBusy(b,false);
     msg('Jika email terdaftar, tautan telah dikirim. Periksa kotak masuk dan folder spam.',true);
   });
@@ -228,7 +236,7 @@ function vRender(){
 window.authResend=async function(){
   const m=CL.me;if(!m||!m.email)return;if(cdLeft(RESEND_KEY)>0)return;
   cdSet(RESEND_KEY);vRender();
-  try{const r=await gt('/resend?redirect_to='+encodeURIComponent(REDIR),{body:{type:'signup',email:m.email}});
+  try{const r=await gt('/resend?redirect_to='+encodeURIComponent(redir()),{body:{type:'signup',email:m.email}});
     toast(r.ok?'Email verifikasi dikirim ulang':gtErr(r))}catch(e){toast('Tidak bisa terhubung')}
   renderAccVerif();
 };
@@ -258,7 +266,7 @@ window.authCdLeft=function(){return cdLeft(RESEND_KEY)};
 window.authResendChange=async function(){
   const m=CL.me;if(!m||!m.pendingEmail||cdLeft(RESEND_KEY)>0)return;
   cdSet(RESEND_KEY);renderAccVerif();
-  try{const r=await gt('/resend?redirect_to='+encodeURIComponent(REDIR),{body:{type:'email_change',email:m.pendingEmail}});
+  try{const r=await gt('/resend?redirect_to='+encodeURIComponent(redir()),{body:{type:'email_change',email:m.pendingEmail}});
     toast(r.ok?'Tautan verifikasi dikirim ulang ke '+m.pendingEmail:gtErr(r))}catch(e){toast('Tidak bisa terhubung')}
   renderAccVerif();
 };
@@ -283,7 +291,7 @@ window.authChangeEmail=function(){
       const t=await gt('/token?grant_type=password',{body:{email:m.email,password:pw}});
       if(!t.ok){const c=String((t.j&&(t.j.error_code||t.j.code))||'')+String((t.j&&(t.j.msg||t.j.error_description))||'');
         return msg(/email_not_confirmed|not confirmed/i.test(c)?'Verifikasi email lama Anda dulu (kirim ulang tautan di halaman Profil), baru ganti email.':/invalid|credentials/i.test(c)?'Kata sandi salah.':gtErr(t))}
-      const u=await gt('/user?redirect_to='+encodeURIComponent(REDIR),{method:'PUT',bearer:t.j.access_token,body:{email:em}});
+      const u=await gt('/user?redirect_to='+encodeURIComponent(redir()),{method:'PUT',bearer:t.j.access_token,body:{email:em}});
       if(!u.ok)return msg(gtErr(u));
       cdSet(RESEND_KEY);hide();
       try{await refreshMe()}catch(e){}
@@ -309,7 +317,7 @@ window.authAddEmail=function(){
     setBusy(b,true,'Menyimpan…');
     try{
       const ck=await rc({email:em});if(ck&&ck.emailFree===false)return msg('Email ini sudah terdaftar.');
-      const r=await gt('/signup?redirect_to='+encodeURIComponent(REDIR),{body:{email:em,password:pw,data:{kind:'link'}}});
+      const r=await gt('/signup?redirect_to='+encodeURIComponent(redir()),{body:{email:em,password:pw,data:{kind:'link'}}});
       if(!r.ok)return msg(gtErr(r));
       const u=r.j&&(r.j.user||r.j);if(u&&Array.isArray(u.identities)&&u.identities.length===0)return msg('Email ini sudah terdaftar.');
       const r2=await api('/api/me/link-email',{method:'POST',body:JSON.stringify({email:em,password:pw})});
