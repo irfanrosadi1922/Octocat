@@ -459,9 +459,9 @@ begin
       'price', pos.num(i -> 'price'), 'stock', greatest(0, floor(pos.num(i -> 'stock'))),
       'emoji', left(coalesce(nullif(i ->> 'emoji', ''), '🍽️'), 8),
       'img', case when (i ->> 'img') ~ '^data:image/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$' then i ->> 'img' else '' end) order by o), '[]')
-    into items from jsonb_array_elements(d -> 'items') with ordinality t(i, o);
+    into items from jsonb_array_elements(d -> 'items') with ordinality t(i, o) where coalesce(i ->> 'ns', '') not in ('1', 'true');
   select coalesce(array_agg(c order by o), '{}') into ucats from (select c, min(o) o from
-    (select coalesce(i ->> 'cat', '') c, o from jsonb_array_elements(d -> 'items') with ordinality t(i, o)) z group by c) y;
+    (select coalesce(i ->> 'cat', '') c, o from jsonb_array_elements(d -> 'items') with ordinality t(i, o) where coalesce(i ->> 'ns', '') not in ('1', 'true')) z group by c) y;
   select coalesce(array_agg(c order by o), '{}') into ccats from jsonb_array_elements_text(case when jsonb_typeof(d -> 'cats') = 'array' then d -> 'cats' else '[]'::jsonb end) with ordinality t(c, o);
   foreach x in array ccats loop if x = any (ucats) then res := res || x; end if; end loop;
   foreach x in array ucats loop if not (x = any (ccats)) then res := res || x; end if; end loop;
@@ -503,7 +503,7 @@ begin
   for it in select x from jsonb_array_elements(b -> 'items') x loop
     iid := case when jsonb_typeof(it) = 'object' then it ->> 'id' end;
     qty := floor(case when jsonb_typeof(it) = 'object' then pos.num(it -> 'qty') else 0 end);
-    if iid is null or qty < 1 or not exists (select 1 from jsonb_array_elements(d -> 'items') x where x ->> 'id' = iid) then
+    if iid is null or qty < 1 or not exists (select 1 from jsonb_array_elements(d -> 'items') x where x ->> 'id' = iid and coalesce(x ->> 'ns', '') not in ('1', 'true')) then
       return pos.r(400, '{"error":"Item tidak valid"}');
     end if;
     ix := array_position(ids, iid);

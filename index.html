@@ -152,6 +152,7 @@ td .th{width:42px;height:42px;border-radius:10px;background:var(--peach);display
 td .th img{width:100%;height:100%;object-fit:cover}
 .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
 .tag.ok{background:var(--greenbg);color:var(--ok)}.tag.low{background:var(--yelbg);color:#b45309}.tag.out{background:var(--redbg);color:var(--bad)}
+.tag.bhn{background:var(--bg2,#eef2ff);color:#4f46e5;margin-left:4px}html[data-theme=dark] .tag.bhn{background:rgba(129,140,248,.18);color:#a5b4fc}
 .phr{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:8px}.phr .fi{min-width:0}.logbar#usrLogBar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}#usrLogBar .logsel{flex:1 1 120px;min-width:0}.rcpt .rtb{text-align:center;font-weight:800;line-height:1.1;margin:6px 0;letter-spacing:.5px;overflow-wrap:anywhere}.stkc{display:flex;align-items:center;gap:6px}.stkc b{font-size:15px;min-width:28px;text-align:right}.stkadd{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:14px;background:var(--bg);margin-bottom:4px}.stkadd b{font-size:20px}
 .stkc input{width:60px;text-align:center;border:1px solid var(--ln);border-radius:8px;padding:5px;outline:0}
 .logbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
@@ -1111,14 +1112,15 @@ function toggleInv(open){$('#invoice').classList.toggle('open',open);$('#fab').c
 
 /* ---------- POS ---------- */
 function renderCats(){
-  const list=[{k:'all',n:'Semua Menu',c:db.items.length,img:null}].concat(db.cats.map(c=>({k:c,n:c,c:db.items.filter(i=>i.cat===c).length})));
+  const sale=db.items.filter(i=>!i.ns);
+  const list=[{k:'all',n:'Semua Menu',c:sale.length,img:null}].concat(db.cats.filter(c=>sale.some(i=>i.cat===c)||!db.items.some(i=>i.cat===c)).map(c=>({k:c,n:c,c:sale.filter(i=>i.cat===c).length})));
   $('#cats').innerHTML=list.map(c=>{
     return`<button class="cat ${S.cat===c.k?'on':''}" onclick="S.cat='${esc(c.k).replace(/'/g,"\\'")}';renderCats();renderGrid()"><div class="t"><b>${esc(c.n)}</b><small>${c.c} Items</small></div></button>`
   }).join('');
 }
 function filtered(){
   const q=S.q.trim().toLowerCase();
-  return db.items.filter(i=>(S.cat==='all'||i.cat===S.cat)&&(!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)));
+  return db.items.filter(i=>!i.ns&&(S.cat==='all'||i.cat===S.cat)&&(!q||i.name.toLowerCase().includes(q)||i.cat.toLowerCase().includes(q)));
 }
 function renderPop(){
   const w=$('#popW'),l=$('#popL');if(!w||!l)return;
@@ -1127,7 +1129,7 @@ function renderPop(){
     const cnt={};db.orders.slice(0,400).forEach(o=>(o.lines||[]).forEach(x=>{cnt[x.name]=(cnt[x.name]||0)+(+x.qty||0)}));
     S._pt=Object.keys(cnt).filter(n=>cnt[n]>0).sort((a,b)=>cnt[b]-cnt[a]).slice(0,8);S._pk=key;
   }
-  const items=S._pt.map(n=>db.items.find(i=>i.name===n)).filter(Boolean);
+  const items=S._pt.map(n=>db.items.find(i=>i.name===n&&!i.ns)).filter(Boolean);
   const show=S.view==='pos'&&S.cat==='all'&&!S.q.trim()&&items.length>0;
   w.hidden=!show;if(!show)return;
   l.innerHTML=items.map(i=>{const out=i.stock<=0||(S.cart[i.id]||0)>=maxQty(i);return`<div class="pc"><div class="pi">${thumb(i)}</div><div class="pt"><div class="pn">${esc(i.name)}</div><div class="pp">${money(i.price)}</div></div><button class="pa" onclick="chg('${i.id}',1)" ${out?'disabled':''}>+</button></div>`}).join('');
@@ -1820,18 +1822,20 @@ function itemForm(id){
   <div><label class="fl">atau kategori baru</label><input class="fi" id="fC2" placeholder="Opsional"></div></div>
   <div class="two"><div><label class="fl">Harga jual *</label><input class="fi" id="fP" type="number" step="any" min="0" value="${i.price}"></div>
   <div><label class="fl">Harga modal</label><input class="fi" id="fK" type="number" step="any" min="0" value="${i.cost||''}"></div></div>
-  <label class="tgl"><input type="checkbox" id="fB" ${isB(i)?'checked':''} onchange="bdToggle()"><span>Item paket / set (berisi beberapa item)</span></label>
+  <label class="tgl"><input type="checkbox" id="fNS" ${i.ns?'checked':''} onchange="nsToggle()"><span>Bahan / tidak dijual (hanya untuk stok &amp; opname, tidak muncul di Kasir)</span></label>
+  <label class="tgl" id="fBL" ${i.ns?'hidden':''}><input type="checkbox" id="fB" ${isB(i)?'checked':''} onchange="bdToggle()"><span>Item paket / set (berisi beberapa item)</span></label>
   <div id="bdBox" ${isB(i)?'':'hidden'}>  <div id="bdRows"></div><button class="btn sm sec" type="button" onclick="bdAdd()">+ Tambah isi</button></div>
   <div id="stkRow" style="${isB(i)?'display:none':''}"><div class="two"><div><label class="fl">Stok</label><input class="fi" id="fS" type="number" min="0" value="${isB(i)?0:i.stock}"></div>
   <div><label class="fl">Batas stok menipis</label><input class="fi" id="fM" type="number" min="0" value="${i.min}"></div></div></div>
   <button class="btn" onclick="saveItem()">Simpan</button><button class="btn sec" onclick="closeModal()">Batal</button>${id?`<button class="btn red" onclick="delItem('${id}')">Hapus Item</button>`:''}`);
   bdRender();
 }
-function bdOpts(sel){const me=S.edit.id;return '<option value="">Pilih item…</option>'+db.items.filter(x=>!isB(x)&&x.id!==me).map(x=>`<option value="${esc(x.id)}" ${x.id===sel?'selected':''}>${esc(x.name)}</option>`).join('')}
+function bdOpts(sel){const me=S.edit.id;return '<option value="">Pilih item…</option>'+db.items.filter(x=>!isB(x)&&!x.ns&&x.id!==me).map(x=>`<option value="${esc(x.id)}" ${x.id===sel?'selected':''}>${esc(x.name)}</option>`).join('')}
 function bdRender(){const e=$('#bdRows');if(!e)return;e.innerHTML=S.edit.bd.map((c,k)=>`<div class="bdr"><input class="fi" type="number" min="1" step="1" inputmode="numeric" value="${c.q}" aria-label="Jumlah isi" onchange="bdSet(${k},'q',this.value)"><span>×</span><select class="fi" aria-label="Item isi" onchange="bdSet(${k},'id',this.value)">${bdOpts(c.id)}</select><button class="mini" type="button" onclick="bdDel(${k})">Hapus</button></div>`).join('')}
 function bdSet(k,f,v){const c=S.edit.bd[k];if(!c)return;if(f==='q')c.q=Math.max(1,Math.floor(+v||1));else c.id=v}
 function bdAdd(){S.edit.bd.push({id:'',q:1});bdRender()}
 function bdDel(k){S.edit.bd.splice(k,1);bdRender()}
+function nsToggle(){const on=$('#fNS').checked;if(on){if(S.edit.id&&bdUsedBy(S.edit.id)){$('#fNS').checked=false;toast('Item ini jadi isi paket, tidak bisa dijadikan bahan');return}$('#fB').checked=false;bdToggle()}$('#fBL').hidden=on}
 function bdToggle(){const on=$('#fB').checked;if(on&&bdUsedBy(S.edit.id)){$('#fB').checked=false;toast('Item ini sudah jadi isi paket lain, tidak bisa dijadikan paket');return}$('#bdBox').hidden=!on;$('#stkRow').style.display=on?'none':'';if(on&&!S.edit.bd.length)S.edit.bd.push({id:'',q:1});bdRender()}
 /* ---------- pangkas (crop) gambar: dipakai untuk logo dan gambar menu ---------- */
 function cropImg(file,o){
@@ -1908,14 +1912,14 @@ function pickImg(inp){
   cropImg(f,{title:'Pangkas gambar menu',aspects:[['1:1',1],['4:3',4/3],['3:4',3/4]],max:480,q:.8,cb:d=>{S.edit.img=d;const pv=$('#pv');if(pv)pv.innerHTML=`<img src="${d}">`}});
 }
 function saveItem(){
-  const name=$('#fN').value.trim(),price=rnd(+$('#fP').value);
+  const ns=$('#fNS').checked,name=$('#fN').value.trim(),price=rnd(+$('#fP').value);
   if(!name){toast('Nama wajib diisi');return}
-  if(!(price>=0)||$('#fP').value===''){toast('Harga wajib diisi');return}
+  if(!(price>=0)||($('#fP').value===''&&!ns)){toast('Harga wajib diisi');return}
   let cat=$('#fC2').value.trim()||$('#fC').value;
   if(!cat){toast('Pilih / isi kategori');return}
   if(!db.cats.includes(cat))db.cats.push(cat);
   let bundle=null;
-  if($('#fB').checked){
+  if(!ns&&$('#fB').checked){
     const m=new Map();(S.edit.bd||[]).forEach(c=>{if(c.id&&find(c.id)&&c.id!==S.edit.id)m.set(c.id,(m.get(c.id)||0)+Math.max(1,Math.floor(+c.q||1)))});
     bundle=[...m].map(([id,q])=>({id,q}));
     if(!bundle.length){toast('Pilih minimal 1 isi paket');return}
@@ -1925,7 +1929,8 @@ function saveItem(){
   let cost=rnd(+$('#fK').value||0);
   if(bundle&&!cost)cost=rnd(bundle.reduce((a,c)=>a+c.q*((find(c.id)||{}).cost||0),0));
   const d={name,cat,price,cost,stock,min:Math.max(0,Math.floor(+($('#fM')||{}).value||0)),img:S.edit.img||''};
-  if(S.edit.id){const i=find(S.edit.id);if(!isB(i)&&!bundle&&stock!==i.stock)logAdd(name,stock-i.stock,'Edit item',stock);if(bundle&&!isB(i)&&i.stock)logAdd(name,-i.stock,'Dijadikan item paket',0);Object.assign(i,d);if(bundle)i.bundle=bundle;else delete i.bundle}
+  if(ns)d.ns=1;
+  if(S.edit.id){const i=find(S.edit.id);if(!isB(i)&&!bundle&&stock!==i.stock)logAdd(name,stock-i.stock,'Edit item',stock);if(bundle&&!isB(i)&&i.stock)logAdd(name,-i.stock,'Dijadikan item paket',0);Object.assign(i,d);if(!ns)delete i.ns;if(bundle)i.bundle=bundle;else delete i.bundle}
   else{const ni={id:uid(),emoji:'🍽️',...d};if(bundle)ni.bundle=bundle;db.items.push(ni);if(!bundle&&stock)logAdd(name,stock,'Stok awal',stock)}
   save();closeModal();render();toast('Item disimpan');
 }
@@ -2210,8 +2215,8 @@ function renderInvTable(){
   $('#invHead').innerHTML=emp?'<th></th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th></th>':'<th><input type="checkbox" id="selAllCk" onchange="selAll(this.checked)"></th><th></th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Modal</th><th>Stok</th><th>Status</th><th></th>';
   $('#invBody').innerHTML=invList().map(i=>{const[s,t]=status(i);
     const stk=isB(i)?`<td class="i-s"><span class="stkc"><b>${i.stock}</b></span></td>`:`<td class="i-s"><span class="stkc"><b>${i.stock}</b></span></td>`;
-    return emp?`<tr><td class="i-th"><div class="th">${thumb(i)}</div></td><td class="i-n"><b>${esc(i.name)}</b>${isB(i)?`<br><small class="bdl">Isi: ${esc(bdLbl(i.bundle))}</small>`:''}</td><td class="i-c">${esc(i.cat)}</td><td class="i-p">${money(i.price)}</td>${stk}<td class="i-st"><span class="tag ${s}">${t}</span></td><td class="i-a">${isB(i)?'':`<button class="ib" onclick="stockForm('${i.id}')">Edit</button>`}</td></tr>`
-    :`<tr><td class="i-ck"><input type="checkbox" ${S.sel.has(i.id)?'checked':''} onchange="selOne('${i.id}',this.checked)"></td><td class="i-th"><div class="th">${thumb(i)}</div></td><td class="i-n"><b>${esc(i.name)}</b>${isB(i)?`<br><small class="bdl">Isi: ${esc(bdLbl(i.bundle))}</small>`:''}</td><td class="i-c">${esc(i.cat)}</td><td class="i-p">${money(i.price)}</td><td class="i-m">${money(i.cost||0)}</td>
+    return emp?`<tr><td class="i-th"><div class="th">${thumb(i)}</div></td><td class="i-n"><b>${esc(i.name)}</b>${i.ns?' <span class="tag bhn">Bahan</span>':''}${isB(i)?`<br><small class="bdl">Isi: ${esc(bdLbl(i.bundle))}</small>`:''}</td><td class="i-c">${esc(i.cat)}</td><td class="i-p">${money(i.price)}</td>${stk}<td class="i-st"><span class="tag ${s}">${t}</span></td><td class="i-a">${isB(i)?'':`<button class="ib" onclick="stockForm('${i.id}')">Edit</button>`}</td></tr>`
+    :`<tr><td class="i-ck"><input type="checkbox" ${S.sel.has(i.id)?'checked':''} onchange="selOne('${i.id}',this.checked)"></td><td class="i-th"><div class="th">${thumb(i)}</div></td><td class="i-n"><b>${esc(i.name)}</b>${i.ns?' <span class="tag bhn">Bahan</span>':''}${isB(i)?`<br><small class="bdl">Isi: ${esc(bdLbl(i.bundle))}</small>`:''}</td><td class="i-c">${esc(i.cat)}</td><td class="i-p">${money(i.price)}</td><td class="i-m">${money(i.cost||0)}</td>
     ${stk}
     <td class="i-st"><span class="tag ${s}">${t}</span></td>
     <td class="i-a" style="white-space:nowrap"><button class="ib" onclick="itemForm('${i.id}')">Edit</button><button class="ib d" onclick="delItem('${i.id}')">Hapus</button></td></tr>`}).join('')||`<tr><td colspan="${emp?7:9}" style="color:var(--mu)">Tidak ada item.</td></tr>`;
