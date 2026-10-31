@@ -79,6 +79,7 @@ create table if not exists pos.t_co(
 alter table pos.t_co add column if not exists pay text not null default '';
 alter table pos.t_co add column if not exists pst int not null default 0;
 alter table pos.t_co add column if not exists proof text not null default '';
+alter table pos.t_co add column if not exists by_name text not null default '';
 create index if not exists co_day on pos.t_co(day);
 create index if not exists co_status on pos.t_co(status, id);
 create table if not exists pos.t_att(
@@ -349,7 +350,7 @@ end $$;
 create or replace function pos.staff_view(r pos.co) returns jsonb language sql stable as $$
   select jsonb_build_object('id', r.id, 'num', r.num, 'name', r.name, 'tbl', r.tbl, 'type', r.type, 'note', r.note, 'lines', r.lines,
     'sub', r.sub, 'tax', r.tax, 'total', r.total, 'status', r.status, 'printed', r.printed, 'saleNo', coalesce(r.sale_no, ''), 'pay', r.pay, 'pst', r.pst, 'hp', r.proof <> '',
-    't', pos.iso(r.created_at), 'u', pos.iso(r.updated_at)) $$;
+    'by', r.by_name, 't', pos.iso(r.created_at), 'u', pos.iso(r.updated_at)) $$;
 create or replace function pos.cust_view(r pos.co) returns jsonb language sql stable as $$
   select jsonb_build_object('num', r.num, 'name', r.name, 'tbl', r.tbl, 'type', r.type, 'note', r.note, 'lines', r.lines,
     'total', r.total, 'sub', r.sub, 'tax', r.tax, 'status', r.status, 'pay', r.pay, 'pst', r.pst, 'hp', r.proof <> '', 't', pos.iso(r.created_at)) $$;
@@ -476,16 +477,17 @@ begin
     'tax', pos.num(s -> 'tax'), 'pay', pos.pay_cfg(s), 'cats', to_jsonb(res), 'items', items, 'open', st -> 'on', 'msg', st -> 'msg'));
 end $$;
 
-create or replace function pos.create_order(b jsonb, v_ip text) returns jsonb language plpgsql as $$
+drop function if exists pos.create_order(jsonb, text);
+create or replace function pos.create_order(b jsonb, v_ip text, v_by text default null) returns jsonb language plpgsql as $$
 declare st jsonb := pos.co_set(); d jsonb; s jsonb; nm text; kk text; ex pos.co; lim int; ids text[] := '{}'; qts int[] := '{}';
   it jsonb; iid text; qty int; ix int; item jsonb; dec int; sub numeric := 0; tx numeric; tot numeric; lines jsonb := '[]'; stock numeric;
   tk text; n int; v_day date; r pos.co; tp text; tx_pct numeric; v_pay text := '';
 begin
   perform pg_advisory_xact_lock(7001);
-  if not (st ->> 'on')::boolean then return pos.r(403, jsonb_build_object('error', 'closed', 'msg', st -> 'msg')); end if;
+  if v_by is null and not (st ->> 'on')::boolean then return pos.r(403, jsonb_build_object('error', 'closed', 'msg', st -> 'msg')); end if;
   select json into d from pos.doc where id = 1;
   if d is null then return pos.r(503, '{"error":"belum siap"}'); end if;
-  if jsonb_typeof(b -> 'website') = 'string' and (b ->> 'website') <> '' then return pos.r(400, '{"error":"ditolak"}'); end if;
+  if v_by is null and jsonb_typeof(b -> 'website') = 'string' and (b ->> 'website') <> '' then return pos.r(400, '{"error":"ditolak"}'); end if;
   nm := pos.clean(b ->> 'name', 40);
   if nm = '' then return pos.r(400, '{"error":"Nama wajib diisi"}'); end if;
   kk := nullif(pos.clean(b ->> 'key', 64), '');
@@ -495,10 +497,10 @@ begin
   end if;
   lim := greatest(1, coalesce((select (v #>> '{}')::int from pos.meta where meta.k = 'order_rate'), 40));
   delete from pos.hits where t < now() - interval '10 minutes';
-  if (select count(*) from pos.hits where hits.ip = v_ip) >= lim then
+  if v_by is null and (select count(*) from pos.hits where hits.ip = v_ip) >= lim then
     return pos.r(429, '{"error":"Terlalu banyak pesanan. Coba lagi beberapa menit lagi."}');
   end if;
-  insert into pos.hits(ip) values (v_ip);
+  if v_by is null then insert into pos.hits(ip) values (v_ip); end if;
   if (select count(*) from pos.co where status = 'new') >= 300 then return pos.r(429, '{"error":"Antrean penuh, mohon panggil pelayan."}'); end if;
   if jsonb_typeof(b -> 'items') <> 'array' or jsonb_array_length(b -> 'items') = 0 or jsonb_array_length(b -> 'items') > 60 then
     return pos.r(400, '{"error":"Pesanan kosong"}');
@@ -536,6 +538,7 @@ begin
   insert into pos.co(tok, idem, day, num, name, tbl, type, note, lines, sub, tax, total, pay)
     values (tk, kk, v_day, '#' || lpad(n::text, 3, '0'), nm, pos.clean(b ->> 'table', 12), tp, pos.clean(b ->> 'note', 200), lines, sub, tx, tot, v_pay)
     returning * into r;
+  if v_by is not null then update pos.co set by_name = left(v_by, 40), status = 'accepted' where id = r.id returning * into r; end if;
   if random() < 0.05 then delete from pos.co where status in ('done', 'cancelled') and updated_at < now() - interval '30 days'; end if;
   perform pos.push_ev('new', r);
   perform pos.bump();
@@ -987,6 +990,9 @@ begin
     return pos.r(200, '{"ok":true}');
   end if;
   if u like '/api/co%' and not pos.can(me, 'co') then return pos.r(403, '{"error":"Anda tidak punya izin Pesanan Online"}'); end if;
+  if u = '/api/co/new' and m = 'POST' then
+    return pos.create_order(b, pos.client_ip(), coalesce(nullif(me.name, ''), me.username));
+  end if;
   if u = '/api/co' and m = 'GET' then
     rv := pos.rev(); wt := least(25, pos.num(q -> 'wait'));
     if pos.num(q -> 'rev') = rv and wt > 0 then return pos.r(200, jsonb_build_object('rev', rv, 'unchanged', true)); end if;

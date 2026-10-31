@@ -891,7 +891,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
     </section>
 
     <section id="v-co" hidden>
-      <div class="bar"><h2><i class="ic" data-ic="cart"></i>Pesanan Online</h2><button class="btn sm" id="coGear" style="width:auto;margin:0" hidden onclick="S.setSub='coForm';go('set')"><i class="ic" data-ic="sliders"></i>Pengaturan QR</button></div>
+      <div class="bar"><h2><i class="ic" data-ic="cart"></i>Pesanan Online</h2><button class="btn sm" id="coNew" style="width:auto;margin:0" onclick="noOpen()">+ Ambil Pesanan</button><button class="btn sm" id="coGear" style="width:auto;margin:0" hidden onclick="S.setSub='coForm';go('set')"><i class="ic" data-ic="sliders"></i>Pengaturan QR</button></div>
       <div id="coStat"></div>
       <div class="kp wkp" id="coKp"></div>
       <div id="coList"></div>
@@ -972,6 +972,7 @@ html[data-theme=dark] .pm.w{background:#1e2a44;color:#93b4ff}html[data-theme=dar
 <div class="toast" id="toast"></div>
 <div class="sesw" id="sesw" role="alert" hidden><span>Sesi berakhir dalam <b id="seswT"></b> detik karena tidak ada aktivitas.</span><button type="button" onclick="ssStamp();ssWarnHide()">Tetap masuk</button></div>
 <style id="pageStyle">.itabs{display:flex;gap:8px;margin:0 0 12px;overflow-x:auto}.itabs button{border:0;background:var(--card);color:inherit;padding:9px 16px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer}.itabs button b{opacity:.6;margin-left:4px}.itabs button.on{background:var(--ac);color:var(--acx,#fff)}
+.nol{max-height:34vh;overflow:auto;margin:6px 0 10px;border:1px solid var(--ln);border-radius:14px}.nor{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln)}.nor:last-child{border:0}.nor .nn{display:flex;flex-direction:column;min-width:0}.nor small{color:var(--mu)}.nq{display:flex;align-items:center;gap:10px}.nq button{width:32px;height:32px;border-radius:50%;border:0;background:var(--b,#111);color:#fff;font-size:18px;font-weight:700}.nq b{min-width:20px;text-align:center}.nof{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
 </style>
 
 <script>
@@ -3023,6 +3024,8 @@ function cloudStart(){
 
 /* ---------- pesanan online (QR pelanggan) ---------- */
 const CO={rev:0,list:[],set:{on:true,msg:''},seen:new Set(),mine:new Set(),run:false,err:false,tries:{},pr:false,ring:0,aud:null,wl:null,pend:[],title:'Ordela',perr:''};
+/* cetak otomatis hanya di perangkat berizin Printer (perangkat printer); akun server yang cuma mengambil pesanan tidak ikut mencetak */
+function coAuto(){return can('prn')&&coPref('auto',true)}
 function coPref(k,d){try{const p=JSON.parse(localStorage.getItem('pos_co')||'{}');return p[k]==null?d:p[k]}catch(e){return d}}
 function coSetPref(k,v){let p={};try{p=JSON.parse(localStorage.getItem('pos_co')||'{}')}catch(e){}p[k]=v;try{localStorage.setItem('pos_co',JSON.stringify(p))}catch(e){}}
 const coNew=()=>CO.list.filter(o=>o.status==='new');
@@ -3191,12 +3194,13 @@ function coApply(j){
 /* tiket pesanan (dapur) */
 function ticketModel(o){
   const m=[],hr=()=>m.push({t:'hr'});
-  m.push({t:'text',x:'PESANAN ONLINE',a:'center',b:true});
+  m.push({t:'text',x:o.by?'PESANAN SERVER':'PESANAN ONLINE',a:'center',b:true});
   m.push({t:'text',x:o.num,a:'center',b:true,big:true});
   hr();
   m.push({t:'row',l:'Nama',r:o.name,b:true});
   if(o.tbl)m.push({t:'text',x:'MEJA '+o.tbl,a:'center',b:true,huge:3});
   m.push({t:'row',l:'Tipe',r:tr(o.type)});
+  if(o.by)m.push({t:'row',l:'Server',r:o.by});
   m.push({t:'row',l:'Waktu',r:fmtDT(o)});
   hr();
   o.lines.forEach(l=>m.push({t:'text',x:l.qty+'x '+l.name,a:'left',b:true}));
@@ -3222,7 +3226,7 @@ async function printTicket(o){
   }catch(e){console.error(e);CO.perr=(e&&e.name==='NotFoundError')?'pemilihan printer dibatalkan':((e&&e.message)||String(e));return false}
 }
 async function coAutoPrint(){
-  if(CO.pr||!CL.on||!CL.tok||!coPref('auto',true))return;
+  if(CO.pr||!CL.on||!CL.tok||!coAuto())return;
   const now=Date.now();
   const todo=CO.list.filter(o=>{
     if(!(o.status==='new'||o.status==='accepted')||o.printed!==0)return false;
@@ -3243,6 +3247,46 @@ async function coAutoPrint(){
       if(ok){o.printed=2;toast('Tiket '+o.num+' tercetak')}
     }
   }finally{CO.pr=false;if(S.view==='co')renderCo(false)}
+}
+
+/* ---------- Ambil Pesanan (server/pelayan): pesanan dibuat dari akun masing-masing, masuk ke antrean Pesanan Online yang sama,
+   lalu dicetak otomatis oleh perangkat printer (layar Pesanan Online yang terbuka + printer terhubung) ---------- */
+const NO={q:{},s:'',busy:false,key:''};
+function noOpen(){
+  if(!can('co')){toast('Tidak punya izin Pesanan Online');return}
+  NO.q={};NO.s='';NO.busy=false;NO.key='n'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  openModal(`<h3>Ambil Pesanan</h3>
+  <div class="two"><div><label class="fl">Nama pelanggan *</label><input class="fi" id="noN" maxlength="40" autocomplete="off"></div>
+  <div><label class="fl">Meja</label><input class="fi" id="noT" maxlength="12" autocomplete="off"></div></div>
+  <div class="two"><div><label class="fl">Tipe</label><select class="fi" id="noTy"><option>Dine In</option><option>Takeaway</option></select></div>
+  <div><label class="fl">Cari menu</label><input class="fi" id="noS" placeholder="Cari…" oninput="NO.s=this.value;noList()"></div></div>
+  <div id="noL" class="nol"></div>
+  <label class="fl">Catatan</label><input class="fi" id="noC" maxlength="200" placeholder="Mis. tanpa pedas">
+  <div class="nof"><b id="noTot"></b><button class="btn" id="noGo" onclick="noSend()">Kirim ke Printer</button></div>
+  <button class="btn sec" onclick="closeModal()">Batal</button>`);
+  noList();
+}
+function noList(){
+  const q=NO.s.trim().toLowerCase(),l=$('#noL');if(!l)return;
+  const its=db.items.filter(i=>!i.ns&&(+i.stock>0||NO.q[i.id])&&(!q||i.name.toLowerCase().includes(q)||(i.cat||'').toLowerCase().includes(q)));
+  l.innerHTML=its.map(i=>`<div class="nor"><span class="nn"><b>${esc(i.name)}</b><small>${money(i.price)}</small></span><span class="nq"><button type="button" onclick="noQ('${i.id}',-1)">−</button><b>${NO.q[i.id]||0}</b><button type="button" onclick="noQ('${i.id}',1)">+</button></span></div>`).join('')||'<p class="hint">Menu tidak ditemukan.</p>';
+  noTot();
+}
+function noQ(id,d){const i=find(id);if(!i)return;const n=Math.max(0,Math.min(99,(NO.q[id]||0)+d));if(n>(+i.stock||0)&&d>0){toast('Stok '+i.name+' tinggal '+i.stock);return}if(n)NO.q[id]=n;else delete NO.q[id];noList()}
+function noTot(){const t=Object.keys(NO.q).reduce((a,id)=>{const i=find(id);return a+(i?i.price*NO.q[id]:0)},0),n=Object.values(NO.q).reduce((a,b)=>a+b,0),e=$('#noTot');if(e)e.textContent=n+' item · '+money(t)}
+async function noSend(){
+  if(NO.busy)return;
+  const name=$('#noN').value.trim(),items=Object.keys(NO.q).map(id=>({id,qty:NO.q[id]}));
+  if(!name){toast('Nama pelanggan wajib diisi');return}
+  if(!items.length){toast('Pilih minimal 1 menu');return}
+  NO.busy=true;$('#noGo').disabled=true;
+  try{
+    const r=await api('/api/co/new',{method:'POST',body:JSON.stringify({name,table:$('#noT').value.trim(),type:$('#noTy').value,note:$('#noC').value.trim(),items,key:NO.key})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){toast(j.error||'Gagal mengirim pesanan');NO.busy=false;$('#noGo').disabled=false;return}
+    closeModal();toast('Pesanan terkirim ke printer');
+    CO.rev=0;try{const x=await (await api('/api/co?rev=0')).json();if(!x.unchanged){CO.rev=x.rev;coApply(x)}}catch(e){}
+  }catch(e){toast('Tidak bisa terhubung');NO.busy=false;const g=$('#noGo');if(g)g.disabled=false}
 }
 async function coPrint(id){
   const o=CO.list.find(x=>x.id===id);if(!o)return;
@@ -3379,8 +3423,8 @@ function renderCo(full){
     else if(Notification.permission==='denied')msgs.push(['neg','<i class="ic" data-ic="bell"></i>Notifikasi diblokir di browser']);
   }
   if(!CO.aud||CO.aud.state!=='running')msgs.push(['neg','<i class="ic" data-ic="mute"></i>Ketuk layar untuk aktifkan bunyi']);
-  if(coPref('auto',true)&&!coReady())msgs.push(['neg','<i class="ic" data-ic="print"></i>Printer belum terhubung']);
-  if(un&&coPref('auto',true))msgs.push(['neg','<i class="ic" data-ic="clock"></i>'+un+' tiket belum tercetak']);
+  if(coAuto()&&!coReady())msgs.push(['neg','<i class="ic" data-ic="print"></i>Printer belum terhubung']);
+  if(un&&coAuto())msgs.push(['neg','<i class="ic" data-ic="clock"></i>'+un+' tiket belum tercetak']);
   $('#coStat').innerHTML=msgs.map(m=>`<div class="chg ${m[0]}" style="margin:0 0 8px"><span>${m[1]}</span></div>`).join('');
   const L=CO.list,act=L.filter(o=>o.status==='new'||o.status==='accepted').sort((a,b)=>a.id-b.id),
     fin=L.filter(o=>o.status==='done'||o.status==='cancelled').sort((a,b)=>b.id-a.id).slice(0,40);
@@ -3616,7 +3660,7 @@ function fmtIdle(m){return m<60||m%60?m+' menit':(m/60)+' jam'}
 function ssStamp(){SS.last=Date.now();try{localStorage.setItem('pos_act',String(SS.last))}catch(e){}}
 function ssWarnHide(){if(!SS.warn)return;SS.warn=false;const w=$('#sesw');if(w)w.hidden=true}
 function ssWarnShow(sec){SS.warn=true;const w=$('#sesw');if(w)w.hidden=false;const t=$('#seswT');if(t)t.textContent=sec}
-function ssExempt(){return S.view==='co'&&can('co')&&coPref('auto',true)}   // layar dapur yang menerima & mencetak pesanan tidak ikut keluar
+function ssExempt(){return S.view==='co'&&can('co')&&coAuto()}   // layar dapur yang menerima & mencetak pesanan tidak ikut keluar
 function ssCheck(){
   if(!CL.on||!CL.tok){ssWarnHide();return}
   const m=idleMin();if(!m){ssWarnHide();return}
