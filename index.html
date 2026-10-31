@@ -115,7 +115,7 @@ input,select,textarea{font:inherit;color:inherit}
 .dsc input{width:80px;border:1px solid var(--ln);border-radius:8px;padding:4px 8px;text-align:right;outline:0;font-size:12.5px}
 .dsc select{width:auto;margin:0;padding:4px 6px;border-radius:8px;font-size:12px;border:1px solid var(--ln);color:var(--tx);font-weight:400}
 .tot{display:flex;justify-content:space-between;color:var(--bt);font-weight:800;font-size:18px;border-top:1px solid var(--ln);margin-top:8px;padding-top:10px}
-.btn{background:var(--ac);color:var(--acx);border-radius:999px;padding:14px 18px;font-weight:600;width:100%;margin-top:10px;box-shadow:0 10px 22px rgba(255,203,116,.5)}
+.btn{background:var(--ac);color:var(--acx);border-radius:999px;padding:14px 18px;font-weight:600;width:100%;margin-top:10px;box-shadow:0 10px 22px var(--acg,rgba(255,203,116,.5))}
 .btn[style*="var(--bad)"]{color:#fff;box-shadow:none}
 .btn.sec,.btn.red,.btn.sm,.btn:disabled,.btn.del{box-shadow:none}
 .btn:hover{background:#f5bd5c}
@@ -479,7 +479,7 @@ select.fi{appearance:auto}
 
 /* tema gelap (pilihan per perangkat: Terang / Gelap / Otomatis ikut sistem) */
 html:not([data-theme=dark]){color-scheme:only light}
-html[data-theme=dark]{color-scheme:dark;--ac:#EF4444;--acx:#ffffff;--bg:#0E0F12;--card:#16171B;--tx:#F5F1EF;--tx2:#C9CBD2;--mu:#9A9CA6;--ln:#26272D;--bg2:#1E1F24;--b:#EF4444;--b2:#DC2626;--bt:#F5F1EF;--peach:#1B1C21;--peach2:#24252B;--peach3:#17181C;--cat1:#24252B;--cat2:#1E1F24;--redbg:#3A1618;--greenbg:#14301F;--yelbg:#3a3015;--chip:#24252B;--srch:#1E1F24;--hover:#1C1D22;--dis:#35363D;--bad:#F87171;--ok:#4ade80}
+html[data-theme=dark]{color-scheme:dark;--acg:rgba(239,68,68,.28);--ac:#EF4444;--acx:#ffffff;--bg:#0E0F12;--card:#16171B;--tx:#F5F1EF;--tx2:#C9CBD2;--mu:#9A9CA6;--ln:#26272D;--bg2:#1E1F24;--b:#EF4444;--b2:#DC2626;--bt:#F5F1EF;--peach:#1B1C21;--peach2:#24252B;--peach3:#17181C;--cat1:#24252B;--cat2:#1E1F24;--redbg:#3A1618;--greenbg:#14301F;--yelbg:#3a3015;--chip:#24252B;--srch:#1E1F24;--hover:#1C1D22;--dis:#35363D;--bad:#F87171;--ok:#4ade80}
 html[data-theme=dark] .pill{box-shadow:none}
 html[data-theme=dark] .sold{background:rgba(16,16,18,.72)}
 html[data-theme=dark] .tag.low{color:#fbbf24}
