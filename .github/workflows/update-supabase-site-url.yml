@@ -1,0 +1,71 @@
+name: Update Supabase Site URL (app.ordela.my.id)
+
+# Jalankan manual: Actions -> Update Supabase Site URL -> Run workflow.
+# Mengatur Site URL dan Redirect URLs Supabase Auth agar tautan verifikasi email dan reset sandi
+# mengarah ke https://app.ordela.my.id/. Entri Redirect URLs yang sudah ada tidak dihapus.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-site-url:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Supabase Auth Site URL and Redirect URLs
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: txnpqiiwdtgtfgkrquty
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+            echo "Missing GitHub Actions secret: SUPABASE_ACCESS_TOKEN"
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+
+          ref = os.environ["SUPABASE_PROJECT_REF"]
+          token = os.environ["SUPABASE_ACCESS_TOKEN"]
+          url = f"https://api.supabase.com/v1/projects/{ref}/config/auth"
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Content-Type": "application/json",
+              "User-Agent": "Ordela-GitHub-Actions",
+          }
+          SITE = "https://app.ordela.my.id"
+          WANT = [SITE, SITE + "/", SITE + "/**"]
+
+          def call(method, data=None):
+              req = urllib.request.Request(url, data=json.dumps(data).encode() if data is not None else None,
+                                           headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return r.status, json.loads(r.read().decode() or "{}")
+              except urllib.error.HTTPError as e:
+                  print(f"Supabase API {method} failed (HTTP {e.code}): {e.read().decode('utf-8', 'replace')}")
+                  raise
+
+          _, cur = call("GET")
+          old_site = cur.get("site_url") or ""
+          old_list = [x.strip() for x in (cur.get("uri_allow_list") or "").split(",") if x.strip()]
+          print("Site URL sebelum :", old_site)
+          print("Redirect URLs sebelum:", old_list)
+
+          new_list = list(old_list)
+          for w in WANT:
+              if w not in new_list:
+                  new_list.append(w)
+
+          status, _ = call("PATCH", {"site_url": SITE + "/", "uri_allow_list": ",".join(new_list)})
+          print(f"Supabase API update succeeded (HTTP {status}).")
+
+          _, after = call("GET")
+          print("Site URL sesudah :", after.get("site_url"))
+          print("Redirect URLs sesudah:", [x.strip() for x in (after.get("uri_allow_list") or "").split(",") if x.strip()])
+          if (after.get("site_url") or "").rstrip("/") != SITE:
+              raise SystemExit("Site URL belum berubah, periksa hasilnya di Supabase")
+          PY
