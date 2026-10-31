@@ -212,6 +212,18 @@ function readHash(){
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
   return Object.fromEntries(p.entries());
 }
+/* tautan email memakai token_hash (bukan ConfirmationURL) supaya tidak hangus saat dipindai/dibuka otomatis oleh Gmail/antivirus: token baru dipakai ketika halaman ini dibuka lewat JS */
+async function handleQuery(){
+  const q=new URLSearchParams(location.search),th=q.get('token_hash'),ty=q.get('type');
+  if(!th||!/^(recovery|signup|email|email_change|invite|magiclink)$/.test(ty||''))return false;
+  q.delete('token_hash');q.delete('type');
+  try{history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''))}catch(e){}
+  let r;try{r=await gt('/verify',{body:{type:ty,token_hash:th}})}catch(e){toast('Tidak bisa terhubung');return true}
+  if(!r.ok||!r.j||!r.j.access_token){toast('Tautan sudah kedaluwarsa atau sudah dipakai. Minta tautan baru.');if(ty==='recovery')setTimeout(authForgot,300);return true}
+  if(ty==='recovery'){newPwScreen(r.j.access_token);return true}
+  toast('Email berhasil diverifikasi');setTimeout(async()=>{try{await refreshMe();renderAccVerif();if(S.view==='acc')renderAccPage()}catch(e){}},400);
+  return true;
+}
 function handleHash(){
   const p=readHash();if(!p)return;
   if(p.error||p.error_code){toast(/expired|invalid/i.test((p.error_code||'')+(p.error_description||''))?'Tautan sudah kedaluwarsa. Minta tautan baru.':'Tautan tidak valid.');
@@ -435,6 +447,6 @@ function authGate(){ // akun baru tanpa toko -> penyiapan toko
 }
 
 patchLogin();
-handleHash();window.addEventListener("hashchange",handleHash);
+handleQuery().then(d=>{if(!d)handleHash()});window.addEventListener("hashchange",handleHash);
 if(CL.me)vRender();
 })();
